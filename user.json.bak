@@ -1,0 +1,28 @@
+{
+	"Users":[
+		{
+			"userId":36585311,
+			"userNick":"拓维36585311",
+			"token":"7cb1b239-e2fe-49f6-8f51-9117b708d0d4",
+			"password":"dmsm3b39450b7c",
+			"gem":150730,
+			"activate":true
+		},
+		{
+			"userId":36585313,
+			"userNick":"拓维36585313",
+			"token":"32c12022-a769-45b4-8de5-e27ad51e6df9",
+			"password":"dmsm93569f261a",
+			"gem":151120,
+			"activate":true
+		},
+		{
+			"userId":36585315,
+			"userNick":"拓维36585315",
+			"token":"87ba921a-9fe5-4e3f-8178-51882a349448",
+			"password":"dmsmeff1752078",
+			"gem":150540,
+			"activate":true
+		}
+	]
+}

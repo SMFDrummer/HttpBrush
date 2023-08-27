@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+smf.icdada.Main-Class: smf.icdada.Main
+Class-Path: gson-2.10.1.jar json-20220924.jar bcprov-jdk18on-1.73.jar fa
+ stjson2-2.0.29.jar
+
