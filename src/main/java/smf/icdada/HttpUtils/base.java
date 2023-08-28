@@ -1,6 +1,8 @@
 package smf.icdada.HttpUtils;
 
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONException;
 import com.alibaba.fastjson2.JSONObject;
 import smf.icdada.*;
 
@@ -46,7 +48,7 @@ public class base {
                 Future<String> future = executor.submit(() -> getRes(channel, userId, proxyHost, proxyPort));
                 try {
                     String response = future.get(10, TimeUnit.SECONDS);
-                    if (HttpCrypto.JsonChecker(response)) {
+                    if (JSON.isValidObject(response)) {
                         JSONObject jsonObject = JSONObject.parseObject(response);
                         if (jsonObject.containsKey("r")) {
                             if (jsonObject.getIntValue("r") == 20507) {
@@ -197,7 +199,7 @@ public class base {
             System.out.println("\033[33m" +"请输入任意内容或数据包，输入空字段以结束："+"\033[0m");
             String body = smfScanner.smfLongString(true);
             if (body.isBlank()) System.exit(0);
-            if (HttpCrypto.JsonChecker(body)) {
+            if (JSON.isValidObject(body)) {
                 JSONObject jsonObject = JSONObject.parse(body);
                 if (jsonObject.containsKey("i") && jsonObject.containsKey("r")) {
                     if (jsonObject.containsKey("t")) {

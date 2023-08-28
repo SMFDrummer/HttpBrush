@@ -24,7 +24,7 @@ public class Anniversary {
             } else {
                 System.out.println("\033[33m" + "邀请码：" + inviteCode + "\033[0m" + " || " + "\033[32m" + "刷取成功" + "\033[0m" + " || " +"共成功：" + count);
             }
-        } while (count >= 20);
+        } while (count < 20);
         System.out.println("\033[33m" + "邀请码：" + inviteCode + "\033[0m" + " || " + "\033[32m" + "刷取结束" + "\033[0m");
     }
     private static String getInviteCode(){
@@ -62,11 +62,7 @@ public class Anniversary {
                             String response876BodyResend = futures.get(2).get(3,TimeUnit.SECONDS);
                             return JSON.parseObject(response876BodyResend).getIntValue("r") == 0 ? 1 : 0;
                         } else return 1;
-                    } else {
-                        refresh(Inter.oi,randomUserId);
-                        uisk = getUisk(randomUserId);
-                        proxy = getProxy(randomUserId);
-                    }
+                    } else return 0;
                 } catch (Exception ignored) {
                     refresh(Inter.oi,randomUserId);
                     uisk = getUisk(randomUserId);

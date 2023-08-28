@@ -29,6 +29,7 @@ import java.util.zip.GZIPOutputStream;
 
 @SuppressWarnings("ALL")
 public class HttpCrypto {
+
     private static final char[] BASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".toCharArray();
 
     /**
@@ -122,7 +123,7 @@ public class HttpCrypto {
      * @描述: 响应加密方法
      */
     public static String encryptRES(String identifier, String toEncryptResponseBody) {
-        if (!JsonChecker(toEncryptResponseBody)) {
+        if (!JSON.isValid(toEncryptResponseBody)) {
             return null;
         }
         JSONObject parse = JSONObject.parse(toEncryptResponseBody);
@@ -147,14 +148,14 @@ public class HttpCrypto {
      * @描述: 响应加密方法 - 自动
      */
     public static String encryptRES(String toEncryptResponseBody) {
-        if (!JsonChecker(toEncryptResponseBody)) {
+        if (!JSON.isValid(toEncryptResponseBody)) {
             return null;
         }
         JSONObject parse = JSONObject.parse(toEncryptResponseBody);
         JSONObject encryptParse = JSONObject.parse("{}");
         String identifier = parse.getString("i");
         int i = parse.getIntValue("r");
-        if (parse.containsKey("d") && JsonChecker(parse.getString("d"))) {
+        if (parse.containsKey("d") && JSON.isValidObject(parse.getString("d"))) {
             JSONObject d = parse.getJSONObject("d");
             parse.put("d", GZIPEncode(d));
             toEncryptResponseBody = parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
@@ -173,14 +174,14 @@ public class HttpCrypto {
      * @描述: 响应解密方法
      */
     public static String decryptRES(String identifier, String toDecryptResponseBody) {
-        if (!JsonChecker(toDecryptResponseBody)) {
+        if (!JSON.isValid(toDecryptResponseBody)) {
             return "{\"r\":12202}";
         }
         JSONObject parse = JSONObject.parse(toDecryptResponseBody);
         if (parse.containsKey("e")) {
             String decryptRESBody = new String(decryptBase64(toEnByte(parse.getString("e")), getKey(identifier), getIv(identifier)));
             JSONObject jsonObject = JSONObject.parseObject(decryptRESBody);
-            if (jsonObject.containsKey("d") && JsonChecker(jsonObject.getString("d"))) {
+            if (jsonObject.containsKey("d") && JSON.isValidObject(jsonObject.getString("d"))) {
                 JSONObject d = jsonObject.getJSONObject("d");
                 jsonObject.put("d", GZIPDecode(d));
                 decryptRESBody = jsonObject.toJSONString(JSONWriter.Feature.WriteMapNullValue);
@@ -197,7 +198,7 @@ public class HttpCrypto {
      * @描述: 响应解密方法 - 自动
      */
     public static String decryptRES(String toDecryptResponseBody) {
-        if (!JsonChecker(toDecryptResponseBody)) {
+        if (!JSON.isValid(toDecryptResponseBody)) {
             return "{\"r\":12202}";
         }
         JSONObject parse = JSONObject.parse(toDecryptResponseBody);
@@ -206,7 +207,7 @@ public class HttpCrypto {
             if (parse.containsKey("e")) {
                 String decryptRESBody = new String(decryptBase64(toEnByte(parse.getString("e")), getKey(identifier), getIv(identifier)));
                 JSONObject jsonObject = JSONObject.parseObject(decryptRESBody);
-                if (jsonObject.containsKey("d") && JsonChecker(jsonObject.getString("d"))) {
+                if (jsonObject.containsKey("d") && JSON.isValidObject(jsonObject.getString("d"))) {
                     JSONObject d = jsonObject.getJSONObject("d");
                     jsonObject.put("d", GZIPDecode(d));
                     decryptRESBody = jsonObject.toJSONString(JSONWriter.Feature.WriteMapNullValue);
@@ -223,21 +224,21 @@ public class HttpCrypto {
      * @描述: GZIP 数据段加密方法
      */
     private static JSONObject GZIPEncode(JSONObject parse) {
-        if (parse.containsKey("pr") && JsonChecker(parse.getString("pr")) && parse.getJSONObject("pr").containsKey("sd")) {
+        if (parse.containsKey("pr") && JSON.isValidObject(parse.getString("pr")) && parse.getJSONObject("pr").containsKey("sd")) {
             String pr = parse.getString("pr");
-            if (JsonChecker(pr)) {
+            if (JSON.isValidObject(pr)) {
                 parse.put("m", new String(getMD5(pr), StandardCharsets.UTF_8));
                 parse.put("pr", GZIPEnCrypto(pr));
             }
         }
         if (
                 parse.containsKey("ri") &&
-                        JsonChecker(parse.getString("ri")) &&
-                        JsonChecker(parse.getJSONObject("ri").getString("pl"))
+                        JSON.isValidObject(parse.getString("ri")) &&
+                        JSON.isValid(parse.getJSONObject("ri").getString("pl"))
         ) {
             String pl = parse.getJSONObject("ri").getString("pl");
             System.out.println(new String(getMD5(pl), StandardCharsets.UTF_8));
-            if (JsonChecker(pl)) {
+            if (JSON.isValid(pl)) {
                 parse.getJSONObject("ri").put("pl", GZIPEnCrypto(pl));
             }
         }
@@ -250,20 +251,21 @@ public class HttpCrypto {
      * @描述: GZIP 数据段解密方法
      */
     private static JSONObject GZIPDecode(JSONObject parse) {
+        if (parse.isEmpty()) return new JSONObject();
         if (parse.containsKey("pr") && parse.getString("pr").startsWith("H4sIA")) {
             String pr = parse.getString("pr");
-            if (!JsonChecker(pr)) {
+            if (!JSON.isValid(pr)) {
                 parse.put("pr", GZIPDeCrypto(pr));
             }
         }
         if (
                 parse.containsKey("ri") &&
-                        JsonChecker(parse.getString("ri")) &&
+                        JSON.isValidObject(parse.getString("ri")) &&
                         parse.getJSONObject("ri").containsKey("pl") &&
                         parse.getJSONObject("ri").getString("pl").startsWith("H4sIA")
         ) {
             String pl = parse.getJSONObject("ri").getString("pl");
-            if (!JsonChecker(pl)) {
+            if (!JSON.isValid(pl)) {
                 parse.getJSONObject("ri").put("pl", GZIPDeCrypto(pl));
             }
         }
@@ -577,13 +579,4 @@ public class HttpCrypto {
                 .replace("/", "_");
     }
 
-    public static Boolean JsonChecker(String toBeChecked) {
-        try {
-            Object json = JSON.parse(toBeChecked);
-            if (!(json instanceof JSONObject || json instanceof JSONArray)) return false;
-            return true;
-        } catch (JSONException ex) {
-            return false;
-        }
-    }
 }

@@ -14,7 +14,7 @@ public enum RequestType {
     ANNI_IN("", "{\"i\":\"V303\",\"r\":0,\"t\":{\"al\":[{\"id\":10868,\"abi\":0,\"type\":1,\"config_version\":1}],\"ci\":\"93\",\"cs\":\"0\",\"pack\":\"com.popcap.pvz2cthdbk\",\"pi\":\"%s\",\"sk\":\"%s\",\"ui\":\"%s\",\"v\":\"" + Inter.versionName + "\"}}"),
     ANNI_BRUSH("", "{\"i\":\"V876\",\"r\":0,\"t\":{\"code\":\"%s\",\"pi\":\"%s\",\"sk\":\"%s\",\"star\":\"50\",\"ui\":\"%s\"}}"),
     GET("", "{\"i\":\"V316\",\"r\":0,\"t\":{\"b\":\"0\",\"n\":\"\",\"pi\":\"%s\",\"sk\":\"%s\",\"ui\":\"%s\"}}"),
-    ISNEW("", "{\"i\":\"V437\",\"r\":0,\"t\":{\"pi\":\"%s\",\"sk\":\"%s\",\"ui\":\"%s\"}}\n");
+    ISNEW("", "{\"i\":\"V437\",\"r\":0,\"t\":{\"pi\":\"%s\",\"sk\":\"%s\",\"ui\":\"%s\"}}");
     private final String name;
     private final String requestBody;
 
