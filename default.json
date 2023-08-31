@@ -17,7 +17,7 @@
 	"#betaUrl":"测试代理池源址，每日更新，仅 Beta 测试",
 	"betaUrl":"",
 	"#oi":"此值为渠道选择，109208 为官方渠道，109250 为 Taptap 渠道",
-	"oi":"109208",
+	"oi":"109250",
 	"#versionName":"此值为版本名",
 	"versionName":"3.1.7",
 	"#versionCode":"此值为版本号",

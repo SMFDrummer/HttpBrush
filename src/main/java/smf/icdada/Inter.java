@@ -44,7 +44,9 @@ public class Inter {
                 [5] user.json用户库拆解
                 [6] 发送数据包配置生成器
                 [7] 自定义发送数据包组
-                [8] 周年庆邀请活动刷取
+                [8] 周年庆邀请活动单一刷取
+                [9] 周年庆邀请活动批量刷取(user.json)
+                [10] user.json用户库保护
                 [0] 退出程序
                 请输入功能序号并按回车键继续……：
                 """);
@@ -82,7 +84,15 @@ public class Inter {
                         keepRunning = false;
                         break;
                     case 8:
-                        System.out.println("[8] 周年庆邀请活动刷取");
+                        System.out.println("[8] 周年庆邀请活动单一刷取");
+                        keepRunning = false;
+                        break;
+                    case 9:
+                        System.out.println("[9] 周年庆邀请活动批量刷取(user.json)");
+                        keepRunning = false;
+                        break;
+                    case 10:
+                        System.out.println("[10] user.json用户库保护");
                         keepRunning = false;
                         break;
                     case 0:

@@ -1,5 +1,6 @@
 package smf.icdada;
 
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONWriter;
@@ -12,9 +13,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -28,17 +27,16 @@ import static smf.icdada.HttpUtils.base.*;
  * </p>
  */
 public class UserJsonUtils {
-    private static final ThreadLocal<Integer> fgThreadLocal = new ThreadLocal<>();
     private static final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    public static void gemSetter() {
+    public static void measure() {
         List<Integer> userIds = readUserIds();
-        ExecutorService executorService = Executors.newFixedThreadPool(100);
+        ExecutorService executorService = Executors.newFixedThreadPool(1000);
         for (int userId : userIds) {
             sleep(100);
             executorService.submit(() -> {
-                System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[33m" + " 已读取，开始执行" + "\033[0m");
-                gemResponseUtil(userId);
+                System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[33m" + "已读取，开始执行" + "\033[0m");
+                JsonUtilInterface(userId);
             });
         }
         executorService.shutdown();
@@ -51,62 +49,102 @@ public class UserJsonUtils {
         System.exit(0);
     }
 
-    private static void gemResponseUtil(int userId) {
+    private static void JsonUtilInterface(int userId) {
+        if (Inter.inter == 10) while (true) refresh(Inter.oi, userId);
         refresh(Inter.oi, userId);
-        Result uisk = getUisk(userId);
-        if (!"banned".equals(uisk.getUi()) && !"banned".equals(uisk.getSk())) {
-            Result proxy = getProxy(userId);
-            int gem = getGemResponse(userId, uisk, proxy);
-            JsonUtil(userId, gem);
+        if (!"banned".equals(getUisk(userId).getUi()) && !"banned".equals(getUisk(userId).getSk())) {
+            int gem = getGem(userId, getUisk(userId), getProxy(userId));
+            JsonUtil(userId, "gem", gem);
+            String inviteCode = getInviteCode(userId,getUisk(userId),getProxy(userId));
+            JsonUtil(userId,"inviteCode",inviteCode);
+        } else {
+            JsonUtil(userId, "isBanned", true);
+            JsonUtil(userId, "activate", false);
         }
     }
 
-    private static int getGemResponse(int userId, Result uisk, Result proxy) {
-        int fg = fgThreadLocal.get() == null ? 0 : fgThreadLocal.get();
-        String response316GemBody = "{\"r\":12202}";
+    private static int getGem(int userId, Result uisk, Result proxy) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
         while (true) {
-            boolean isError = false;
             try {
-                assert uisk != null;
-                response316GemBody = HttpCrypto.decryptRES(
+                Result finaluisk = uisk, finalproxy = proxy;
+                Future<String> future = executor.submit(() -> HttpCrypto.decryptRES(
                         HttpSender.doQuest(
                                 Inter.isAndroid,
                                 HttpCrypto.encryptREQ(
-                                        RequestType.GET.getRequestBody(uisk.getUi(), uisk.getSk())
+                                        RequestType.GET.getRequestBody(finaluisk.getUi(), finaluisk.getSk())
                                 ),
-                                proxy.getProxyHost(),
-                                proxy.getProxyPort()));
+                                finalproxy.getProxyHost(),
+                                finalproxy.getProxyPort())));
+                String response316Body = future.get(3, TimeUnit.SECONDS);
+                if (JSONObject.parseObject(response316Body).getIntValue("r") != 0) {
+                    System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[31m" + "读取失败，正在重试……" + "\033[0m" + " || " + response316Body);
+                    if (JSONObject.parseObject(response316Body).getIntValue("r") != 20013) {
+                        refresh(Inter.oi, userId);
+                        uisk = getUisk(userId);
+                        proxy = getProxy(userId);
+                    }
+                } else {
+                    JSONObject jsonObject = JSONObject.parseObject(response316Body);
+                    if (jsonObject.containsKey("d")) {
+                        JSONObject dObject = jsonObject.getJSONObject("d");
+                        JSONObject pObject = dObject.getJSONObject("p");
+                        int fg = pObject.getIntValue("fg");
+                        System.out.println("\033[32m" + "账号：" + userId + "\033[0m" + " || " + "\033[32m" + "已获取钻石数量：" + fg + "\033[0m");
+                        return fg;
+
+                    }
+                }
             } catch (Exception ignored) {
                 refresh(Inter.oi, userId);
                 uisk = getUisk(userId);
                 proxy = getProxy(userId);
             }
-            // 处理响应
-            if (JSONObject.parseObject(response316GemBody).getIntValue("r") != 0) {
-                System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[31m" + "读取失败，正在重试……" + "\033[0m" + " || " + response316GemBody);
-                if (JSONObject.parseObject(response316GemBody).getIntValue("r") != 20013) isError = true;
-            }
-            if (isError) {
-                System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[33m" + "正在刷新各项数值，请稍后……" + "\033[0m");
+        }
+    }
+
+    private static String getInviteCode(int userId, Result uisk, Result proxy) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        while (true) {
+            try {
+                Result finaluisk = uisk, finalproxy = proxy;
+                Future<String> future = executor.submit(() -> HttpCrypto.decryptRES(
+                        HttpSender.doQuest(
+                                Inter.isAndroid,
+                                HttpCrypto.encryptREQ(
+                                        RequestType.IN.getRequestBody(finaluisk.getUi(), finaluisk.getSk())
+                                ),
+                                finalproxy.getProxyHost(),
+                                finalproxy.getProxyPort())));
+                String response303Body = future.get(3, TimeUnit.SECONDS);
+                if (JSONObject.parseObject(response303Body).getIntValue("r") != 0) {
+                    System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[31m" + "读取失败，正在重试……" + "\033[0m" + " || " + response303Body);
+                    if (JSONObject.parseObject(response303Body).getIntValue("r") != 20013) {
+                        refresh(Inter.oi, userId);
+                        uisk = getUisk(userId);
+                        proxy = getProxy(userId);
+                    }
+                } else {
+                    JSONObject jsonObject = JSONObject.parseObject(response303Body);
+                    if (jsonObject.containsKey("d")) {
+                        JSONObject dObject = jsonObject.getJSONArray("d").getJSONObject(0);
+                        JSONObject data = JSON.parseObject(dObject.getString("data"));
+                        if (data.containsKey("code") && !data.getString("code").isBlank()){
+                            String inviteCode = data.getString("code");
+                            System.out.println("\033[32m" + "账号：" + userId + "\033[0m" + " || " + "\033[32m" + "已获取邀请码：" + inviteCode + "\033[0m");
+                            return inviteCode;
+                        }
+                    }
+                }
+            } catch (Exception ignored) {
                 refresh(Inter.oi, userId);
                 uisk = getUisk(userId);
                 proxy = getProxy(userId);
             }
-            JSONObject jsonObject = JSONObject.parseObject(response316GemBody);
-            if (jsonObject.containsKey("r") && jsonObject.containsKey("d")) {
-                if (jsonObject.getIntValue("r") == 0) {
-                    JSONObject dObject = jsonObject.getJSONObject("d");
-                    JSONObject pObject = dObject.getJSONObject("p");
-                    fg = pObject.getIntValue("fg");
-                    fgThreadLocal.set(fg);
-                    System.out.println("\033[32m" + "账号：" + userId + "\033[0m" + " || " + "\033[32m" + "已获取钻石数量：" + fg + "\033[0m");
-                    return fg;
-                }
-            }
         }
     }
 
-    private static void JsonUtil(int userId, int gem) {
+    public static <T> void JsonUtil(int userId, String key, T value) {
         String filePath = System.getProperty("user.dir") + File.separator + "user.json";
         String tempFilePath = System.getProperty("user.dir") + File.separator + "temp" + File.separator + UUID.randomUUID() + ".tmp";
         try {
@@ -117,8 +155,7 @@ public class UserJsonUtils {
             for (int i = 0; i < usersArray.size(); i++) {
                 JSONObject userObj = usersArray.getJSONObject(i);
                 if (userObj.getIntValue("userId") == userId) {
-                    userObj.put("gem", gem);
-                    userObj.put("activate", gem <= Inter.maxGem);
+                    userObj.put(key, value);
                 }
             }
             String formattedJson = parse.toJSONString(JSONWriter.Feature.PrettyFormat, JSONWriter.Feature.WriteMapNullValue);
@@ -128,7 +165,7 @@ public class UserJsonUtils {
             }
             Files.move(Paths.get(tempFilePath), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
             Files.deleteIfExists(Paths.get(tempFilePath)); // 删除临时文件
-            System.out.println("\033[32m" + "账号：" + userId + "\033[0m" + " || " + "\033[32m" + "处理完成" + "\033[0m");
+            //System.out.println("\033[32m" + "账号：" + userId + "\033[0m" + " || " + "\033[32m" + "处理完成" + "\033[0m");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

@@ -34,7 +34,7 @@ import static smf.icdada.HttpUtils.strategy.apply;
 public class UserBanner {
     private static final String banuserPath = System.getProperty("user.dir") + File.separator + "banuser.json";
     public static final ReadWriteLock lock = new ReentrantReadWriteLock();
-    private static Print print = new Print();
+    private static final Print print = new Print();
 
     public static void fileChecker(boolean check) {
         Path path = Paths.get(banuserPath);

@@ -24,7 +24,20 @@ public class Anniversary {
             } else {
                 System.out.println("\033[33m" + "邀请码：" + inviteCode + "\033[0m" + " || " + "\033[32m" + "刷取成功" + "\033[0m" + " || " +"共成功：" + count);
             }
-        } while (count < 20);
+        } while (count < 12);
+        System.out.println("\033[33m" + "邀请码：" + inviteCode + "\033[0m" + " || " + "\033[32m" + "刷取结束" + "\033[0m");
+    }
+    public static void brush(String inviteCode){
+        int count = 0;
+        do {
+            int i = count;
+            count += brushInviteCode(inviteCode,getRandomId());
+            if (count == i) {
+                System.out.println("\033[33m" + "邀请码：" + inviteCode + "\033[0m" + " || " + "\033[31m" + "刷取失败" + "\033[0m" + " || " +"共成功：" + count);
+            } else {
+                System.out.println("\033[33m" + "邀请码：" + inviteCode + "\033[0m" + " || " + "\033[32m" + "刷取成功" + "\033[0m" + " || " +"共成功：" + count);
+            }
+        } while (count < 12);
         System.out.println("\033[33m" + "邀请码：" + inviteCode + "\033[0m" + " || " + "\033[32m" + "刷取结束" + "\033[0m");
     }
     private static String getInviteCode(){
@@ -46,9 +59,8 @@ public class Anniversary {
             Result proxy = getProxy(randomUserId);
             while (true){
                 List<Future<String>> futures = new ArrayList<>();
-                Result finaluisk = uisk;
-                Result finalproxy = proxy;
-                futures.add(executor.submit(() -> getRes(finalproxy,RequestType.ANNI_IN.getRequestBody(finaluisk.getUi(),finaluisk.getSk()))));
+                Result finaluisk = uisk,finalproxy = proxy;
+                futures.add(executor.submit(() -> getRes(finalproxy,RequestType.IN.getRequestBody(finaluisk.getUi(),finaluisk.getSk()))));
                 sleep(350);
                 futures.add(executor.submit(() -> getRes(finalproxy,RequestType.ANNI_BRUSH.getRequestBody(inviteCode,finaluisk.getUi(),finaluisk.getSk()))));
                 sleep(350);

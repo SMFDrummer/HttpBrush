@@ -60,8 +60,8 @@ public class Main {
             case 3:
                 UserBanner.bannedFunction();
                 break;
-            case 4:
-                UserJsonUtils.gemSetter();
+            case 4,10:
+                UserJsonUtils.measure();
                 break;
             case 5:
                 UserJsonUtils.JsonCutter();
@@ -74,6 +74,9 @@ public class Main {
                 break;
             case 8:
                 Anniversary.brush();
+                break;
+            case 9:
+                System.out.println("没想到吧，我没写完~");
                 break;
             case 0:
                 System.exit(0);

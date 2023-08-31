@@ -2,7 +2,6 @@ package smf.icdada.HttpUtils;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONException;
 import com.alibaba.fastjson2.JSONObject;
 import smf.icdada.*;
 
@@ -58,7 +57,7 @@ public class base {
                                 JSONObject dObject = jsonObject.getJSONObject("d");
                                 String ui = dObject.getString("ui");
                                 String sk = dObject.getString("sk");
-                                if (ProxyManager.openConsole) {
+                                if (Inter.inter == 10) {
                                     System.out.println("\033[34m" + "userId:" + userId + "\033[0m");
                                     System.out.println("\033[34m" + "ui:" + ui + "\033[0m");
                                     System.out.println("\033[34m" + "sk:" + sk + "\n" + "\033[0m");
@@ -84,9 +83,7 @@ public class base {
                     HttpSender.doQuest(
                             Inter.isAndroid,
                             HttpCrypto.encryptREQ(
-                                    Inter.inter != 8 ?
-                                            RequestType.OI_REAL.getRequestBody(channel, userId):
-                                            RequestType.OI_FAKE.getRequestBody(channel, userId)
+                                    RequestType.OI.getRequestBody(channel, userId)
                             ),
                             proxyHost,
                             proxyPort
@@ -151,8 +148,8 @@ public class base {
      * @描述: userId批量获取方法
      */
     public static List<Integer> readUserIds() {
-        if (Inter.chooser == 1) {
-            System.out.println("\033[33m" +"正在等待代理池刷新……"+ "\033[0m");
+        if (Inter.chooser == 4) {
+            System.out.println("\033[33m" + "正在等待代理池刷新……" + "\033[0m");
             sleep(Inter.waiter);
         }
         List<Integer> userIds = new ArrayList<>();
@@ -164,23 +161,19 @@ public class base {
                 JSONArray usersArray = userData.getJSONArray("Users");
                 for (Object userElement : usersArray) {
                     JSONObject userObject = (JSONObject) userElement;
-                    if (Inter.inter == 3) {
-                        if (userObject.containsKey("activate")) {
-                            if (userObject.getBooleanValue("activate")) {
-                                int userId = userObject.getIntValue("userId");
-                                userIds.add(userId);
-                            }
-                        } else {
+                    if (userObject.containsKey("activate")) {
+                        if (userObject.getBooleanValue("activate")) {
                             int userId = userObject.getIntValue("userId");
                             userIds.add(userId);
                         }
                     } else {
                         int userId = userObject.getIntValue("userId");
+                        UserJsonUtils.JsonUtil(userId,"activate",true);
                         userIds.add(userId);
                     }
                 }
             } else {
-                System.out.println("\033[31m" + "User file not found, please check out the " + System.getProperty("user.dir") + File.separator + "user.json exist" + "\033[0m");
+                System.out.println("\033[31m" + "用户库文件异常，请检查：" + System.getProperty("user.dir") + File.separator + "user.json文件是否存在" + "\033[0m");
                 Scanner scanner = new Scanner(System.in);
                 scanner.nextLine();
                 System.exit(0);
@@ -196,7 +189,7 @@ public class base {
      */
     public static void cryptoGuideLine() {
         try {
-            System.out.println("\033[33m" +"请输入任意内容或数据包，输入空字段以结束："+"\033[0m");
+            System.out.println("\033[33m" + "请输入任意内容或数据包，输入空字段以结束：" + "\033[0m");
             String body = smfScanner.smfLongString(true);
             if (body.isBlank()) System.exit(0);
             if (JSON.isValidObject(body)) {
@@ -204,9 +197,9 @@ public class base {
                 if (jsonObject.containsKey("i") && jsonObject.containsKey("r")) {
                     if (jsonObject.containsKey("t")) {
                         System.out.println(HttpCrypto.encryptREQ(body));
-                        System.out.println("\033[33m" +"是否发送数据包取得响应？(Y/N)"+"\033[0m");
+                        System.out.println("\033[33m" + "是否发送数据包取得响应？(Y/N)" + "\033[0m");
                         if (smfScanner.smfBoolean(false))
-                            System.out.println(HttpCrypto.decryptRES(HttpSender.doQuest(Inter.isAndroid,HttpCrypto.encryptREQ(body))));
+                            System.out.println(HttpCrypto.decryptRES(HttpSender.doQuest(Inter.isAndroid, HttpCrypto.encryptREQ(body))));
                     }
                     if (jsonObject.containsKey("e")) {
                         System.out.println(HttpCrypto.decryptRES(body));
@@ -217,13 +210,13 @@ public class base {
                 }
             } else if (body.startsWith("--_{{}}_")) {
                 System.out.println(HttpCrypto.decryptREQ(body));
-                System.out.println("\033[33m" +"是否发送数据包取得响应？(Y/N)"+"\033[0m");
+                System.out.println("\033[33m" + "是否发送数据包取得响应？(Y/N)" + "\033[0m");
                 if (smfScanner.smfBoolean(false))
-                    System.out.println(HttpCrypto.decryptRES(HttpSender.doQuest(Inter.isAndroid,body)));
+                    System.out.println(HttpCrypto.decryptRES(HttpSender.doQuest(Inter.isAndroid, body)));
             } else {
-                System.out.println("\033[31m" +"自动检测失败，请手动输入数据包标识并选择功能：\n"+"\033[0m" +"\033[33m" +"请输入数据包标识："+"\033[0m");
+                System.out.println("\033[31m" + "自动检测失败，请手动输入数据包标识并选择功能：\n" + "\033[0m" + "\033[33m" + "请输入数据包标识：" + "\033[0m");
                 String identifier = smfScanner.smfString(true);
-                System.out.println("\033[32m" +"请选择功能：\n[1] 请求加密\n[2] 请求解密\n[3] 响应加密\n[4] 响应解密\n[5] 获取密钥和偏移\n[6] 获取MD5\n"+"\033[0m");
+                System.out.println("\033[32m" + "请选择功能：\n[1] 请求加密\n[2] 请求解密\n[3] 响应加密\n[4] 响应解密\n[5] 获取密钥和偏移\n[6] 获取MD5\n" + "\033[0m");
                 boolean keepRunning = true;
                 while (keepRunning) {
                     int choice = smfScanner.smfInt(false);
@@ -255,7 +248,7 @@ public class base {
                             keepRunning = false;
                             break;
                         default:
-                            System.out.println("\033[31m" +"输入有误，请重新输入功能序号："+"\033[0m");
+                            System.out.println("\033[31m" + "输入有误，请重新输入功能序号：" + "\033[0m");
                     }
                 }
             }
