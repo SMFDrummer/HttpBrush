@@ -31,7 +31,7 @@ public class UserJsonUtils {
 
     public static void measure() {
         List<Integer> userIds = readUserIds();
-        ExecutorService executorService = Executors.newFixedThreadPool(1000);
+        ExecutorService executorService = Executors.newFixedThreadPool(userIds.size());
         for (int userId : userIds) {
             sleep(100);
             executorService.submit(() -> {

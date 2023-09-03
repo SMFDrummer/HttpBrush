@@ -37,14 +37,14 @@ public class Main {
                 ██████╔╝██║  ██║╚██████╔╝███████║██║  ██║
                 ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝
                                                          
-                HttpBrush 正式版本:4.3
+                HttpBrush 正式版本:4.5-Beta
                 程序作者：SMF & icdada；协同测试：能奈何尔
                 请检查 %s 目录下程序运行环境是否存在完整配置
                 user.json    default.json
                 
                 更新日志：
-                *修复了加解密问题
-                *修复了周年庆活动的代码逻辑
+                *修复了线程池大小问题
+                *添加功能9（ForBeta）
                 
                 ————————————————————————————————————————————————————————————————————————————
                 
@@ -76,7 +76,7 @@ public class Main {
                 Anniversary.brush();
                 break;
             case 9:
-                System.out.println("没想到吧，我没写完~");
+                Anniversary.measure();
                 break;
             case 0:
                 System.exit(0);
