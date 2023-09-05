@@ -18,7 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import static smf.icdada.HttpUtils.base.*;
+import static smf.icdada.HttpUtils.Base.*;
 
 /**
  * @author SMF & icdada
@@ -27,7 +27,7 @@ import static smf.icdada.HttpUtils.base.*;
  * 包含配置文件指引器、单一实现方法、批量实现方法、响应获取以及配置文件创建方法。
  * </p>
  */
-public class strategy {
+public class Strategy {
 
     protected static String pathBinder = System.getProperty("user.dir") + File.separator + "bannerConfig.json";
 
@@ -69,7 +69,7 @@ public class strategy {
             JSONObject parse = JSONObject.parse(Files.readString(Paths.get(cfgIn(false))));
             if (parse.containsKey("configuration") && "HttpUtilSenderProps".equals(parse.get("configuration"))) {
                 if (parse.containsKey("openConsole")) ProxyManager.console(parse.getBoolean("openConsole"));
-                refresh(Inter.oi, userId);
+                refresh(userId);
                 Result uisk = getUisk(userId);
                 Result proxy = getProxy(userId);
                 if (parse.containsKey("sendPackage") && !"banned".equals(uisk.getUi()) && !"banned".equals(uisk.getSk())) {
@@ -113,7 +113,7 @@ public class strategy {
                                 isTimeOut = true;
                             }
                             if (isError || isTimeOut) {
-                                refresh(Inter.oi, userId);
+                                refresh(userId);
                                 uisk = getUisk(userId);
                                 proxy = getProxy(userId);
                             } else {
@@ -194,7 +194,7 @@ public class strategy {
                                 }
                             } else isError = true;
                             if (isError || isTimeOut) {
-                                refresh(Inter.oi, userId);
+                                refresh(userId);
                                 uisk = getUisk(userId);
                                 proxy = getProxy(userId);
                             } else {
@@ -224,7 +224,7 @@ public class strategy {
      * @return 明文响应
      * @描述: 明文请求获取响应
      */
-    public static String getRes(String packageIdentifier, String packageBody, String ui, String sk, String proxyHost, int proxyPort) {
+    private static String getRes(String packageIdentifier, String packageBody, String ui, String sk, String proxyHost, int proxyPort) {
         JSONObject parse = JSONObject.parse(packageBody);
         if (parse.containsKey("t")) {
             JSONObject t = parse.getJSONObject("t");

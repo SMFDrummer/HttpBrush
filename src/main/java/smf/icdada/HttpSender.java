@@ -1,5 +1,7 @@
 package smf.icdada;
 
+import smf.icdada.HttpUtils.Base;
+
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -13,9 +15,10 @@ import java.nio.charset.StandardCharsets;
  */
 @SuppressWarnings("unused")
 public class HttpSender {
+
     /**
      * @param isAndroid   为安卓类型布尔判断，形参值默认为 smf.icdada.Inter.isAndroid
-     * @param requestBody 为数据包包体，具体配合用法可参照 {@link smf.icdada.HttpUtils.strategy#getRes} 方法实现
+     * @param requestBody 为数据包包体，具体配合用法可参照 {@link Base#getResponseBody} 方法实现
      * @return 返回数据包响应结果
      * @描述: 该方法为依赖自身网络环境发送数据包方法
      */
@@ -31,7 +34,7 @@ public class HttpSender {
 
     /**
      * @param isAndroid   为安卓类型布尔判断，形参值默认为 smf.icdada.Inter.isAndroid
-     * @param requestBody 为数据包包体，具体配合用法可参照 {@link smf.icdada.HttpUtils.strategy#getRes} 方法实现
+     * @param requestBody 为数据包包体，具体配合用法可参照 {@link Base#getResponseBody} 方法实现
      * @param proxyHost   代理服务器域名
      * @param proxyPort   代理服务器端口
      * @return 返回数据包响应结果

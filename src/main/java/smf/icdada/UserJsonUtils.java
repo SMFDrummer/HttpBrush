@@ -1,9 +1,9 @@
 package smf.icdada;
 
-import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONWriter;
+import smf.icdada.HttpUtils.Check;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -13,11 +13,14 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static smf.icdada.HttpUtils.base.*;
+import static smf.icdada.HttpUtils.Base.*;
 
 /**
  * @author SMF & icdada
@@ -50,96 +53,73 @@ public class UserJsonUtils {
     }
 
     private static void JsonUtilInterface(int userId) {
-        if (Inter.inter == 10) while (true) refresh(Inter.oi, userId);
-        refresh(Inter.oi, userId);
-        if (!"banned".equals(getUisk(userId).getUi()) && !"banned".equals(getUisk(userId).getSk())) {
-            int gem = getGem(userId, getUisk(userId), getProxy(userId));
+        if (Inter.inter == 10) while (true) try {
+            refresh(userId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            break;
+        }
+        refresh(userId);
+        Result uisk = getUisk(userId);
+        if (!"banned".equals(uisk.getUi()) && !"banned".equals(uisk.getSk())) {
+            int gem = getGem(userId);
             JsonUtil(userId, "gem", gem);
-            String inviteCode = getInviteCode(userId,getUisk(userId),getProxy(userId));
-            JsonUtil(userId,"inviteCode",inviteCode);
+            String inviteCode = getInviteCode(userId);
+            JsonUtil(userId, "inviteCode", inviteCode);
         } else {
             JsonUtil(userId, "isBanned", true);
             JsonUtil(userId, "activate", false);
         }
     }
 
-    private static int getGem(int userId, Result uisk, Result proxy) {
+    private static int getGem(int userId) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
+        Check.V316 v316 = new Check.V316();
         while (true) {
             try {
-                Result finaluisk = uisk, finalproxy = proxy;
-                Future<String> future = executor.submit(() -> HttpCrypto.decryptRES(
-                        HttpSender.doQuest(
-                                Inter.isAndroid,
-                                HttpCrypto.encryptREQ(
-                                        RequestType.GET.getRequestBody(finaluisk.getUi(), finaluisk.getSk())
-                                ),
-                                finalproxy.getProxyHost(),
-                                finalproxy.getProxyPort())));
+                Future<String> future = executor.submit(() -> getResponseBody(userId, RequestType.GET.getRequestBody(userId)));
                 String response316Body = future.get(3, TimeUnit.SECONDS);
-                if (JSONObject.parseObject(response316Body).getIntValue("r") != 0) {
+                v316.setResponseBody(response316Body);
+                if (!v316.isValid(0)) {
                     System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[31m" + "读取失败，正在重试……" + "\033[0m" + " || " + response316Body);
-                    if (JSONObject.parseObject(response316Body).getIntValue("r") != 20013) {
-                        refresh(Inter.oi, userId);
-                        uisk = getUisk(userId);
-                        proxy = getProxy(userId);
-                    }
+                    if (!v316.isValid(20013)) refresh(userId);
                 } else {
-                    JSONObject jsonObject = JSONObject.parseObject(response316Body);
-                    if (jsonObject.containsKey("d")) {
-                        JSONObject dObject = jsonObject.getJSONObject("d");
-                        JSONObject pObject = dObject.getJSONObject("p");
-                        int fg = pObject.getIntValue("fg");
+                    Check.V316.d d = v316.new d();
+                    if (d.containsKey("p")) {
+                        int fg = d.getJSONObject("p").getIntValue("fg");
                         System.out.println("\033[32m" + "账号：" + userId + "\033[0m" + " || " + "\033[32m" + "已获取钻石数量：" + fg + "\033[0m");
                         return fg;
-
                     }
                 }
             } catch (Exception ignored) {
-                refresh(Inter.oi, userId);
-                uisk = getUisk(userId);
-                proxy = getProxy(userId);
+                refresh(userId);
             }
         }
     }
 
-    private static String getInviteCode(int userId, Result uisk, Result proxy) {
+    private static String getInviteCode(int userId) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
+        Check.V303 v303 = new Check.V303();
         while (true) {
             try {
-                Result finaluisk = uisk, finalproxy = proxy;
-                Future<String> future = executor.submit(() -> HttpCrypto.decryptRES(
-                        HttpSender.doQuest(
-                                Inter.isAndroid,
-                                HttpCrypto.encryptREQ(
-                                        RequestType.IN.getRequestBody(finaluisk.getUi(), finaluisk.getSk())
-                                ),
-                                finalproxy.getProxyHost(),
-                                finalproxy.getProxyPort())));
+                Future<String> future = executor.submit(() -> getResponseBody(userId, RequestType.IN.getRequestBody(userId)));
                 String response303Body = future.get(3, TimeUnit.SECONDS);
-                if (JSONObject.parseObject(response303Body).getIntValue("r") != 0) {
+                v303.setResponseBody(response303Body);
+                if (!v303.isValid(0)) {
                     System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[31m" + "读取失败，正在重试……" + "\033[0m" + " || " + response303Body);
-                    if (JSONObject.parseObject(response303Body).getIntValue("r") != 20013) {
-                        refresh(Inter.oi, userId);
-                        uisk = getUisk(userId);
-                        proxy = getProxy(userId);
+                    if (!v303.isValid(20013)) {
+                        refresh(userId);
                     }
                 } else {
-                    JSONObject jsonObject = JSONObject.parseObject(response303Body);
-                    if (jsonObject.containsKey("d")) {
-                        JSONObject dObject = jsonObject.getJSONArray("d").getJSONObject(0);
-                        JSONObject data = JSON.parseObject(dObject.getString("data"));
-                        if (data.containsKey("code") && !data.getString("code").isBlank()){
-                            String inviteCode = data.getString("code");
-                            System.out.println("\033[32m" + "账号：" + userId + "\033[0m" + " || " + "\033[32m" + "已获取邀请码：" + inviteCode + "\033[0m");
-                            return inviteCode;
-                        }
+                    Check.V303.data data = v303.new data();
+                    if (data.containsKey("code") && !data.getString("code").isBlank()) {
+                        String inviteCode = data.getString("code");
+                        System.out.println("\033[32m" + "账号：" + userId + "\033[0m" + " || " + "\033[32m" + "已获取邀请码：" + inviteCode + "\033[0m");
+                        return inviteCode;
                     }
                 }
             } catch (Exception ignored) {
-                refresh(Inter.oi, userId);
-                uisk = getUisk(userId);
-                proxy = getProxy(userId);
+                refresh(userId);
             }
         }
     }

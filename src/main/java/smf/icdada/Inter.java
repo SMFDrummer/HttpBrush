@@ -407,16 +407,16 @@ public class Inter {
                     } else {
                         try {
                             chooser = Integer.parseInt(chooserValue);
-                            if (chooser == 3){
+                            if (chooser == 3) {
                                 String betaUrlValue = settingData.getString("betaUrl");
-                                if (!betaUrlValue.isBlank()){
+                                if (!betaUrlValue.isBlank()) {
                                     betaUrl = betaUrlValue;
                                     System.out.println("已检测到测试代理池：" + betaUrl);
                                 } else {
                                     chooser = 2;
                                 }
                             }
-                            if (chooser == 1||chooser == 2) System.out.println("已检测到默认代理池类型：" + chooser);
+                            if (chooser == 1 || chooser == 2) System.out.println("已检测到默认代理池类型：" + chooser);
                         } catch (NumberFormatException e) {
                             System.out.println("default.json 文件中 chooser 值不合法，已重置");
                             settingData.put("chooser", "?input");

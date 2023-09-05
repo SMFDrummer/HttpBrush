@@ -25,26 +25,23 @@ import static smf.icdada.ProxyManager.proxy;
  * 包含处理Http请求的基础函数。
  * </p>
  */
-public class base {
+public class Base {
     private static final ConcurrentHashMap<Integer, Result> Account = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Integer, Result> Proxy = new ConcurrentHashMap<>();
     private static final ExecutorService executor = Executors.newFixedThreadPool(1000);
 
     /**
-     * @param channel 账号所属渠道
-     * @param userId  八位用户ID
+     * @param userId 八位用户ID
      * @return Result(ui, sk)
      * @描述: uisk重要数值获取与刷新
      */
-    private static CompletableFuture<Result> uisk(int channel, int userId) {
+    private static CompletableFuture<Result> uisk(int userId) {
         Result uisk = null;
         Result proxy = proxy();
         Proxy.put(userId, proxy);
         do {
             try {
-                String proxyHost = getProxy(userId).getProxyHost();
-                int proxyPort = getProxy(userId).getProxyPort();
-                Future<String> future = executor.submit(() -> getRes(channel, userId, proxyHost, proxyPort));
+                Future<String> future = executor.submit(() -> getResponseBody(userId, RequestType.OI.getRequestBodyById(userId)));
                 try {
                     String response = future.get(10, TimeUnit.SECONDS);
                     if (JSON.isValidObject(response)) {
@@ -77,16 +74,17 @@ public class base {
         return CompletableFuture.supplyAsync(() -> finalUisk, executor);
     }
 
-    private static String getRes(int channel, int userId, String proxyHost, int proxyPort) {
+    public static String getResponseBody(int userId, String requestBody) {
         try {
+            Result proxy = getProxy(userId);
             return HttpCrypto.decryptRES(
                     HttpSender.doQuest(
                             Inter.isAndroid,
                             HttpCrypto.encryptREQ(
-                                    RequestType.OI.getRequestBody(channel, userId)
+                                    requestBody
                             ),
-                            proxyHost,
-                            proxyPort
+                            proxy.getProxyHost(),
+                            proxy.getProxyPort()
                     )
             );
         } catch (Exception ignored) {
@@ -94,11 +92,11 @@ public class base {
         }
     }
 
-    public static void refresh(int channel, int userId) {
+    public static void refresh(int userId) {
         while (true) {
             Result previous = Account.get(userId);
             try {
-                Result latest = uisk(channel, userId).get();
+                Result latest = uisk(userId).get();
                 if (!latest.equals(previous)) {
                     Account.put(userId, latest);
                     break;
@@ -168,7 +166,7 @@ public class base {
                         }
                     } else {
                         int userId = userObject.getIntValue("userId");
-                        UserJsonUtils.JsonUtil(userId,"activate",true);
+                        UserJsonUtils.JsonUtil(userId, "activate", true);
                         userIds.add(userId);
                     }
                 }

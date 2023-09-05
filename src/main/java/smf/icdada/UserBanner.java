@@ -3,6 +3,7 @@ package smf.icdada;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONWriter;
+import smf.icdada.HttpUtils.Check;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -21,8 +22,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static smf.icdada.HttpUtils.base.*;
-import static smf.icdada.HttpUtils.strategy.apply;
+import static smf.icdada.HttpUtils.Base.*;
+import static smf.icdada.HttpUtils.Strategy.apply;
 
 /**
  * @author SMF & icdada
@@ -32,8 +33,8 @@ import static smf.icdada.HttpUtils.strategy.apply;
  * </p>
  */
 public class UserBanner {
-    private static final String banuserPath = System.getProperty("user.dir") + File.separator + "banuser.json";
     public static final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private static final String banuserPath = System.getProperty("user.dir") + File.separator + "banuser.json";
     private static final Print print = new Print();
 
     public static void fileChecker(boolean check) {
@@ -149,126 +150,96 @@ public class UserBanner {
     }
 
     private static void banned(int userId) {
-        refresh(Inter.oi, userId);
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        refresh(userId);
         Result uisk = getUisk(userId);
         if ("banned".equals(uisk.getUi()) && "banned".equals(uisk.getSk())) {
             JsonUtil(Inter.oi, userId, true, false);
         } else {
-            Result proxy = getProxy(userId);
-            //CheckPointStart
-            boolean isNew = false;
-            String response437CheckBody = "{\"r\":12202}";
+            Check.V437 v437 = new Check.V437();
+            Check.V316 v316 = new Check.V316();
             int i = 0;
             while (true) {
                 i++;
                 try {
-                    response437CheckBody = HttpCrypto.decryptRES(
-                            HttpSender.doQuest(
-                                    Inter.isAndroid,
-                                    HttpCrypto.encryptREQ(
-                                            RequestType.ISNEW.getRequestBody(uisk.getUi(), uisk.getSk())
-                                    ),
-                                    proxy.getProxyHost(),
-                                    proxy.getProxyPort()));
-                } catch (Exception ignored) {
-                    refresh(Inter.oi, userId);
-                    uisk = getUisk(userId);
-                    proxy = getProxy(userId);
-                }
-                int r = JSONObject.parseObject(response437CheckBody).getIntValue("r");
-                if (r != 0) {
-                    if (r == 10800) break;
-                    else if (r == 20013) {
-                        refresh(Inter.oi, userId);
-                        uisk = getUisk(userId);
-                        proxy = getProxy(userId);
-                    } else
-                        System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[31m" + "检查失败，正在重试……" + "\033[0m" + " || " + response437CheckBody);
-                } else {
-                    JSONObject d = JSONObject.parseObject(response437CheckBody).getJSONObject("d");
-                    if (d.containsKey("isnew")) isNew = d.getBooleanValue("isnew");
-                    break;
-                }
-                if (i >= 10) break;
-            }
-            if (isNew||i >= 10) {
-                print.normalPrint(userId,null,null,null);
-                JsonUtil(Inter.oi, userId, false, true);
-            } else {
-                String response316GetBody = "{\"r\":12202}";
-                while (true) {
-                    try {
-                        response316GetBody = HttpCrypto.decryptRES(
-                                HttpSender.doQuest(
-                                        Inter.isAndroid,
-                                        HttpCrypto.encryptREQ(
-                                                RequestType.GET.getRequestBody(uisk.getUi(), uisk.getSk())
-                                        ),
-                                        proxy.getProxyHost(),
-                                        proxy.getProxyPort()));
-                    } catch (Exception ignored) {
-                        refresh(Inter.oi, userId);
-                        uisk = getUisk(userId);
-                        proxy = getProxy(userId);
-                    }
-                    int r = JSONObject.parseObject(response316GetBody).getIntValue("r");
-                    if (r != 0) {
-                        if (r == 10800) break;
-                        else if (r == 20013) {
-                            refresh(Inter.oi, userId);
-                            uisk = getUisk(userId);
-                            proxy = getProxy(userId);
-                        } else
-                            System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[31m" + "读取失败，正在重试……" + "\033[0m" + " || " + response316GetBody);
-                    } else {
-                        JSONObject d = JSONObject.parseObject(response316GetBody).getJSONObject("d");
-                        int snailCoin = 0, chestnutPiece = 0, gem = 0;
-                        //钻石
-                        if (d.containsKey("p")) {
-                            JSONObject p = d.getJSONObject("p");
-                            if (p.containsKey("fg")) {
-                                gem = Integer.parseInt(p.getString("fg"));
-                            }
+                    Future<String> futureV437 = executor.submit(() -> getResponseBody(userId, RequestType.ISNEW.getRequestBody(userId)));
+                    String response437CheckBody = futureV437.get(3, TimeUnit.SECONDS);
+                    v437.setResponseBody(response437CheckBody);
+                    if (!v437.isValid(0)) {
+                        if (v437.isValid(10800)) break;
+                        else {
+                            System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[31m" + "检查失败，正在重试……" + "\033[0m" + " || " + response437CheckBody);
+                            refresh(userId);
                         }
-                        //蜗牛币
-                        if (d.containsKey("il")) {
-                            JSONArray il = d.getJSONArray("il");
-                            for (Object object : il) {
-                                JSONObject ilObject = (JSONObject) object;
-                                if ("23400".equals(ilObject.getString("i"))) {
-                                    snailCoin = Integer.parseInt(ilObject.getString("q"));
+                    } else if (v437.isNew() || i >= 10) {
+                        print.normalPrint(userId, null, null, null);
+                        JsonUtil(Inter.oi, userId, false, true);
+                        break;
+                    } else while (true) {
+                        try {
+                            Future<String> futureV316 = executor.submit(() -> getResponseBody(userId, RequestType.GET.getRequestBodyById(userId)));
+                            String response316GetBody = futureV316.get(3, TimeUnit.SECONDS);
+                            v316.setResponseBody(response316GetBody);
+                            if (!v316.isValid(0)) {
+                                if (v316.isValid(10800)) break;
+                                else {
+                                    System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[31m" + "读取失败，正在重试……" + "\033[0m" + " || " + response316GetBody);
+                                    refresh(userId);
                                 }
-                            }
-                        }
-                        //荸荠碎片
-                        if (d.containsKey("pcl")) {
-                            JSONArray blank = d.getJSONArray("pcl");
-                            for (Object object : blank) {
-                                JSONObject blankObject = (JSONObject) object;
-                                if ("22000090".equals(blankObject.getString("i"))) {
-                                    chestnutPiece = Integer.parseInt(blankObject.getString("q"));
+                            } else {
+                                Check.V316.d d = v316.new d();
+                                int snailCoin = 0, chestnutPiece = 0, gem = 0;
+                                //钻石
+                                if (d.containsKey("p")) {
+                                    JSONObject p = d.getJSONObject("p");
+                                    if (p.containsKey("fg")) {
+                                        gem = Integer.parseInt(p.getString("fg"));
+                                    }
                                 }
-                            }
-                        }
-                        if (snailCoin >= 500000 || chestnutPiece >= 3000 || gem >= 2000000) {
-                            print.abnormalPrint(userId, gem, snailCoin, chestnutPiece);
-                            if (apply(userId, true)) {
-                                refresh(Inter.oi, userId);
-                                uisk = getUisk(userId);
-                                proxy = getProxy(userId);
-                                if ("banned".equals(uisk.getUi()) && "banned".equals(uisk.getSk())) {
-                                    JsonUtil(Inter.oi, userId, true, false);
-                                    break;
+                                //蜗牛币
+                                if (d.containsKey("il")) {
+                                    JSONArray il = d.getJSONArray("il");
+                                    for (Object object : il) {
+                                        JSONObject ilObject = (JSONObject) object;
+                                        if ("23400".equals(ilObject.getString("i"))) {
+                                            snailCoin = Integer.parseInt(ilObject.getString("q"));
+                                        }
+                                    }
+                                }
+                                //荸荠碎片
+                                if (d.containsKey("pcl")) {
+                                    JSONArray blank = d.getJSONArray("pcl");
+                                    for (Object object : blank) {
+                                        JSONObject blankObject = (JSONObject) object;
+                                        if ("22000090".equals(blankObject.getString("i"))) {
+                                            chestnutPiece = Integer.parseInt(blankObject.getString("q"));
+                                        }
+                                    }
+                                }
+                                if (snailCoin >= 500000 || chestnutPiece >= 3000 || gem >= 2000000) {
+                                    print.abnormalPrint(userId, gem, snailCoin, chestnutPiece);
+                                    if (apply(userId, true)) {
+                                        refresh(userId);
+                                        uisk = getUisk(userId);
+                                        if ("banned".equals(uisk.getUi()) && "banned".equals(uisk.getSk())) {
+                                            JsonUtil(Inter.oi, userId, true, false);
+                                            break;
+                                        } else {
+                                            System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[33m" + "尝试封号失败，正在重试……" + "\033[0m");
+                                        }
+                                    }
                                 } else {
-                                    System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[33m" + "尝试封号失败，正在重试……" + "\033[0m");
+                                    print.normalPrint(userId, gem, snailCoin, chestnutPiece);
+                                    JsonUtil(Inter.oi, userId, false, true);
+                                    break;
                                 }
                             }
-                        } else {
-                            print.normalPrint(userId, gem, snailCoin, chestnutPiece);
-                            JsonUtil(Inter.oi, userId, false, true);
-                            break;
+                        } catch (Exception ignored) {
+                            refresh(userId);
                         }
                     }
+                } catch (Exception ignored) {
+                    refresh(userId);
                 }
             }
         }

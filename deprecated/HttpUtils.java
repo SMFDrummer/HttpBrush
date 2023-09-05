@@ -24,12 +24,12 @@ import static smf.icdada.ProxyManager.proxy;
  */
 @java.lang.Deprecated
 public class HttpUtils {
+    static final int sleepMiMillions = Inter.sleepMillions / 10;
+    private static final ThreadLocal<Integer> fgThreadLocal = new ThreadLocal<>();
     static String ui, sk;
     static int fg;
     static int g1;
     static int httpSended = 0;
-    private static final ThreadLocal<Integer> fgThreadLocal = new ThreadLocal<>();
-    static final int sleepMiMillions = Inter.sleepMillions / 10;
 
     /**
      * @描述: 该方法为钻石刷取方法

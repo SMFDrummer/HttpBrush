@@ -1,6 +1,5 @@
 package smf.icdada;
 
-import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONWriter;
 
@@ -9,7 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
 
-import static smf.icdada.HttpUtils.base.sleep;
+import static smf.icdada.HttpUtils.Base.sleep;
 
 /**
  * @author SMF & icdada
@@ -31,20 +30,14 @@ public class ProxyManager {
         while (true) {
             String urlString;
             switch (Inter.chooser) {
-                case 1:
-                    urlString = "http://localhost:8093/get/";
-                    break;
-                case 2:
-                    urlString = "http://demo.spiderpy.cn/get/";
-                    break;
-                case 3:
-                    urlString = Inter.betaUrl;
-                    break;
-                default:
+                case 1 -> urlString = "http://localhost:8093/get/";
+                case 2 -> urlString = "http://demo.spiderpy.cn/get/";
+                case 3 -> urlString = Inter.betaUrl;
+                default -> {
                     System.out.println("Back Chooser ERROR, default back Online ProxyPool!");
                     Inter.chooser = 2;
                     urlString = "http://demo.spiderpy.cn/get/";
-                    break;
+                }
             }
 
             String responseData = fetchData(urlString);
@@ -108,11 +101,11 @@ public class ProxyManager {
                 JSONObject jsonObject = JSONObject.parse(response.toString());
                 if (jsonObject.containsKey("proxy")) {
                     success = true;
-                    responseString = JSONObject.of("proxy",jsonObject.getString("proxy")).toJSONString(JSONWriter.Feature.WriteMapNullValue);
-                } else if (jsonObject.getJSONObject("data").containsKey("proxy_list")){
+                    responseString = JSONObject.of("proxy", jsonObject.getString("proxy")).toJSONString(JSONWriter.Feature.WriteMapNullValue);
+                } else if (jsonObject.getJSONObject("data").containsKey("proxy_list")) {
                     success = true;
                     String proxy = jsonObject.getJSONObject("data").getJSONArray("proxy_list").getString(0);
-                    responseString = JSONObject.of("proxy",proxy).toJSONString(JSONWriter.Feature.WriteMapNullValue);
+                    responseString = JSONObject.of("proxy", proxy).toJSONString(JSONWriter.Feature.WriteMapNullValue);
                 } else {
                     sleep(1000);
                 }

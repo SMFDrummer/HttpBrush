@@ -10,10 +10,10 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class Req202Thread extends Thread{
+public class Req202Thread extends Thread {
     int timeout;
     int userid;
-    FutureTask<String> deamonFuture=new FutureTask<>(new Callable<String>() {
+    FutureTask<String> deamonFuture = new FutureTask<>(new Callable<String>() {
         @Override
         public String call() throws Exception {
             while (true) {
@@ -48,11 +48,13 @@ public class Req202Thread extends Thread{
             }
         }
     });//守护线程
-    public Req202Thread(int timeout,int userid){
-    this.timeout=timeout; //设置超时时间
-        this.userid=userid;
-    this.setName("Thread"+ userid); //设置线程名称
+
+    public Req202Thread(int timeout, int userid) {
+        this.timeout = timeout; //设置超时时间
+        this.userid = userid;
+        this.setName("Thread" + userid); //设置线程名称
     }
+
     @Override
     @SneakyThrows
     public void run() {
@@ -62,7 +64,7 @@ public class Req202Thread extends Thread{
             deamon.setDaemon(true);
             deamon.start();
             System.out.println(deamonFuture.get(timeout, TimeUnit.MILLISECONDS));
-        }catch (TimeoutException timeout){
+        } catch (TimeoutException timeout) {
             timeout.printStackTrace();
             base.deadAccount.add(userid);
         }

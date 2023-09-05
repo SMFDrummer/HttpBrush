@@ -20,13 +20,13 @@ public class smfScanner {
         while (!isValid) {
             //System.out.println("\033[33m" +"请输入一个整数："+"\033[0m");
             while (!scanner.hasNextInt()) {
-                System.out.println("\033[31m" +"输入无效，请输入一个整数："+"\033[0m");
+                System.out.println("\033[31m" + "输入无效，请输入一个整数：" + "\033[0m");
                 scanner.next();
             }
             number = scanner.nextInt();
             scanner.nextLine(); // consume newline left-over
             if (requireConfirmation) {
-                System.out.println("\033[33m" +"你输入的是 " + number + "\n如果确认请输入任意字符，否则请输入N或n："+"\033[0m");
+                System.out.println("\033[33m" + "你输入的是 " + number + "\n如果确认请输入任意字符，否则请输入N或n：" + "\033[0m");
                 String confirmation = scanner.nextLine().trim();
                 isValid = !confirmation.equalsIgnoreCase("N");
             } else {
@@ -41,15 +41,15 @@ public class smfScanner {
         boolean bool = false;
         boolean isValid = false;
         while (!isValid) {
-            System.out.println("\033[33m" +"请输入Y或N："+"\033[0m");
+            System.out.println("\033[33m" + "请输入Y或N：" + "\033[0m");
             while (!scanner.hasNext("[YyNn]")) {
-                System.out.println("\033[31m" +"输入无效，请输入Y或N："+"\033[0m");
+                System.out.println("\033[31m" + "输入无效，请输入Y或N：" + "\033[0m");
                 scanner.next();
             }
             bool = scanner.next().equalsIgnoreCase("Y");
             scanner.nextLine(); // consume newline left-over
             if (requireConfirmation) {
-                System.out.println("\033[33m" +"你输入的是 " + (bool ? "Y" : "N") + "\n如果确认请输入任意字符，否则请输入N或n："+"\033[0m");
+                System.out.println("\033[33m" + "你输入的是 " + (bool ? "Y" : "N") + "\n如果确认请输入任意字符，否则请输入N或n：" + "\033[0m");
                 String confirmation = scanner.nextLine().trim();
                 isValid = !confirmation.equalsIgnoreCase("N");
             } else {
@@ -66,7 +66,7 @@ public class smfScanner {
         boolean isValid = false;
         while (!isValid) {
             inputContent.setLength(0); // clear the StringBuilder
-            System.out.println("\033[33m" +"请输入内容，连续两次回车结束输入："+"\033[0m");
+            System.out.println("\033[33m" + "请输入内容，连续两次回车结束输入：" + "\033[0m");
             try {
                 int emptyLineCount = 0;
                 while (true) {
@@ -83,7 +83,7 @@ public class smfScanner {
                     inputContent.append(lineSeparator);
                 }
                 if (requireConfirmation) {
-                    System.out.println("\033[33m" +"你输入的内容是：\n" + inputContent + "\n如果确认请输入任意字符，否则请输入N或n："+"\033[0m");
+                    System.out.println("\033[33m" + "你输入的内容是：\n" + inputContent + "\n如果确认请输入任意字符，否则请输入N或n：" + "\033[0m");
                     String confirmation = reader.readLine().trim();
                     isValid = !confirmation.equalsIgnoreCase("N");
                 } else {
@@ -105,7 +105,7 @@ public class smfScanner {
             try {
                 inputContent = reader.readLine();
                 if (requireConfirmation) {
-                    System.out.println("\033[33m" +"你输入的内容是：" + inputContent + "\n如果确认请输入任意字符，否则请输入N或n："+"\033[0m");
+                    System.out.println("\033[33m" + "你输入的内容是：" + inputContent + "\n如果确认请输入任意字符，否则请输入N或n：" + "\033[0m");
                     String confirmation = reader.readLine().trim();
                     isValid = !confirmation.equalsIgnoreCase("N");
                 } else {

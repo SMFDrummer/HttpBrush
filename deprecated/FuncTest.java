@@ -25,100 +25,9 @@ import static smf.icdada.HttpUtils.strategy.apply;
 import static smf.icdada.ProxyManager.proxy;
 
 public class FuncTest {
-    @Test
-    public void Reqtest() throws Exception{
-        //第一步是构建202请求并发送
-        String V202req = HttpCrypto.encryptREQ(
-                RequestType.OI.getRequestBody(109208,36576332)
-        );
-        String V202res = HttpCrypto.decryptRES(
-                HttpSender.doQuest(true,V202req)
-        );
-        System.out.println(V202res);
-        JSONObject jsonObject = JSONObject.parseObject(V202res);
-        JSONObject d = jsonObject.getJSONObject("d");
-        Result uisk = new Result(d.getString("ui"),d.getString("sk"));//获取uisk
-        //使用获取的uisk构建数据包，如果uisk不是最新，则出现20013错误
-        String V316req = HttpCrypto.encryptREQ(
-                RequestType.GET.getRequestBody(uisk.getUi(), uisk.getSk())
-        );
-        System.out.println(V316req);
-        String V316res = HttpCrypto.decryptRES(
-                HttpSender.doQuest(true,V316req)
-        );
-        System.out.println(V316res);
-    }
-    @Test
-    public void ThreadPoolTest(){
-            ThreadPoolExecutor threadPoolExecutor =
-                    new ThreadPoolExecutor(10, 10,
-                            10000, TimeUnit.MILLISECONDS, new SynchronousQueue<>());
-
-
-            threadPoolExecutor.execute(new Req202Thread(5000,0));
-
-
-            threadPoolExecutor.shutdown();
-            while (!threadPoolExecutor.isTerminated()) ;
-    }
-    @Test
-    public void LoadTestData(){
-        base.deadAccount.add(36576332);
-    }
-    @Test
-    @SneakyThrows
-    public void UpdateUisk(){
-       // Inter.defaultSetting();
-        LoadTestData();
-        Thread thread=new Thread(()->{
-            for(;;) {
-                ThreadPoolExecutor threadPoolExecutor =
-                        new ThreadPoolExecutor(10, 10,
-                                10000, TimeUnit.MILLISECONDS, new SynchronousQueue<>());
-                if(!base.deadAccount.isEmpty()){
-                    Integer userid = base.deadAccount.get(0);
-                    threadPoolExecutor.execute(()->{new Req202Thread(5000,userid).run();});
-                    Iterator<Integer> iterator = base.deadAccount.iterator();
-                    if(iterator.hasNext()) {
-                        Integer next = iterator.next();
-                        if (next.equals(userid)) {
-                            iterator.remove();
-                        }
-                    }
-                }
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        },"UISK-UPDATE-THREAD");
-        thread.start();
-sleep(2000);
-        ThreadPoolExecutor executor =
-                new ThreadPoolExecutor(10, 10,
-                        10000, TimeUnit.MILLISECONDS, new SynchronousQueue<>());
-        for (Integer i : base.accountMap.keySet()) {
-            if(!base.runningAccount.contains(i)) {
-                runningAccount.add(i);
-                executor.execute(() -> {
-                    banned(i);
-                });
-            }
-        }
-        for (;;);
-    }
-    @Test
-    public void printHashmap(){
-
-        for (HashMap.Entry<Integer, Result> entry : base.accountMap.entrySet()) {
-            System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
-        }
-
-    }
     public static void banned(int userId) {
         Result uiskOfficial = base.accountMap.get(userId);//获取uisk
-       {
+        {
             Result proxy = proxy();
             String response316GetBody = "{\"r\":12202}";
             boolean keepRunning = true;
@@ -130,13 +39,13 @@ sleep(2000);
                                     HttpCrypto.encryptREQ(
                                             RequestType.GET.getRequestBody(uiskOfficial.getUi(), uiskOfficial.getSk())
                                     )));//发送V316
-                                    //proxy.getProxyHost(),
-                                    //proxy.getProxyPort()));
+                    //proxy.getProxyHost(),
+                    //proxy.getProxyPort()));
                 } catch (Exception ignored) {
                     proxy = proxy();
                 }
                 if (JSONObject.parseObject(response316GetBody).getIntValue("r") != 0) {
-                    System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[31m" + "读取失败，正在重试……" + "\033[0m" + " || "+ response316GetBody );
+                    System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[31m" + "读取失败，正在重试……" + "\033[0m" + " || " + response316GetBody);
                     if (JSONObject.parseObject(response316GetBody).getIntValue("r") == 20013) {
                         proxy = proxy();
                         uiskOfficial = null;
@@ -163,7 +72,7 @@ sleep(2000);
                                             }
                                         }
                                     } else {
-                                        System.out.println("\033[32m" + "账号：" + userId + "\033[0m"+" || "+"\033[32m"+ "检测通过！" + "\033[0m");
+                                        System.out.println("\033[32m" + "账号：" + userId + "\033[0m" + " || " + "\033[32m" + "检测通过！" + "\033[0m");
                                         JsonUtil(Inter.oi, userId, false, true);
                                         keepRunning = false;
                                     }
@@ -180,7 +89,6 @@ sleep(2000);
             }
         }
     }
-
 
     private static void JsonUtil(int channel, int userId, boolean isBanned, boolean isProtected) {
         try {
@@ -214,5 +122,103 @@ sleep(2000);
         } finally {
             UserBanner.lock.writeLock().unlock();
         }
+    }
+
+    @Test
+    public void Reqtest() throws Exception {
+        //第一步是构建202请求并发送
+        String V202req = HttpCrypto.encryptREQ(
+                RequestType.OI.getRequestBody(109208, 36576332)
+        );
+        String V202res = HttpCrypto.decryptRES(
+                HttpSender.doQuest(true, V202req)
+        );
+        System.out.println(V202res);
+        JSONObject jsonObject = JSONObject.parseObject(V202res);
+        JSONObject d = jsonObject.getJSONObject("d");
+        Result uisk = new Result(d.getString("ui"), d.getString("sk"));//获取uisk
+        //使用获取的uisk构建数据包，如果uisk不是最新，则出现20013错误
+        String V316req = HttpCrypto.encryptREQ(
+                RequestType.GET.getRequestBody(uisk.getUi(), uisk.getSk())
+        );
+        System.out.println(V316req);
+        String V316res = HttpCrypto.decryptRES(
+                HttpSender.doQuest(true, V316req)
+        );
+        System.out.println(V316res);
+    }
+
+    @Test
+    public void ThreadPoolTest() {
+        ThreadPoolExecutor threadPoolExecutor =
+                new ThreadPoolExecutor(10, 10,
+                        10000, TimeUnit.MILLISECONDS, new SynchronousQueue<>());
+
+
+        threadPoolExecutor.execute(new Req202Thread(5000, 0));
+
+
+        threadPoolExecutor.shutdown();
+        while (!threadPoolExecutor.isTerminated()) ;
+    }
+
+    @Test
+    public void LoadTestData() {
+        base.deadAccount.add(36576332);
+    }
+
+    @Test
+    @SneakyThrows
+    public void UpdateUisk() {
+        // Inter.defaultSetting();
+        LoadTestData();
+        Thread thread = new Thread(() -> {
+            for (; ; ) {
+                ThreadPoolExecutor threadPoolExecutor =
+                        new ThreadPoolExecutor(10, 10,
+                                10000, TimeUnit.MILLISECONDS, new SynchronousQueue<>());
+                if (!base.deadAccount.isEmpty()) {
+                    Integer userid = base.deadAccount.get(0);
+                    threadPoolExecutor.execute(() -> {
+                        new Req202Thread(5000, userid).run();
+                    });
+                    Iterator<Integer> iterator = base.deadAccount.iterator();
+                    if (iterator.hasNext()) {
+                        Integer next = iterator.next();
+                        if (next.equals(userid)) {
+                            iterator.remove();
+                        }
+                    }
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }, "UISK-UPDATE-THREAD");
+        thread.start();
+        sleep(2000);
+        ThreadPoolExecutor executor =
+                new ThreadPoolExecutor(10, 10,
+                        10000, TimeUnit.MILLISECONDS, new SynchronousQueue<>());
+        for (Integer i : base.accountMap.keySet()) {
+            if (!base.runningAccount.contains(i)) {
+                runningAccount.add(i);
+                executor.execute(() -> {
+                    banned(i);
+                });
+            }
+        }
+        for (; ; ) ;
+    }
+
+    @Test
+    public void printHashmap() {
+
+        for (HashMap.Entry<Integer, Result> entry : base.accountMap.entrySet()) {
+            System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+        }
+
     }
 }
