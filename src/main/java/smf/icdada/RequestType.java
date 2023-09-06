@@ -26,10 +26,20 @@ public enum RequestType {
         this.requestBody = requestBody;
     }
 
+    /**
+     * @描述: 该方法适用于RequestType.I4 aka I4
+     */
     public String getRequestBody() {
         return String.format(requestBody);
     }
 
+    /**
+     * @param userId 8位用户id
+     * @描述: 该方法适用于RequestType.IN aka V303
+     * @描述: 该方法适用于RequestType.GET aka V316
+     * @描述: 该方法适用于RequestType.ISNEW aka V437
+     * @描述: 该方法适用于RequestType.ANNI_BEAN* aka V878
+     */
     public String getRequestBody(int userId) {
         Result uisk = getUisk(userId);
         String ui = uisk.getUi();
@@ -37,6 +47,11 @@ public enum RequestType {
         return String.format(requestBody, ui, sk, ui);
     }
 
+    /**
+     * @param userId 8位用户id
+     * @param index 数据包数值参量
+     * @描述: 该方法适用于RequestType.ANNI_GET aka V877
+     */
     public String getRequestBody(int userId, int index) {
         Result uisk = getUisk(userId);
         String ui = uisk.getUi();
@@ -44,6 +59,11 @@ public enum RequestType {
         return String.format(requestBody, index, ui, sk, ui);
     }
 
+    /**
+     * @param userId 8位用户id
+     * @param inviteCode 数据包字符串参量
+     * @描述: 该方法适用于RequestType.ANNI_BRUSH aka V876
+     */
     public String getRequestBody(int userId, String inviteCode) {
         Result uisk = getUisk(userId);
         String ui = uisk.getUi();
@@ -51,6 +71,9 @@ public enum RequestType {
         return String.format(requestBody, inviteCode, ui, sk, ui);
     }
 
+    /**
+     * @描述: 该方法适用于RequestType.OI aka V202
+     */
     public String getRequestBodyById(int userId) {
         return String.format(requestBody, userId);
     }

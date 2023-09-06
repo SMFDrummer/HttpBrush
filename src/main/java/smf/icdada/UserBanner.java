@@ -177,7 +177,7 @@ public class UserBanner {
                         break;
                     } else while (true) {
                         try {
-                            Future<String> futureV316 = executor.submit(() -> getResponseBody(userId, RequestType.GET.getRequestBodyById(userId)));
+                            Future<String> futureV316 = executor.submit(() -> getResponseBody(userId, RequestType.GET.getRequestBody(userId)));
                             String response316GetBody = futureV316.get(3, TimeUnit.SECONDS);
                             v316.setResponseBody(response316GetBody);
                             if (!v316.isValid(0)) {

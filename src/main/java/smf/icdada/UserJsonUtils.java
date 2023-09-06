@@ -145,7 +145,7 @@ public class UserJsonUtils {
             }
             Files.move(Paths.get(tempFilePath), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
             Files.deleteIfExists(Paths.get(tempFilePath)); // 删除临时文件
-            //System.out.println("\033[32m" + "账号：" + userId + "\033[0m" + " || " + "\033[32m" + "处理完成" + "\033[0m");
+            System.out.println("\033[32m" + "账号：" + userId + "\033[0m" + " || " + "\033[32m" + "处理完成" + "\033[0m");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

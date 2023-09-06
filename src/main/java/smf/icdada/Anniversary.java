@@ -97,11 +97,13 @@ public class Anniversary {
         if (count == 12202) {
             UserJsonUtils.JsonUtil(userId, "isBanned", true);
             UserJsonUtils.JsonUtil(userId, "activate", false);
-        } else while (count < 13) {
-            count += brushInviteCode(inviteCode, getRandomId());
+        } else {
+            while (count < 13) {
+                count += brushInviteCode(inviteCode, getRandomId());
+            }
+            System.out.println("\033[33m" + "邀请码：" + inviteCode + "\033[0m" + " || " + "\033[32m" + "邀请结束，开始刷取" + "\033[0m");
+            anniversaryGacha(userId);
         }
-        System.out.println("\033[33m" + "邀请码：" + inviteCode + "\033[0m" + " || " + "\033[32m" + "邀请结束，开始刷取" + "\033[0m");
-        anniversaryGacha(userId);
     }
 
     private static String getInviteCode() {
@@ -122,7 +124,7 @@ public class Anniversary {
         if ("banned".equals(uisk.getUi()) && "banned".equals(uisk.getSk())) {
             return 12202;
         } else while (true) try {
-            Future<String> future = executor.submit(() -> getResponseBody(userId, RequestType.IN.getRequestBodyById(userId)));
+            Future<String> future = executor.submit(() -> getResponseBody(userId, RequestType.IN.getRequestBody(userId)));
             String response303Body = future.get(3, TimeUnit.SECONDS);
             v303.setResponseBody(response303Body);
             if (v303.isValid(0)) {
