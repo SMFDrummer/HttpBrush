@@ -171,7 +171,8 @@ public class Anniversary {
     }
 
     private static void anniversaryGacha(int userId) {
-        ExecutorService executor = Executors.newFixedThreadPool(10);
+        ExecutorService executor = Executors.newFixedThreadPool(30);
+        Check.V316 v316 = new Check.V316();
         refresh(userId);
         Result uisk = getUisk(userId);
         if ("banned".equals(uisk.getUi()) && "banned".equals(uisk.getSk())) {
@@ -179,64 +180,69 @@ public class Anniversary {
             UserJsonUtils.JsonUtil(userId, "activate", false);
         } else {
             while (true) try {
-                Future<String> futureV878 = executor.submit(() -> getResponseBody(userId, RequestType.ANNI_BEAN_2.getRequestBody(userId)));
-                String response878BodyPreCheck = futureV878.get(3, TimeUnit.SECONDS);
-                if (JSON.parseObject(response878BodyPreCheck).getIntValue("r") == 46009) {
-                    List<Future<String>> futures;
-                    while (true) {
-                        futures = new ArrayList<>();
-                        futures.add(executor.submit(() -> getResponseBody(userId, RequestType.ANNI_GET.getRequestBody(userId, 1))));
-                        sleep(350);
-                        futures.add(executor.submit(() -> getResponseBody(userId, RequestType.ANNI_GET.getRequestBody(userId, 2))));
-                        sleep(350);
-                        futures.add(executor.submit(() -> getResponseBody(userId, RequestType.ANNI_GET.getRequestBody(userId, 3))));
-                        sleep(350);
-                        futures.add(executor.submit(() -> getResponseBody(userId, RequestType.ANNI_GET.getRequestBody(userId, 6))));
-                        sleep(350);
-                        futures.add(executor.submit(() -> getResponseBody(userId, RequestType.ANNI_GET.getRequestBody(userId, 7))));
-                        sleep(350);
-                        futures.add(executor.submit(() -> getResponseBody(userId, RequestType.ANNI_GET.getRequestBody(userId, 8))));
-                        sleep(350);
-                        futures.add(executor.submit(() -> getResponseBody(userId, RequestType.ANNI_GET.getRequestBody(userId, 9))));
-                        sleep(350);
-                        try {
-                            int success = 0;
-                            for (Future<String> future : futures) {
-                                String response877Body = future.get(3, TimeUnit.SECONDS);
-                                if (
-                                        JSON.parseObject(response877Body).getIntValue("r") == 0 ||
-                                                JSON.parseObject(response877Body).getIntValue("r") == 20000
-                                ) success++;
+                Future<String> futureV316 = executor.submit(() -> getResponseBody(userId, RequestType.GET.getRequestBody(userId)));
+                String response316Body = futureV316.get(3, TimeUnit.SECONDS);
+                v316.setResponseBody(response316Body);
+                if (!v316.isValid(0)) refresh(userId);
+                else {
+                    Check.V316.d d = v316.new d();
+                    if (!d.checkJSONArray("al","i",60011)) {
+                        List<Future<String>> futures;
+                        while (true) {
+                            futures = new ArrayList<>();
+                            futures.add(executor.submit(() -> getResponseBody(userId, RequestType.ANNI_GET.getRequestBody(userId, 1))));
+                            sleep(350);
+                            futures.add(executor.submit(() -> getResponseBody(userId, RequestType.ANNI_GET.getRequestBody(userId, 2))));
+                            sleep(350);
+                            futures.add(executor.submit(() -> getResponseBody(userId, RequestType.ANNI_GET.getRequestBody(userId, 3))));
+                            sleep(350);
+                            futures.add(executor.submit(() -> getResponseBody(userId, RequestType.ANNI_GET.getRequestBody(userId, 6))));
+                            sleep(350);
+                            futures.add(executor.submit(() -> getResponseBody(userId, RequestType.ANNI_GET.getRequestBody(userId, 7))));
+                            sleep(350);
+                            futures.add(executor.submit(() -> getResponseBody(userId, RequestType.ANNI_GET.getRequestBody(userId, 8))));
+                            sleep(350);
+                            futures.add(executor.submit(() -> getResponseBody(userId, RequestType.ANNI_GET.getRequestBody(userId, 9))));
+                            sleep(350);
+                            try {
+                                int success = 0;
+                                for (Future<String> future : futures) {
+                                    String response877Body = future.get(3, TimeUnit.SECONDS);
+                                    if (
+                                            JSON.parseObject(response877Body).getIntValue("r") == 0 ||
+                                                    JSON.parseObject(response877Body).getIntValue("r") == 20000
+                                    ) success++;
+                                }
+                                if (success == 7) break;
+                            } catch (Exception ignored) {
+                                refresh(userId);
                             }
-                            if (success == 7) break;
-                        } catch (Exception ignored) {
-                            refresh(userId);
                         }
-                    }
-                    while (true) {
-                        futures.add(executor.submit(() -> getResponseBody(userId, RequestType.ANNI_BEAN_1.getRequestBody(userId))));
-                        sleep(350);
-                        futures.add(executor.submit(() -> getResponseBody(userId, RequestType.ANNI_BEAN_2.getRequestBody(userId))));
-                        sleep(350);
-                        try {
-                            String response878Body = futures.get(futures.size() - 1).get(3, TimeUnit.SECONDS);
-                            if (
-                                    JSON.parseObject(response878Body).getIntValue("r") == 0 ||
-                                            JSON.parseObject(response878Body).getIntValue("r") == 46342
-                            ) {
-                                UserJsonUtils.JsonUtil(userId, "activate", false);
-                                break;
+                        while (true) {
+                            futures.add(executor.submit(() -> getResponseBody(userId, RequestType.ANNI_BEAN_GACHA.getRequestBody(userId))));
+                            sleep(350);
+                            try {
+                                String response878GachaBody = futures.get(futures.size() - 1).get(3, TimeUnit.SECONDS);
+                                if (JSON.parseObject(response878GachaBody).getIntValue("r") == 46343) {
+                                    futures.add(executor.submit(() -> getResponseBody(userId, RequestType.ANNI_BEAN_GET.getRequestBody(userId))));
+                                    sleep(350);
+                                    String response878GetBody = futures.get(futures.size() - 1).get(3, TimeUnit.SECONDS);
+                                    if (
+                                            JSON.parseObject(response878GetBody).getIntValue("r") == 0 ||
+                                            JSON.parseObject(response878GetBody).getIntValue("r") == 46342
+                                    ) {
+                                        UserJsonUtils.JsonUtil(userId, "activate", false);
+                                        break;
+                                    }
+                                }
+                            } catch (Exception ignored) {
+                                refresh(userId);
                             }
-                        } catch (Exception ignored) {
-                            refresh(userId);
                         }
+                    } else {
+                        UserJsonUtils.JsonUtil(userId, "activate", false);
+                        break;
                     }
-                } else if (
-                        JSON.parseObject(response878BodyPreCheck).getIntValue("r") == 0 ||
-                                JSON.parseObject(response878BodyPreCheck).getIntValue("r") == 46342
-                ) {
-                    UserJsonUtils.JsonUtil(userId, "activate", false);
-                    break;
                 }
             } catch (Exception ignored) {
                 refresh(userId);

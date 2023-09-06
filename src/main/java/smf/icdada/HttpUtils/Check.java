@@ -87,6 +87,17 @@ public class Check {
             public JSONArray getJSONArray(String key) {
                 return d.getJSONArray(key);
             }
+            public boolean checkJSONArray(String key,String objectKey,Object objectValue){
+                JSONArray jsonArray = d.getJSONArray(key);
+                if (jsonArray.isEmpty()) return false;
+                else {
+                    for (Object object : jsonArray){
+                        JSONObject jsonObject = (JSONObject) object;
+                        if (jsonObject.containsKey(objectKey) && jsonObject.get(objectKey).equals(objectValue)) return true;
+                    }
+                    return false;
+                }
+            }
         }
     }
 

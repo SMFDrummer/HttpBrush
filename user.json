@@ -1,13 +1,13 @@
 {
 	"Users":[
 		{
-			"userId":36634303,
+			"userId":36634304,
 			"userNick":"拓维36634303",
 			"token":"afa8d169-46fd-4bbb-ba6b-bb444ceb2d6a",
 			"password":"dmsmd26f6cae15",
-			"activate":false,
-			"gem":1509790,
-			"inviteCode":"WHDKHETBJ"
+			"activate":true,
+			"gem":1510640,
+			"inviteCode":"DSCGDMAGS"
 		}
 	]
 }
