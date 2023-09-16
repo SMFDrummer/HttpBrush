@@ -1,6 +1,7 @@
 package smf.icdada;
 
 import java.io.IOException;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -19,11 +20,10 @@ import static smf.icdada.HttpUtils.Strategy.maker;
 
 public class Main {
     public static void main(String[] args) {
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        Runnable clearConsoleTask = Main::clearConsole;
-        scheduler.scheduleAtFixedRate(clearConsoleTask, 15, 5, TimeUnit.MINUTES);
-        sleep(1000);
-        System.out.printf("""
+        startConsole();
+        Inter.PreCheck();
+        String version = getProperties().getProperty("app.version");
+        System.out.println("""
                 ██╗  ██╗████████╗████████╗██████╗
                 ██║  ██║╚══██╔══╝╚══██╔══╝██╔══██╗
                 ███████║   ██║      ██║   ██████╔╝
@@ -36,18 +36,18 @@ public class Main {
                 ██╔══██╗██╔══██╗██║   ██║╚════██║██╔══██║
                 ██████╔╝██║  ██║╚██████╔╝███████║██║  ██║
                 ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝
-                
-                HttpBrush 正式版本:4.8
-                程序作者：SMF & icdada；协同测试：能奈何尔
-                请检查 %s 目录下程序运行环境是否存在完整配置
-                user.json    default.json
-                
+                """);
+        Log.i(String.format("HttpBrush 正式版本：%s", version));
+        Log.i(String.format("程序作者：SMF & icdada；协同测试：%s", Inter.getTestBy()));
+        Log.v(String.format("请检查 %s 目录下程序运行环境是否存在完整配置", System.getProperty("user.dir")));
+        Log.d("-> default.json");
+        Log.v("""
                 更新日志：
-                *修复了功能9
-                ————————————————————————————————————————————————————————————————————————————
-                
-                """, System.getProperty("user.dir"));
-        Inter.defaultSetting();
+                * 重写default.json
+                * 修正自动化发包代码
+                * 优化控制台输出
+                """);
+        Inter.Setting();
         switch (Inter.inter) {
             case 1 -> cryptoGuideLine();
             case 2 -> UserBanner.fileChecker(false);
@@ -60,11 +60,28 @@ public class Main {
             case 9 -> Anniversary.measure();
             case 0 -> System.exit(0);
             default -> {
-                System.out.println("\033[31m" + "默认值非法，无法执行已知功能，请重新设置" + "\033[0m");
+                Log.e("默认值非法，无法执行已知功能，请重新设置");
                 System.exit(0);
             }
         }
         System.exit(0);
+    }
+
+    private static void startConsole() {
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        Runnable clearConsoleTask = Main::clearConsole;
+        scheduler.scheduleAtFixedRate(clearConsoleTask, 15, 5, TimeUnit.MINUTES);
+        sleep(1000);
+    }
+
+    private static Properties getProperties() {
+        Properties properties = new Properties();
+        try {
+            properties.load(Main.class.getClassLoader().getResourceAsStream("application.properties"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return properties;
     }
 
     private static void clearConsole() {
@@ -75,7 +92,7 @@ public class Main {
                 System.out.print("\033[H\033[2J");
                 System.out.flush();
             }
-            System.out.println("\033[33m" + "已清空控制台，控制台定时触发已加载" + "\033[0m");
+            Log.v("已清空控制台，控制台定时触发已加载");
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

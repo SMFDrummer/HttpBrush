@@ -1,25 +1,116 @@
 {
-	"#inter":"此值为预选程序功能的值，若需填入，请将 ?input 替换为 0 ~ 8，程序将会自动解析，下同",
-	"inter":"?input",
-	"#isAndroid":"此值为程序判断是否为安卓渠道的根据，暂仅支持安卓，恒为 true",
-	"isAndroid":true,
-	"#waiter":"此值为首次运行代理池时需要对代理池进行等待的时长，若代理池已经运行一段时间则可以设置为 0",
-	"waiter":"600000",
-	"#count":"此值为程序运行发包的最大成功数，超过此值程序（账号）将会停止",
-	"count":"99999",
-	"#maxGem":"此值为最大钻石阈值，程序会通过此值切割帐号库",
-	"maxGem":"1500000",
-	"#sleepMillions":"此值为程序发包间隔，默认值为 100（单位：毫秒），不建议小于 100 或大于 1000",
-	"sleepMillions":"200",
-	"#chooser":"此值为默认执行代理池类型，值 1 为本地代理池，值 2 为在线代理池，选择 2 时 waiter 不生效",
-	"#chooser_beta":"值 3 为测试代理池，每日更新，仅 Beta 测试，选择 3 时 waiter 不生效",
-	"chooser":"2",
-	"#betaUrl":"测试代理池源址，每日更新，仅 Beta 测试",
-	"betaUrl":"",
-	"#oi":"此值为渠道选择，109208 为官方渠道，109250 为 Taptap 渠道",
-	"oi":"109250",
-	"#versionName":"此值为版本名",
-	"versionName":"3.1.8",
-	"#versionCode":"此值为版本号",
-	"versionCode":"1410"
+  "PropInfo": "HttpBrushPropertySheet",
+  "AuthorInfo": {
+    "Developer": "SMF",
+    "TestBy": [
+      "能奈何尔"
+    ]
+  },
+  "#PROPCANBENULL#": [
+    "#可以填入null的所有值列表，默认一级项为PropData，下列指向均可以置null#",
+    "GlobalSettings - Inter - value",
+    "GlobalSettings - ProxyType - value",
+    "GlobalSettings - Version - value",
+    "OtherSettings - PackageId - channelId"
+  ],
+  "PropData": {
+    "GlobalSettings": {
+      "#DESCRIPTION#": "全局设定值，若需要手动输入，请填入null",
+      "Inter": {
+        "#DESCRIPTION#": "预选程序功能",
+        "value": null
+      },
+      "ProxyType": {
+        "#DESCRIPTION#": "默认执行代理池类型",
+        "value": 2
+      },
+      "Version": {
+        "#DESCRIPTION#": "版本号",
+        "value": "3.1.9.1415"
+      },
+      "Environment": {
+        "#DESCRIPTION#": "运行环境",
+        "value": true
+      }
+    },
+    "OtherSettings": {
+      "#DESCRIPTION#": "其他设定值，若需要手动输入，请填入null",
+      "PackageId": {
+        "appId": 109,
+        "channelId": null,
+        "package": [
+          {
+            "Description": "拓维官服",
+            "id": 208,
+            "value": "com.popcap.pvz2cthdbk"
+          },
+          {
+            "Description": "好游快爆",
+            "id": 261,
+            "value": "com.popcap.pvz2cthdbk"
+          },
+          {
+            "Description": "Taptap",
+            "id": 250,
+            "value": "com.popcap.pvz2cthdbk"
+          },
+          {
+            "Description": "应用宝",
+            "id": 132,
+            "value": "com.tencent.tmgp.pvz2hdtxyyb"
+          },
+          {
+            "Description": "华为",
+            "id": 1030,
+            "value": "com.popcap.pvz2cthdhwct"
+          },
+          {
+            "Description": "小米",
+            "id": 1013,
+            "value": "com.popcap.pvz2cthdxm"
+          },
+          {
+            "Description": "九游",
+            "id": 24,
+            "value": "com.popcap.pvz2cthduc"
+          },
+          {
+            "Description": "百度",
+            "id": 1025,
+            "value": "com.popcap.pvz2cthd.g.baidu"
+          },
+          {
+            "Description": "vivo",
+            "id": 1027,
+            "value": "com.popcap.pvz2cthdbbg"
+          },
+          {
+            "Description": "OPPO",
+            "id": 22,
+            "value": "com.popcap.pvz2cthdop"
+          },
+          {
+            "Description": "360游戏",
+            "id": 16,
+            "value": "com.popcap.pvz2cthd360"
+          },
+          {
+            "Description": "八门神器",
+            "id": 10022,
+            "value": "com.popcap.pvz2cthdbmsq"
+          },
+          {
+            "Description": "4399游戏盒",
+            "id": 54,
+            "value": "com.popcap.pvz2cthd4399"
+          },
+          {
+            "Description": "7723游戏盒",
+            "id": 266,
+            "value": "com.popcap.pvz2cthdbazhang"
+          }
+        ]
+      }
+    }
+  }
 }

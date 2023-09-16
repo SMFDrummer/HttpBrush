@@ -6,7 +6,7 @@
 
     <groupId>smf.icdada</groupId>
     <artifactId>HttpBrush</artifactId>
-    <version>4.8</version>
+    <version>5.0</version>
 
     <properties>
         <maven.compiler.source>20</maven.compiler.source>
@@ -15,6 +15,12 @@
         <kotlin.version>1.9.0</kotlin.version>
     </properties>
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <!--配置项目名-->
         <finalName>HttpBrush</finalName>
         <plugins>
@@ -29,11 +35,8 @@
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
+                    <descriptor>${project.basedir}/src/main/assembly/assembly.xml</descriptor>
                     <archive>
-                        <!--主程序入口-->
                         <manifest>
                             <mainClass>smf.icdada.Main</mainClass>
                         </manifest>
@@ -86,6 +89,30 @@
                     <jvmTarget>${maven.compiler.target}</jvmTarget>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/classes</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
     <dependencies>

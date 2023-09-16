@@ -1,7 +1,12 @@
 target/
+temp/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+user.json
+user.json.bak
+banuser.json
+bannerConfig.json
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

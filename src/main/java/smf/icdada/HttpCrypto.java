@@ -4,19 +4,21 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONWriter;
 import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.crypto.engines.DESEngine;
 import org.bouncycastle.crypto.engines.RijndaelEngine;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.bouncycastle.crypto.paddings.ZeroBytePadding;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
+import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.Hex;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Objects;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -32,6 +34,7 @@ import java.util.zip.GZIPOutputStream;
 @SuppressWarnings("ALL")
 public class HttpCrypto {
 
+    protected static final byte[] IV_PARAMETER = {1, 2, 3, 4, 5, 6, 7, 8};
     private static final char[] BASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".toCharArray();
 
     /**
@@ -239,7 +242,6 @@ public class HttpCrypto {
                         JSON.isValid(parse.getJSONObject("ri").getString("pl"))
         ) {
             String pl = parse.getJSONObject("ri").getString("pl");
-            System.out.println(new String(getMD5(pl), StandardCharsets.UTF_8));
             if (JSON.isValid(pl)) {
                 parse.getJSONObject("ri").put("pl", GZIPEnCrypto(pl));
             }
@@ -281,7 +283,7 @@ public class HttpCrypto {
      * @return 解密后的原始数据
      * @描述: 这个方法用于解密Base64编码的数据。
      */
-    protected static byte[] decryptBase64(byte[] paramArrayOfbyte1, byte[] paramArrayOfbyte2, byte[] paramArrayOfbyte3) {
+    public static byte[] decryptBase64(byte[] paramArrayOfbyte1, byte[] paramArrayOfbyte2, byte[] paramArrayOfbyte3) {
         PaddedBufferedBlockCipher paddedBufferedBlockCipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new RijndaelEngine(192)), new ZeroBytePadding());
         ParametersWithIV parametersWithIV = new ParametersWithIV(new KeyParameter(paramArrayOfbyte2), paramArrayOfbyte3);
         paramArrayOfbyte1 = DecryptRTON(paramArrayOfbyte1, paddedBufferedBlockCipher, parametersWithIV);
@@ -325,7 +327,7 @@ public class HttpCrypto {
      * @return 加密后的Base64编码数据
      * @描述: 这个方法用于加密数据并返回Base64编码的结果
      */
-    protected static byte[] encryptBase64(byte[] paramArrayOfbyte1, byte[] paramArrayOfbyte2, byte[] paramArrayOfbyte3) {
+    public static byte[] encryptBase64(byte[] paramArrayOfbyte1, byte[] paramArrayOfbyte2, byte[] paramArrayOfbyte3) {
         PaddedBufferedBlockCipher paddedBufferedBlockCipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new RijndaelEngine(192)), new ZeroBytePadding());
         ParametersWithIV parametersWithIV = new ParametersWithIV(new KeyParameter(paramArrayOfbyte2), paramArrayOfbyte3);
         paramArrayOfbyte1 = EncryptRTON(paramArrayOfbyte1, paddedBufferedBlockCipher, parametersWithIV);
@@ -443,18 +445,14 @@ public class HttpCrypto {
      * @描述: 该方法为 MD5 计算方法，此方法会根据字符串自动计算 MD5
      */
     public static byte[] getMD5(String toBeHashed) {
-        StringBuilder stringBuilder = new StringBuilder();
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("MD5");
             messageDigest.update(toBeHashed.getBytes());
             byte[] digest = messageDigest.digest();
-            for (byte b : digest) {
-                stringBuilder.append(String.format("%02x", b & 0xff));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+            return Hex.toHexString(digest).getBytes();
+        } catch (Exception ignored) {
+            return new String().getBytes();
         }
-        return stringBuilder.toString().getBytes();
     }
 
     /**
@@ -486,7 +484,7 @@ public class HttpCrypto {
                     isAndroid = sd.get("ffc").toString().length() == 5;
                 }
             }
-            byte[] encodedBytes = Base64.getEncoder().encode(originalString.getBytes());
+            byte[] encodedBytes = Base64.encode(originalString.getBytes());
             if (isAndroid) {
                 encodedString = "\"" + replaceCharactersBack(new String(encodedBytes, StandardCharsets.UTF_8)) + "\"";
             } else {
@@ -511,7 +509,7 @@ public class HttpCrypto {
             if (decodedString.startsWith("\"") && decodedString.endsWith("\"")) {
                 decodedString = decodedString.substring(1, decodedString.length() - 1);//有引号去掉
             }
-            byte[] decodedBytes = Base64.getDecoder().decode(replaceCharacters(decodedString));
+            byte[] decodedBytes = Base64.decode(replaceCharacters(decodedString));
             decodedString = new String(decodedBytes);//先字符替换然后base64解码
         }
         return JSON.parse(decodedString);
@@ -525,7 +523,7 @@ public class HttpCrypto {
     protected static String decode(String base64GzipString) {
         try {
             // 解码Base64字符串
-            byte[] base64DecodedBytes = Base64.getDecoder().decode(base64GzipString);
+            byte[] base64DecodedBytes = Base64.decode(base64GzipString);
             // 解压缩Gzip数据
             ByteArrayInputStream inputStream = new ByteArrayInputStream(base64DecodedBytes);
             GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
@@ -560,7 +558,7 @@ public class HttpCrypto {
             gzipOutputStream.write(originalBytes);
             gzipOutputStream.close();
             byte[] gzipBytes = byteArrayOutputStream.toByteArray();
-            String base64GzipString = Base64.getEncoder().encodeToString(gzipBytes);
+            String base64GzipString = Base64.toBase64String(gzipBytes);
             byteArrayOutputStream.close();
             return base64GzipString;
         } catch (Exception e) {
@@ -580,5 +578,108 @@ public class HttpCrypto {
                 .replace("+", "-")
                 .replace("/", "_");
     }
+}
 
+class CreateAccountCrypto extends HttpCrypto {
+    public static byte[] encryptBase64(byte[] data, byte[] key, byte[] iv) {
+        try {
+            PaddedBufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new DESEngine()));
+            cipher.init(true, new ParametersWithIV(new KeyParameter(key), iv));
+            return Base64Crypto(data, cipher);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    public static byte[] decryptBase64(byte[] data, byte[] key, byte[] iv) {
+        try {
+            PaddedBufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new DESEngine()));
+            cipher.init(false, new ParametersWithIV(new KeyParameter(key), iv));
+            return Base64Crypto(data, cipher);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static byte[] Base64Crypto(byte[] data, PaddedBufferedBlockCipher cipher) throws InvalidCipherTextException {
+        byte[] out = new byte[cipher.getOutputSize(data.length)];
+        int len1 = cipher.processBytes(data, 0, data.length, out, 0);
+        int len2 = cipher.doFinal(out, len1);
+        byte[] result = new byte[len1 + len2];
+        System.arraycopy(out, 0, result, 0, result.length);
+        return result;
+    }
+
+    private static String XMLEncrypt(String password, String data) {
+        if (password == null || password.length() < 8) {
+            throw new RuntimeException("加密失败，key不能小于8位");
+        }
+        if (data == null) return null;
+        byte[] keyBytes = password.getBytes();
+        byte[] dataBytes = data.getBytes();
+        byte[] encryptedData = encryptBase64(dataBytes, keyBytes, IV_PARAMETER);
+        if (encryptedData != null) {
+            return Base64.toBase64String(encryptedData);
+        } else return "";
+    }
+
+    private static String XMLDecrypt(String password, String data) {
+        if (password == null || password.length() < 8) {
+            throw new RuntimeException("加密失败，key不能小于8位");
+        }
+        if (data == null) return null;
+        try {
+            byte[] keyBytes = password.getBytes();
+            byte[] dataBytes = Base64.decode(data);
+            byte[] decryptedData = decryptBase64(dataBytes, keyBytes, IV_PARAMETER);
+            if (decryptedData != null) {
+                return new String(decryptedData, StandardCharsets.UTF_8);
+            } else return "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return data;
+        }
+    }
+
+    public static KeyParameter generateKey(String password) {
+        return new KeyParameter(password.getBytes());
+    }
+
+    public static String decrypt(String in) {
+        StringBuilder result = new StringBuilder();
+        if (in.startsWith("head=")) {
+            String[] s = in.split("&");
+            for (String string : s) {
+                if (string.startsWith("md5=")) {
+                    result.append(string);
+                } else {
+                    result.append(string.split("=")[0]).append("=").append(XMLDecrypt("TwPay001", string.split("=")[1])).append("&");
+                }
+            }
+        } else {
+            result = new StringBuilder(Objects.requireNonNull(XMLDecrypt("TwPay001", in)));
+        }
+        return result.toString();
+    }
+
+    public static String encrypt(String in) {
+        StringBuilder result = new StringBuilder();
+        String md5 = "";
+        if (in.startsWith("head=")) {
+            String[] s = in.split("&");
+            for (String string : s) {
+                if (string.startsWith("md5=")) {
+                    result.append("md5=").append(md5);
+                } else {
+                    result.append(string.split("=")[0]).append("=").append(XMLEncrypt("TwPay001", string.split("=")[1])).append("&");
+                    if (string.startsWith("verifySMS") || string.startsWith("registerInfo")) {
+                        md5 = new String(getMD5(string.split("=")[1] + "b0b29851-b8a1-4df5-abcb-a8ea158bea20"), StandardCharsets.UTF_8);
+                    }
+                }
+            }
+        } else {
+            result = new StringBuilder(Objects.requireNonNull(XMLEncrypt("TwPay001", in)));
+        }
+        return result.toString();
+    }
 }

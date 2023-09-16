@@ -29,13 +29,12 @@ public class ProxyManager {
         int invalidRequestCount = 0;
         while (true) {
             String urlString;
-            switch (Inter.chooser) {
+            switch (Inter.proxyType) {
                 case 1 -> urlString = "http://localhost:8093/get/";
                 case 2 -> urlString = "http://demo.spiderpy.cn/get/";
-                case 3 -> urlString = Inter.betaUrl;
                 default -> {
-                    System.out.println("Back Chooser ERROR, default back Online ProxyPool!");
-                    Inter.chooser = 2;
+                    Log.e("Back Chooser ERROR, default back Online ProxyPool!");
+                    Inter.proxyType = 2;
                     urlString = "http://demo.spiderpy.cn/get/";
                 }
             }
@@ -49,17 +48,17 @@ public class ProxyManager {
                 }
             }
 
-            if (openConsole) System.out.println("\033[31m" + "代理服务器地址获取失败，正在重新获取……" + "\033[0m");
+            if (openConsole) Log.e("代理服务器地址获取失败，正在重新获取……");
             sleep(1000);
-            if (Inter.chooser == 1) {
+            if (Inter.proxyType == 1) {
                 invalidRequestCount++;
             }
 
             if (invalidRequestCount > 100) {
-                Inter.chooser = 2;
-                System.out.println("Invalid Request Count TOO MANY, maybe Local doesn't work, Changed to Online ProxyPool!");
+                Inter.proxyType = 2;
+                Log.e("Invalid Request Count TOO MANY, maybe Local doesn't work, Changed to Online ProxyPool!");
             } else if (invalidRequestCount % 2 == 0) {
-                Inter.chooser = (Inter.chooser == 1) ? 2 : 1;
+                Inter.proxyType = (Inter.proxyType == 1) ? 2 : 1;
             }
         }
     }
@@ -77,7 +76,7 @@ public class ProxyManager {
                 tempProxyHost = proxyData[0];
                 tempProxyPort = Integer.parseInt(proxyData[1]);
                 if (openConsole)
-                    System.out.println("\033[33m" + "刷新的代理服务器地址为：" + tempProxyHost + "，端口为" + tempProxyPort + "\n" + "\033[0m");
+                    Log.v("刷新的代理服务器地址为：" + tempProxyHost + "，端口为" + tempProxyPort);
             } catch (Exception ignored) {
             }
         } while (!isProxyAvailable(tempProxyHost, tempProxyPort));
@@ -131,7 +130,7 @@ public class ProxyManager {
             int responseCode = connection.getResponseCode();
             if (responseCode != 200) {
                 if (openConsole)
-                    System.out.println("\033[31m" + "拓维服务器停止响应（HttpError：" + responseCode + "），正在刷新IP……" + "\033[0m");
+                    Log.e("拓维服务器停止响应（HttpError：" + responseCode + "），正在刷新IP……");
                 return false;
             }
             return true;
@@ -143,14 +142,14 @@ public class ProxyManager {
     private static boolean isProxyAvailable(String proxyHost, int proxyPort) {
         try {
             sleep(500);
-            String responseI4CheckBody = HttpSender.doQuest(Inter.isAndroid, RequestType.I4.getRequestBody(), proxyHost, proxyPort);
+            String responseI4CheckBody = HttpSender.doQuest(Inter.environment, RequestType.I4.getRequestBody(), proxyHost, proxyPort);
             if (responseI4CheckBody != null) {
                 JSONObject jsonObject = JSONObject.parse(responseI4CheckBody);
                 return jsonObject.containsKey("i") && jsonObject.getIntValue("r") == 0;
             }
             return false;
         } catch (Exception e) {
-            if (openConsole) System.out.println("\033[31m" + "I4校验异常，正在刷新IP……" + "\033[0m");
+            if (openConsole) Log.e("I4校验异常，正在刷新IP……");
             return false;
         }
     }

@@ -48,16 +48,16 @@ public class Base {
                         JSONObject jsonObject = JSONObject.parseObject(response);
                         if (jsonObject.containsKey("r")) {
                             if (jsonObject.getIntValue("r") == 20507) {
-                                System.out.println("\033[31m" + "账号：" + userId + "\033[0m" + " || " + "\033[31m" + "账号被封禁，已自动跳出" + "\033[0m");
+                                Log.e("账号：" + userId + " || " + "账号被封禁，已自动跳出");
                                 uisk = new Result("banned", "banned");
                             } else if (jsonObject.getIntValue("r") == 0) {
                                 JSONObject dObject = jsonObject.getJSONObject("d");
                                 String ui = dObject.getString("ui");
                                 String sk = dObject.getString("sk");
                                 if (Inter.inter == 10) {
-                                    System.out.println("\033[34m" + "userId:" + userId + "\033[0m");
-                                    System.out.println("\033[34m" + "ui:" + ui + "\033[0m");
-                                    System.out.println("\033[34m" + "sk:" + sk + "\n" + "\033[0m");
+                                    Log.i("userId:" + userId);
+                                    Log.i("ui:" + ui);
+                                    Log.i("sk:" + sk + "\n");
                                 }
                                 uisk = new Result(ui, sk);
                             }
@@ -79,7 +79,7 @@ public class Base {
             Result proxy = getProxy(userId);
             return HttpCrypto.decryptRES(
                     HttpSender.doQuest(
-                            Inter.isAndroid,
+                            Inter.environment,
                             HttpCrypto.encryptREQ(
                                     requestBody
                             ),
@@ -121,7 +121,7 @@ public class Base {
      */
     public static int userIdGetter() {
         int userId;
-        System.out.println("\033[33m" + "请输入拓维UserID，并按回车键继续：" + "\033[0m");
+        Log.v("请输入拓维UserID，并按回车键继续：");
         Scanner scanner = new Scanner(System.in);
         String input;
         Pattern pattern = Pattern.compile("^\\d+$");
@@ -132,10 +132,10 @@ public class Base {
                 if (userId > 0) {
                     break;
                 } else {
-                    System.out.println("\033[31m" + "请输入正确的UserID" + "\033[0m");
+                    Log.e("请输入正确的UserID");
                 }
             } else {
-                System.out.println("\033[31m" + "输入无效，请输入正确的UserID" + "\033[0m");
+                Log.e("输入无效，请输入正确的UserID");
             }
         }
         return userId;
@@ -146,10 +146,6 @@ public class Base {
      * @描述: userId批量获取方法
      */
     public static List<Integer> readUserIds() {
-        if (Inter.chooser == 4) {
-            System.out.println("\033[33m" + "正在等待代理池刷新……" + "\033[0m");
-            sleep(Inter.waiter);
-        }
         List<Integer> userIds = new ArrayList<>();
         try {
             String stringUrl = System.getProperty("user.dir") + File.separator + "user.json";
@@ -171,12 +167,13 @@ public class Base {
                     }
                 }
             } else {
-                System.out.println("\033[31m" + "用户库文件异常，请检查：" + System.getProperty("user.dir") + File.separator + "user.json文件是否存在" + "\033[0m");
+                Log.e("用户库文件异常，请检查：" + System.getProperty("user.dir") + File.separator + "user.json文件是否存在");
                 Scanner scanner = new Scanner(System.in);
                 scanner.nextLine();
                 System.exit(0);
             }
         } catch (Exception e) {
+            Log.w(e.getMessage());
             e.printStackTrace();
         }
         return userIds;
@@ -187,71 +184,71 @@ public class Base {
      */
     public static void cryptoGuideLine() {
         try {
-            System.out.println("\033[33m" + "请输入任意内容或数据包，输入空字段以结束：" + "\033[0m");
+            Log.v("请输入任意内容或数据包，输入空字段以结束：");
             String body = smfScanner.smfLongString(true);
             if (body.isBlank()) System.exit(0);
             if (JSON.isValidObject(body)) {
                 JSONObject jsonObject = JSONObject.parse(body);
                 if (jsonObject.containsKey("i") && jsonObject.containsKey("r")) {
                     if (jsonObject.containsKey("t")) {
-                        System.out.println(HttpCrypto.encryptREQ(body));
-                        System.out.println("\033[33m" + "是否发送数据包取得响应？(Y/N)" + "\033[0m");
+                        Log.a(HttpCrypto.encryptREQ(body));
+                        Log.v("是否发送数据包取得响应？(Y/N)");
                         if (smfScanner.smfBoolean(false))
-                            System.out.println(HttpCrypto.decryptRES(HttpSender.doQuest(Inter.isAndroid, HttpCrypto.encryptREQ(body))));
+                            Log.a(HttpCrypto.decryptRES(HttpSender.doQuest(Inter.environment, HttpCrypto.encryptREQ(body))));
                     }
                     if (jsonObject.containsKey("e")) {
-                        System.out.println(HttpCrypto.decryptRES(body));
+                        Log.a(HttpCrypto.decryptRES(body));
                     }
                     if (jsonObject.containsKey("d")) {
-                        System.out.println(HttpCrypto.encryptRES(body));
+                        Log.a(HttpCrypto.encryptRES(body));
                     }
                 }
             } else if (body.startsWith("--_{{}}_")) {
-                System.out.println(HttpCrypto.decryptREQ(body));
-                System.out.println("\033[33m" + "是否发送数据包取得响应？(Y/N)" + "\033[0m");
+                Log.a(HttpCrypto.decryptREQ(body));
+                Log.v("是否发送数据包取得响应？(Y/N)");
                 if (smfScanner.smfBoolean(false))
-                    System.out.println(HttpCrypto.decryptRES(HttpSender.doQuest(Inter.isAndroid, body)));
+                    Log.a(HttpCrypto.decryptRES(HttpSender.doQuest(Inter.environment, body)));
             } else {
-                System.out.println("\033[31m" + "自动检测失败，请手动输入数据包标识并选择功能：\n" + "\033[0m" + "\033[33m" + "请输入数据包标识：" + "\033[0m");
+                Log.e("自动检测失败，请手动输入数据包标识并选择功能：\n" + "\033[33m" + "请输入数据包标识：");
                 String identifier = smfScanner.smfString(true);
-                System.out.println("\033[32m" + "请选择功能：\n[1] 请求加密\n[2] 请求解密\n[3] 响应加密\n[4] 响应解密\n[5] 获取密钥和偏移\n[6] 获取MD5\n" + "\033[0m");
+                Log.d("请选择功能：\n[1] 请求加密\n[2] 请求解密\n[3] 响应加密\n[4] 响应解密\n[5] 获取密钥和偏移\n[6] 获取MD5");
                 boolean keepRunning = true;
                 while (keepRunning) {
                     int choice = smfScanner.smfInt(false);
                     switch (choice) {
-                        case 1:
-                            System.out.println(HttpCrypto.encryptREQ(identifier, body));
+                        case 1 -> {
+                            Log.a(HttpCrypto.encryptREQ(identifier, body));
                             keepRunning = false;
-                            break;
-                        case 2:
-                            System.out.println(HttpCrypto.decryptREQ(identifier, body));
+                        }
+                        case 2 -> {
+                            Log.a(HttpCrypto.decryptREQ(identifier, body));
                             keepRunning = false;
-                            break;
-                        case 3:
-                            System.out.println(HttpCrypto.encryptRES(identifier, body));
+                        }
+                        case 3 -> {
+                            Log.a(HttpCrypto.encryptRES(identifier, body));
                             keepRunning = false;
-                            break;
-                        case 4:
-                            System.out.println(HttpCrypto.decryptRES(identifier, body));
+                        }
+                        case 4 -> {
+                            Log.a(HttpCrypto.decryptRES(identifier, body));
                             keepRunning = false;
-                            break;
-                        case 5:
-                            System.out.println("Identifier:" + identifier +
+                        }
+                        case 5 -> {
+                            Log.s("Identifier:" + identifier +
                                     "\nkey:" + new String(HttpCrypto.getKey(identifier), StandardCharsets.UTF_8) +
                                     "\niv:" + new String(HttpCrypto.getIv(identifier), StandardCharsets.UTF_8));
                             keepRunning = false;
-                            break;
-                        case 6:
-                            System.out.println("MD5:" + new String(HttpCrypto.getMD5(body), StandardCharsets.UTF_8));
+                        }
+                        case 6 -> {
+                            Log.s("MD5:" + new String(HttpCrypto.getMD5(body), StandardCharsets.UTF_8));
                             keepRunning = false;
-                            break;
-                        default:
-                            System.out.println("\033[31m" + "输入有误，请重新输入功能序号：" + "\033[0m");
+                        }
+                        default -> Log.e("输入有误，请重新输入功能序号：");
                     }
                 }
             }
             cryptoGuideLine();
         } catch (Exception e) {
+            Log.w(e.getMessage());
             e.printStackTrace();
         }
     }
@@ -263,7 +260,7 @@ public class Base {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
-            System.out.println("\033[31m" + "sleep function error:" + "\033[0m");
+            Log.e("sleep function error:");
             e.printStackTrace();
         }
     }

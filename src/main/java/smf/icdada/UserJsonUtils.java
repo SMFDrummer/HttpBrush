@@ -25,9 +25,6 @@ import static smf.icdada.HttpUtils.Base.*;
 /**
  * @author SMF & icdada
  * @描述: 用户库账号刷新方法类
- * <p>
- * &#064;//  TODO: 2023/7/30  未完成的注释：用户库账号刷新方法类
- * </p>
  */
 public class UserJsonUtils {
     private static final ReadWriteLock lock = new ReentrantReadWriteLock();
@@ -38,7 +35,7 @@ public class UserJsonUtils {
         for (int userId : userIds) {
             sleep(100);
             executorService.submit(() -> {
-                System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[33m" + "已读取，开始执行" + "\033[0m");
+                Log.v("账号：" + userId + " || 已读取，开始执行");
                 JsonUtilInterface(userId);
             });
         }
@@ -48,7 +45,7 @@ public class UserJsonUtils {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println("所有账号处理完成，程序退出");
+        Log.s("所有账号处理完成，程序退出");
         System.exit(0);
     }
 
@@ -81,13 +78,13 @@ public class UserJsonUtils {
                 String response316Body = future.get(3, TimeUnit.SECONDS);
                 v316.setResponseBody(response316Body);
                 if (!v316.isValid(0)) {
-                    System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[31m" + "读取失败，正在重试……" + "\033[0m" + " || " + response316Body);
+                    Log.v("账号：" + userId + " || 读取失败，正在重试…… || " + response316Body);
                     if (!v316.isValid(20013)) refresh(userId);
                 } else {
                     Check.V316.d d = v316.new d();
                     if (d.containsKey("p")) {
                         int fg = d.getJSONObject("p").getIntValue("fg");
-                        System.out.println("\033[32m" + "账号：" + userId + "\033[0m" + " || " + "\033[32m" + "已获取钻石数量：" + fg + "\033[0m");
+                        Log.s("账号：" + userId + " || 已获取钻石数量：" + fg);
                         return fg;
                     }
                 }
@@ -106,7 +103,7 @@ public class UserJsonUtils {
                 String response303Body = future.get(3, TimeUnit.SECONDS);
                 v303.setResponseBody(response303Body);
                 if (!v303.isValid(0)) {
-                    System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[31m" + "读取失败，正在重试……" + "\033[0m" + " || " + response303Body);
+                    Log.v("账号：" + userId + " || 读取失败，正在重试…… || " + response303Body);
                     if (!v303.isValid(20013)) {
                         refresh(userId);
                     }
@@ -114,7 +111,7 @@ public class UserJsonUtils {
                     Check.V303.data data = v303.new data();
                     if (data.containsKey("code") && !data.getString("code").isBlank()) {
                         String inviteCode = data.getString("code");
-                        System.out.println("\033[32m" + "账号：" + userId + "\033[0m" + " || " + "\033[32m" + "已获取邀请码：" + inviteCode + "\033[0m");
+                        Log.s("账号：" + userId + " || 已获取邀请码：" + inviteCode);
                         return inviteCode;
                     }
                 }
@@ -145,8 +142,9 @@ public class UserJsonUtils {
             }
             Files.move(Paths.get(tempFilePath), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
             Files.deleteIfExists(Paths.get(tempFilePath)); // 删除临时文件
-            System.out.println("\033[32m" + "账号：" + userId + "\033[0m" + " || " + "\033[32m" + "处理完成" + "\033[0m");
+            Log.s("账号：" + userId + " || 处理完成");
         } catch (Exception e) {
+            Log.w(e.getMessage());
             e.printStackTrace();
         } finally {
             lock.writeLock().unlock(); // 释放写锁
@@ -164,7 +162,7 @@ public class UserJsonUtils {
         File failUser = new File(failUserPath);
         if (!userFolder.exists()) {
             if (!userFolder.mkdir()) {
-                System.out.println("无法写出文件，请检查权限！");
+                Log.e("无法写出文件，请检查权限！");
                 System.exit(0);
             }
         }
@@ -195,9 +193,10 @@ public class UserJsonUtils {
             fileWriterFail.close();
             passUserCutter(100);
         } catch (Exception e) {
+            Log.w(e.getMessage());
             e.printStackTrace();
         }
-        System.out.println("所有账号处理完成，程序退出");
+        Log.v("所有账号处理完成，程序退出");
         System.exit(0);
     }
 
@@ -226,6 +225,7 @@ public class UserJsonUtils {
                 }
             }
         } catch (Exception e) {
+            Log.w(e.getMessage());
             e.printStackTrace();
         }
     }

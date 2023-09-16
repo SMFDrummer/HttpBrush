@@ -24,7 +24,7 @@ public class Anniversary {
         for (Map.Entry<Integer, String> userObject : userObjects.entrySet()) {
             sleep(100);
             executorService.submit(() -> {
-                System.out.println("\033[33m" + "账号：" + userObject.getKey() + "\033[0m" + " || " + "\033[33m" + "已读取，开始执行" + "\033[0m");
+                Log.v("账号：" + userObject.getKey() + " || " + "已读取，开始执行");
                 brush(userObject.getKey(), userObject.getValue());
             });
         }
@@ -34,15 +34,11 @@ public class Anniversary {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println("所有账号处理完成，程序退出");
+        Log.s("所有账号处理完成，程序退出");
         System.exit(0);
     }
 
     private static Map<Integer, String> readUserObjects() {
-        if (Inter.chooser == 4) {
-            System.out.println("\033[33m" + "正在等待代理池刷新……" + "\033[0m");
-            sleep(Inter.waiter);
-        }
         Map<Integer, String> userObjects = new HashMap<>();
         try {
             String stringUrl = System.getProperty("user.dir") + File.separator + "user.json";
@@ -66,12 +62,13 @@ public class Anniversary {
                     }
                 }
             } else {
-                System.out.println("\033[31m" + "用户库文件异常，请检查：" + System.getProperty("user.dir") + File.separator + "user.json文件是否存在" + "\033[0m");
+                Log.e("用户库文件异常，请检查：" + System.getProperty("user.dir") + File.separator + "user.json文件是否存在");
                 Scanner scanner = new Scanner(System.in);
                 scanner.nextLine();
                 System.exit(0);
             }
         } catch (Exception e) {
+            Log.w(e.getMessage());
             e.printStackTrace();
         }
         return userObjects;
@@ -84,12 +81,12 @@ public class Anniversary {
             int i = count;
             count += brushInviteCode(inviteCode, getRandomId());
             if (count == i) {
-                System.out.println("\033[33m" + "邀请码：" + inviteCode + "\033[0m" + " || " + "\033[31m" + "刷取失败" + "\033[0m" + " || " + "共成功：" + count);
+                Log.e("邀请码：" + inviteCode + " || 刷取失败 || 共成功：" + count);
             } else {
-                System.out.println("\033[33m" + "邀请码：" + inviteCode + "\033[0m" + " || " + "\033[32m" + "刷取成功" + "\033[0m" + " || " + "共成功：" + count);
+                Log.s("邀请码：" + inviteCode + " || 刷取成功 || 共成功：" + count);
             }
         } while (count < 13);
-        System.out.println("\033[33m" + "邀请码：" + inviteCode + "\033[0m" + " || " + "\033[32m" + "邀请结束" + "\033[0m");
+        Log.v("邀请码：" + inviteCode + " || 邀请结束");
     }
 
     private static void brush(int userId, String inviteCode) {
@@ -101,13 +98,13 @@ public class Anniversary {
             while (count < 13) {
                 count += brushInviteCode(inviteCode, getRandomId());
             }
-            System.out.println("\033[33m" + "邀请码：" + inviteCode + "\033[0m" + " || " + "\033[32m" + "邀请结束，开始刷取" + "\033[0m");
+            Log.v("邀请码：" + inviteCode + " || 邀请结束，开始刷取");
             anniversaryGacha(userId);
         }
     }
 
     private static String getInviteCode() {
-        System.out.println("\033[33m" + "请输入活动邀请码，并按回车键继续：" + "\033[0m");
+        Log.v("请输入活动邀请码，并按回车键继续：");
         return smfScanner.smfString(true);
     }
 
@@ -186,7 +183,7 @@ public class Anniversary {
                 if (!v316.isValid(0)) refresh(userId);
                 else {
                     Check.V316.d d = v316.new d();
-                    if (!d.checkJSONArray("al","i",60011)) {
+                    if (!d.checkJSONArray("al", "i", 60011)) {
                         List<Future<String>> futures;
                         while (true) {
                             futures = new ArrayList<>();
@@ -229,7 +226,7 @@ public class Anniversary {
                                     String response878GetBody = futures.get(futures.size() - 1).get(3, TimeUnit.SECONDS);
                                     if (
                                             JSON.parseObject(response878GetBody).getIntValue("r") == 0 ||
-                                            JSON.parseObject(response878GetBody).getIntValue("r") == 46342
+                                                    JSON.parseObject(response878GetBody).getIntValue("r") == 46342
                                     ) {
                                         UserJsonUtils.JsonUtil(userId, "activate", false);
                                         break;

@@ -39,12 +39,12 @@ public class Strategy {
     private static String cfgIn(boolean useBind) {
         if (useBind) {
             if (!Files.exists(Paths.get(pathBinder))) {
-                System.out.println("未找到绑定配置文件！");
+                Log.e("未找到绑定配置文件！");
                 pathBinder = cfgIn(false);
             }
             return pathBinder;
         } else {
-            System.out.println("请输入配置文件完整路径：");
+            Log.v("请输入配置文件完整路径：");
             while (true) {
                 String cfgString = smfScanner.smfString(false);
                 try {
@@ -52,7 +52,7 @@ public class Strategy {
                     if (Files.exists(cfgPath)) {
                         return cfgString;
                     } else {
-                        System.out.println("配置文件不存在或输入有误，请重新输入");
+                        Log.e("配置文件不存在或输入有误，请重新输入");
                     }
                 } catch (Exception ignored) {
                 }
@@ -114,8 +114,6 @@ public class Strategy {
                             }
                             if (isError || isTimeOut) {
                                 refresh(userId);
-                                uisk = getUisk(userId);
-                                proxy = getProxy(userId);
                             } else {
                                 break;
                             }
@@ -124,10 +122,10 @@ public class Strategy {
                 }
             }
         } catch (Exception e) {
+            Log.w(e.getMessage());
             e.printStackTrace();
         }
-
-        System.out.println("程序执行结束，即将退出");
+        Log.v("程序执行结束，即将退出");
         System.exit(0);
 
     }
@@ -195,8 +193,6 @@ public class Strategy {
                             } else isError = true;
                             if (isError || isTimeOut) {
                                 refresh(userId);
-                                uisk = getUisk(userId);
-                                proxy = getProxy(userId);
                             } else {
                                 break;
                             }
@@ -205,10 +201,11 @@ public class Strategy {
                 }
             }
         } catch (Exception e) {
+            Log.w(e.getMessage());
             e.printStackTrace();
         }
         if (!useBind) {
-            System.out.println("程序执行结束，即将退出");
+            Log.v("程序执行结束，即将退出");
             System.exit(0);
         }
         return false;
@@ -242,7 +239,7 @@ public class Strategy {
             if (parse.containsKey("i")) {
                 return HttpCrypto.decryptRES(
                         HttpSender.doQuest(
-                                Inter.isAndroid,
+                                Inter.environment,
                                 HttpCrypto.encryptREQ(packageBody),
                                 proxyHost,
                                 proxyPort
@@ -252,7 +249,7 @@ public class Strategy {
                 return HttpCrypto.decryptRES(
                         packageIdentifier,
                         HttpSender.doQuest(
-                                Inter.isAndroid,
+                                Inter.environment,
                                 HttpCrypto.encryptREQ(packageIdentifier, packageBody),
                                 proxyHost,
                                 proxyPort
@@ -270,7 +267,7 @@ public class Strategy {
      * @描述: 配置文件生成器
      */
     public static void maker() {
-        System.out.println("欢迎使用配置生成器，请根据指引输入指定内容，并按回车继续：");
+        Log.d("欢迎使用配置生成器，请根据指引输入指定内容，并按回车继续：");
         JSONObject parse = JSONObject.parse("{}");
         JSONObject fileInfo = new JSONObject();
         JSONArray author = new JSONArray("SMF", "icdada");
@@ -283,33 +280,33 @@ public class Strategy {
             overrideCheckPoint.put("apply", false);
             overrideCheckPoint.put("r", 0);
             aPackage.put("packageOrder", i++);
-            System.out.println("请输入数据包标识，可不填写，但数据包必须包含完整标识：");
+            Log.v("请输入数据包标识，可不填写，但数据包必须包含完整标识：");
             String packageIdentifier = smfScanner.smfString(false);
             aPackage.put("packageIdentifier", packageIdentifier);
-            System.out.println("请输入数据包：");
+            Log.v("请输入数据包：");
             String packageBody = smfScanner.smfLongString(true);
             aPackage.put("packageBody", packageBody);
-            System.out.println("请输入发包延迟（ms）：");
+            Log.v("请输入发包延迟（ms）：");
             int sendDelay = smfScanner.smfInt(false);
             aPackage.put("sendDelay", sendDelay);
-            System.out.println("是否需要检测改包是否发送成功？（Y/N）：");
+            Log.v("是否需要检测改包是否发送成功？（Y/N）：");
             boolean checkSuccess = smfScanner.smfBoolean(false);
             aPackage.put("checkSuccess", checkSuccess);
-            System.out.println("是否需要变更发包成功检测的r的值？（Y/N）：");
+            Log.v("是否需要变更发包成功检测的r的值？（Y/N）：");
             boolean apply = smfScanner.smfBoolean(false);
             overrideCheckPoint.put("apply", apply);
             if (apply) {
-                System.out.println("请输入发包成功检测的r的值：");
+                Log.v("请输入发包成功检测的r的值：");
                 int r = smfScanner.smfInt(false);
                 overrideCheckPoint.put("r", r);
             }
             aPackage.put("overrideCheckPoint", overrideCheckPoint);
             sendPackage.add(aPackage);
-            System.out.println("是否继续添加？（Y/N）");
+            Log.v("是否继续添加？（Y/N）");
         } while (!smfScanner.smfBoolean(false));
         parse.put("configuration", "HttpUtilSenderProps");
         parse.put("fileInfo", fileInfo);
-        System.out.println("是否开启控制台显示？（Y/N）");
+        Log.v("是否开启控制台显示？（Y/N）");
         boolean openConsole = smfScanner.smfBoolean(false);
         parse.put("openConsole", openConsole);
         parse.put("sendPackage", sendPackage);
@@ -320,8 +317,8 @@ public class Strategy {
             fileWriter.flush();
         } catch (Exception ignored) {
         }
-        System.out.println("配置文件已生成！文件名为：" + strategy.getName());
-        System.out.println("生成路径位于：" + strategy.getPath());
+        Log.s("配置文件已生成！文件名为：" + strategy.getName());
+        Log.i("生成路径位于：" + strategy.getPath());
         System.exit(0);
     }
 }

@@ -13,7 +13,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,16 +34,17 @@ import static smf.icdada.HttpUtils.Strategy.apply;
 public class UserBanner {
     public static final ReadWriteLock lock = new ReentrantReadWriteLock();
     private static final String banuserPath = System.getProperty("user.dir") + File.separator + "banuser.json";
+    private static final int oi = Integer.parseInt(String.valueOf(Inter.appId) + Inter.channelId);
     private static final Print print = new Print();
 
     public static void fileChecker(boolean check) {
         Path path = Paths.get(banuserPath);
         if (!Files.exists(path) || check) {
             int i;
-            System.out.println("请输入账号开始（如：36576332）：");
-            int start = Integer.parseInt(new Scanner(System.in).nextLine());
-            System.out.println("请输入账号结束（如：36578332）：");
-            int end = Integer.parseInt(new Scanner(System.in).nextLine());
+            Log.v("请输入账号UserId开始：");
+            int start = smfScanner.smfInt(false, "^\\d{8}$");
+            Log.v("请输入账号UserId结束：");
+            int end = smfScanner.smfInt(false, "^\\d{8}$");
             File file = new File(path.toUri());
             JSONObject parse = JSONObject.parse("{}");
             JSONArray bannedUsers = new JSONArray();
@@ -69,16 +69,15 @@ public class UserBanner {
             try (FileWriter fileWriter = new FileWriter(file)) {
                 fileWriter.write(parse.toJSONString(JSONWriter.Feature.WriteMapNullValue, JSONWriter.Feature.PrettyFormat));
                 fileWriter.flush();
-                System.out.println("配置文件已生成！文件名为：" + file.getName());
-                System.out.println("生成路径位于：" + file.getPath());
+                Log.s("配置文件已生成！文件名为：" + file.getName());
+                Log.i("生成路径位于：" + file.getPath());
                 System.exit(0);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         } else {
-            System.out.println("\n封号区间文件已存在，是否覆盖？(Y/N)");
-            String point = new Scanner(System.in).nextLine();
-            if ("y".equals(point) || "Y".equals(point)) {
+            Log.v("封号区间文件已存在，是否覆盖？(Y/N)");
+            if (smfScanner.smfBoolean(false)) {
                 fileChecker(true);
             } else {
                 System.exit(0);
@@ -87,10 +86,6 @@ public class UserBanner {
     }
 
     private static List<Integer> readBannedUser() {
-        if (Inter.chooser == 1) {
-            System.out.println("\033[33m" + "正在等待代理池刷新……" + "\033[0m");
-            sleep(Inter.waiter);
-        }
         List<Integer> bannedUserIds = new ArrayList<>();
         Path path = Paths.get(banuserPath);
         try {
@@ -111,10 +106,11 @@ public class UserBanner {
                     }
                 }
             } else {
-                System.out.println("\033[33m" + "未找到封号区间文件，正在进行引导创建……" + "\033[0m");
+                Log.v("未找到封号区间文件，正在进行引导创建……");
                 fileChecker(true);
             }
         } catch (Exception e) {
+            Log.w(e.getMessage());
             e.printStackTrace();
         }
         return bannedUserIds;
@@ -128,7 +124,7 @@ public class UserBanner {
             for (int bannedUserId : bannedUserIds) {
                 sleep(100);
                 futures.add(executorService.submit(() -> {
-                    System.out.println("\033[33m" + "账号：" + bannedUserId + "\033[0m" + " || " + "\033[33m" + "已读取，开始封禁" + "\033[0m");
+                    Log.v("账号：" + bannedUserId + " || 已读取，开始封禁");
                     banned(bannedUserId);
                 }));
             }
@@ -145,7 +141,7 @@ public class UserBanner {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println("所有账号封禁完成，程序退出");
+        Log.s("所有账号封禁完成，程序退出");
         System.exit(0);
     }
 
@@ -154,7 +150,7 @@ public class UserBanner {
         refresh(userId);
         Result uisk = getUisk(userId);
         if ("banned".equals(uisk.getUi()) && "banned".equals(uisk.getSk())) {
-            JsonUtil(Inter.oi, userId, true, false);
+            JsonUtil(oi, userId, true, false);
         } else {
             Check.V437 v437 = new Check.V437();
             Check.V316 v316 = new Check.V316();
@@ -168,12 +164,12 @@ public class UserBanner {
                     if (!v437.isValid(0)) {
                         if (v437.isValid(10800)) break;
                         else {
-                            System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[31m" + "检查失败，正在重试……" + "\033[0m" + " || " + response437CheckBody);
+                            Log.v("账号：" + userId + " || 检查失败，正在重试…… || " + response437CheckBody);
                             refresh(userId);
                         }
                     } else if (v437.isNew() || i >= 10) {
                         print.normalPrint(userId, null, null, null);
-                        JsonUtil(Inter.oi, userId, false, true);
+                        JsonUtil(oi, userId, false, true);
                         break;
                     } else while (true) {
                         try {
@@ -183,7 +179,7 @@ public class UserBanner {
                             if (!v316.isValid(0)) {
                                 if (v316.isValid(10800)) break;
                                 else {
-                                    System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[31m" + "读取失败，正在重试……" + "\033[0m" + " || " + response316GetBody);
+                                    Log.v("账号：" + userId + " || 读取失败，正在重试…… || " + response316GetBody);
                                     refresh(userId);
                                 }
                             } else {
@@ -222,15 +218,15 @@ public class UserBanner {
                                         refresh(userId);
                                         uisk = getUisk(userId);
                                         if ("banned".equals(uisk.getUi()) && "banned".equals(uisk.getSk())) {
-                                            JsonUtil(Inter.oi, userId, true, false);
+                                            JsonUtil(oi, userId, true, false);
                                             break;
                                         } else {
-                                            System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[33m" + "尝试封号失败，正在重试……" + "\033[0m");
+                                            Log.v("账号：" + userId + " || 封号失败，正在重试……");
                                         }
                                     }
                                 } else {
                                     print.normalPrint(userId, gem, snailCoin, chestnutPiece);
-                                    JsonUtil(Inter.oi, userId, false, true);
+                                    JsonUtil(oi, userId, false, true);
                                     break;
                                 }
                             }
@@ -274,6 +270,7 @@ public class UserBanner {
             Files.move(tempPath, path, StandardCopyOption.REPLACE_EXISTING);
             Files.deleteIfExists(tempPath);
         } catch (Exception e) {
+            Log.w(e.getMessage());
             e.printStackTrace();
         } finally {
             lock.writeLock().unlock();
