@@ -1,5 +1,7 @@
 package smf.icdada;
 
+import smf.icdada.CreateAccount.Create;
+
 import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.Executors;
@@ -24,28 +26,21 @@ public class Main {
         Inter.PreCheck();
         String version = getProperties().getProperty("app.version");
         System.out.println("""
-                ██╗  ██╗████████╗████████╗██████╗
-                ██║  ██║╚══██╔══╝╚══██╔══╝██╔══██╗
-                ███████║   ██║      ██║   ██████╔╝
-                ██╔══██║   ██║      ██║   ██╔═══╝
-                ██║  ██║   ██║      ██║   ██║
-                ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚═╝
-                ██████╗ ██████╗ ██╗   ██╗███████╗██╗  ██╗
-                ██╔══██╗██╔══██╗██║   ██║██╔════╝██║  ██║
-                ██████╔╝██████╔╝██║   ██║███████╗███████║
-                ██╔══██╗██╔══██╗██║   ██║╚════██║██╔══██║
-                ██████╔╝██║  ██║╚██████╔╝███████║██║  ██║
-                ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝
+                ██╗  ██╗████████╗████████╗██████╗       ██████╗ ██████╗ ██╗   ██╗███████╗██╗  ██╗
+                ██║  ██║╚══██╔══╝╚══██╔══╝██╔══██╗      ██╔══██╗██╔══██╗██║   ██║██╔════╝██║  ██║
+                ███████║   ██║      ██║   ██████╔╝      ██████╔╝██████╔╝██║   ██║███████╗███████║
+                ██╔══██║   ██║      ██║   ██╔═══╝       ██╔══██╗██╔══██╗██║   ██║╚════██║██╔══██║
+                ██║  ██║   ██║      ██║   ██║           ██████╔╝██║  ██║╚██████╔╝███████║██║  ██║
+                ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚═╝           ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝
                 """);
-        Log.i(String.format("HttpBrush 正式版本：%s", version));
-        Log.i(String.format("程序作者：SMF & icdada；协同测试：%s", Inter.getTestBy()));
+        Log.i(String.format("HttpBrush 正式版本:%s", version));
+        Log.i(String.format("程序作者:SMF & icdada；协同测试:%s", Inter.getTestBy()));
         Log.v(String.format("请检查 %s 目录下程序运行环境是否存在完整配置", System.getProperty("user.dir")));
         Log.d("-> default.json");
         Log.v("""
-                更新日志：
-                * 重写default.json
-                * 修正自动化发包代码
-                * 优化控制台输出
+                更新日志:
+                * 添加创号系统
+                * 修复渠道问题
                 """);
         Inter.Setting();
         switch (Inter.inter) {
@@ -58,6 +53,9 @@ public class Main {
             case 7 -> apply(userIdGetter());
             case 8 -> Anniversary.brush();
             case 9 -> Anniversary.measure();
+            case 11 -> Create.Single();
+            case 12 -> Create.Batch();
+            case 99 -> HttpBrushTest.main(args);
             case 0 -> System.exit(0);
             default -> {
                 Log.e("默认值非法，无法执行已知功能，请重新设置");

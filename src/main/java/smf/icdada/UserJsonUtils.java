@@ -35,7 +35,7 @@ public class UserJsonUtils {
         for (int userId : userIds) {
             sleep(100);
             executorService.submit(() -> {
-                Log.v("账号：" + userId + " || 已读取，开始执行");
+                Log.v("账号:" + userId + " || 已读取，开始执行");
                 JsonUtilInterface(userId);
             });
         }
@@ -78,13 +78,13 @@ public class UserJsonUtils {
                 String response316Body = future.get(3, TimeUnit.SECONDS);
                 v316.setResponseBody(response316Body);
                 if (!v316.isValid(0)) {
-                    Log.v("账号：" + userId + " || 读取失败，正在重试…… || " + response316Body);
+                    Log.v("账号:" + userId + " || 读取失败，正在重试…… || " + response316Body);
                     if (!v316.isValid(20013)) refresh(userId);
                 } else {
                     Check.V316.d d = v316.new d();
                     if (d.containsKey("p")) {
                         int fg = d.getJSONObject("p").getIntValue("fg");
-                        Log.s("账号：" + userId + " || 已获取钻石数量：" + fg);
+                        Log.s("账号:" + userId + " || 已获取钻石数量:" + fg);
                         return fg;
                     }
                 }
@@ -103,7 +103,7 @@ public class UserJsonUtils {
                 String response303Body = future.get(3, TimeUnit.SECONDS);
                 v303.setResponseBody(response303Body);
                 if (!v303.isValid(0)) {
-                    Log.v("账号：" + userId + " || 读取失败，正在重试…… || " + response303Body);
+                    Log.v("账号:" + userId + " || 读取失败，正在重试…… || " + response303Body);
                     if (!v303.isValid(20013)) {
                         refresh(userId);
                     }
@@ -111,7 +111,7 @@ public class UserJsonUtils {
                     Check.V303.data data = v303.new data();
                     if (data.containsKey("code") && !data.getString("code").isBlank()) {
                         String inviteCode = data.getString("code");
-                        Log.s("账号：" + userId + " || 已获取邀请码：" + inviteCode);
+                        Log.s("账号:" + userId + " || 已获取邀请码:" + inviteCode);
                         return inviteCode;
                     }
                 }
@@ -142,7 +142,7 @@ public class UserJsonUtils {
             }
             Files.move(Paths.get(tempFilePath), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
             Files.deleteIfExists(Paths.get(tempFilePath)); // 删除临时文件
-            Log.s("账号：" + userId + " || 处理完成");
+            Log.s("账号:" + userId + " || 处理完成");
         } catch (Exception e) {
             Log.w(e.getMessage());
             e.printStackTrace();

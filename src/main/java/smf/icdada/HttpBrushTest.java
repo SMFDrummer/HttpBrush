@@ -2,7 +2,10 @@ package smf.icdada;
 
 public class HttpBrushTest {
     public static void main(String[] args) {
-        Inter.PreCheck();
-        Inter.Setting();
+        try {
+            Log.d("Debug Start");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

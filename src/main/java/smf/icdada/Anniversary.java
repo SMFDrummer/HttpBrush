@@ -24,7 +24,7 @@ public class Anniversary {
         for (Map.Entry<Integer, String> userObject : userObjects.entrySet()) {
             sleep(100);
             executorService.submit(() -> {
-                Log.v("账号：" + userObject.getKey() + " || " + "已读取，开始执行");
+                Log.v("账号:" + userObject.getKey() + " || " + "已读取，开始执行");
                 brush(userObject.getKey(), userObject.getValue());
             });
         }
@@ -62,7 +62,7 @@ public class Anniversary {
                     }
                 }
             } else {
-                Log.e("用户库文件异常，请检查：" + System.getProperty("user.dir") + File.separator + "user.json文件是否存在");
+                Log.e("用户库文件异常，请检查:" + System.getProperty("user.dir") + File.separator + "user.json文件是否存在");
                 Scanner scanner = new Scanner(System.in);
                 scanner.nextLine();
                 System.exit(0);
@@ -81,12 +81,12 @@ public class Anniversary {
             int i = count;
             count += brushInviteCode(inviteCode, getRandomId());
             if (count == i) {
-                Log.e("邀请码：" + inviteCode + " || 刷取失败 || 共成功：" + count);
+                Log.e("邀请码:" + inviteCode + " || 刷取失败 || 共成功:" + count);
             } else {
-                Log.s("邀请码：" + inviteCode + " || 刷取成功 || 共成功：" + count);
+                Log.s("邀请码:" + inviteCode + " || 刷取成功 || 共成功:" + count);
             }
         } while (count < 13);
-        Log.v("邀请码：" + inviteCode + " || 邀请结束");
+        Log.v("邀请码:" + inviteCode + " || 邀请结束");
     }
 
     private static void brush(int userId, String inviteCode) {
@@ -98,13 +98,13 @@ public class Anniversary {
             while (count < 13) {
                 count += brushInviteCode(inviteCode, getRandomId());
             }
-            Log.v("邀请码：" + inviteCode + " || 邀请结束，开始刷取");
+            Log.v("邀请码:" + inviteCode + " || 邀请结束，开始刷取");
             anniversaryGacha(userId);
         }
     }
 
     private static String getInviteCode() {
-        Log.v("请输入活动邀请码，并按回车键继续：");
+        Log.v("请输入活动邀请码，并按回车键继续:");
         return smfScanner.smfString(true);
     }
 

@@ -44,7 +44,7 @@ public class Strategy {
             }
             return pathBinder;
         } else {
-            Log.v("请输入配置文件完整路径：");
+            Log.v("请输入配置文件完整路径:");
             while (true) {
                 String cfgString = smfScanner.smfString(false);
                 try {
@@ -179,7 +179,7 @@ public class Strategy {
                                     if (checkSuccess) {
                                         if (JSONObject.parse(response).getIntValue("r") != checkPoint) {
                                             if (JSONObject.parse(response).getIntValue("r") != 0) {
-                                                System.out.println("\033[33m" + "账号：" + userId + "\033[0m" + " || " + "\033[31m" + "发送数据包失败，正在重试……" + "\033[0m" + " || " + response);
+                                                System.out.println("\033[33m" + "账号:" + userId + "\033[0m" + " || " + "\033[31m" + "发送数据包失败，正在重试……" + "\033[0m" + " || " + response);
                                                 if (JSONObject.parse(response).getIntValue("r") == 20013)
                                                     isError = true;
                                             }
@@ -267,7 +267,7 @@ public class Strategy {
      * @描述: 配置文件生成器
      */
     public static void maker() {
-        Log.d("欢迎使用配置生成器，请根据指引输入指定内容，并按回车继续：");
+        Log.d("欢迎使用配置生成器，请根据指引输入指定内容，并按回车继续:");
         JSONObject parse = JSONObject.parse("{}");
         JSONObject fileInfo = new JSONObject();
         JSONArray author = new JSONArray("SMF", "icdada");
@@ -280,23 +280,23 @@ public class Strategy {
             overrideCheckPoint.put("apply", false);
             overrideCheckPoint.put("r", 0);
             aPackage.put("packageOrder", i++);
-            Log.v("请输入数据包标识，可不填写，但数据包必须包含完整标识：");
+            Log.v("请输入数据包标识，可不填写，但数据包必须包含完整标识:");
             String packageIdentifier = smfScanner.smfString(false);
             aPackage.put("packageIdentifier", packageIdentifier);
-            Log.v("请输入数据包：");
+            Log.v("请输入数据包:");
             String packageBody = smfScanner.smfLongString(true);
             aPackage.put("packageBody", packageBody);
-            Log.v("请输入发包延迟（ms）：");
+            Log.v("请输入发包延迟（ms）:");
             int sendDelay = smfScanner.smfInt(false);
             aPackage.put("sendDelay", sendDelay);
-            Log.v("是否需要检测改包是否发送成功？（Y/N）：");
+            Log.v("是否需要检测改包是否发送成功？（Y/N）:");
             boolean checkSuccess = smfScanner.smfBoolean(false);
             aPackage.put("checkSuccess", checkSuccess);
-            Log.v("是否需要变更发包成功检测的r的值？（Y/N）：");
+            Log.v("是否需要变更发包成功检测的r的值？（Y/N）:");
             boolean apply = smfScanner.smfBoolean(false);
             overrideCheckPoint.put("apply", apply);
             if (apply) {
-                Log.v("请输入发包成功检测的r的值：");
+                Log.v("请输入发包成功检测的r的值:");
                 int r = smfScanner.smfInt(false);
                 overrideCheckPoint.put("r", r);
             }
@@ -317,8 +317,8 @@ public class Strategy {
             fileWriter.flush();
         } catch (Exception ignored) {
         }
-        Log.s("配置文件已生成！文件名为：" + strategy.getName());
-        Log.i("生成路径位于：" + strategy.getPath());
+        Log.s("配置文件已生成！文件名为:" + strategy.getName());
+        Log.i("生成路径位于:" + strategy.getPath());
         System.exit(0);
     }
 }

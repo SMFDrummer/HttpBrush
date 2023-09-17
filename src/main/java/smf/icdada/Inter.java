@@ -123,7 +123,7 @@ public class Inter {
         int inter = 0;
         boolean keepRunning = true;
         Log.v("""
-                功能列表：
+                功能列表:
                 [1] 自适应网络数据包加解密
                 [2] 接收拓维UserID区间的banuser.json生成
                 [3] 根据banuser.json用户库自动封号
@@ -134,8 +134,10 @@ public class Inter {
                 [8] 周年庆邀请活动单一刷取
                 [9] 周年庆邀请活动批量刷取(user.json)
                 [10] user.json用户库保护
+                [11] 创建账号(使用手机号与密码)
+                [12] 创建账号(批量创建)
                 [0] 退出程序""");
-        Log.v("请输入序号并按回车键继续……：");
+        Log.v("请输入序号并按回车键继续……:");
         while (keepRunning) {
             try {
                 Scanner scanner = new Scanner(System.in);
@@ -181,8 +183,20 @@ public class Inter {
                         Log.s("user.json用户库保护");
                         keepRunning = false;
                     }
+                    case 11 -> {
+                        Log.s("创建账号(使用手机号与密码)");
+                        keepRunning = false;
+                    }
+                    case 12 -> {
+                        Log.s("创建账号(批量创建)");
+                        keepRunning = false;
+                    }
+                    case 99 -> {
+                        Log.d("Debug - HttpBrushTest - main");
+                        keepRunning = false;
+                    }
                     case 0 -> System.exit(0);
-                    default -> Log.e("输入无效，请重新输入功能序号：");
+                    default -> Log.e("输入无效，请重新输入功能序号:");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -196,7 +210,7 @@ public class Inter {
                 请输入默认执行代理池类型:
                 [1] 本地代理池(需要提前开启HttpBrushProxyPool)
                 [2] 在线代理池""");
-        Log.v("请输入序号并按回车键继续……：");
+        Log.v("请输入序号并按回车键继续……:");
         return smfScanner.smfInt(false, "^[1|2]+$");
     }
 
@@ -215,7 +229,7 @@ public class Inter {
             JSONObject parse = JSONObject.parse(Files.readString(Paths.get(defaultUrl)));
             JSONArray packages = parse.getJSONObject("PropData").getJSONObject("OtherSettings").getJSONObject("PackageId").getJSONArray("package");
             StringBuilder stringBuilder = new StringBuilder("^[");
-            Log.v("请输入渠道，以下是目前所有可用的渠道：");
+            Log.v("请输入渠道，以下是目前所有可用的渠道:");
             for (int i = 0; i < packages.size(); i++) {
                 JSONObject jsonObject = packages.getJSONObject(i);
                 String description = jsonObject.getString("Description");
@@ -225,10 +239,10 @@ public class Inter {
                 if (i != packages.size() - 1) {
                     stringBuilder.append("|");
                 }
-                Log.i(String.format("渠道：%s - Id：%s - 包名：%s", description, id, value));
+                Log.i(String.format("渠道:%s - Id:%s - 包名:%s", description, id, value));
             }
             stringBuilder.append("]+$");
-            Log.v("请输入渠道Id，并按回车键继续……：");
+            Log.v("请输入渠道Id，并按回车键继续……:");
             channelId = smfScanner.smfInt(false, stringBuilder.toString());
         } catch (Exception e) {
             Log.e("配置文件异常:");

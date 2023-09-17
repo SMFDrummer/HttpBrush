@@ -20,14 +20,14 @@ public class smfScanner {
         boolean isValid = false;
         while (!isValid) {
             while (!scanner.hasNextInt()) {
-                Log.e("输入无效，请输入一个整数：");
+                Log.e("输入无效，请输入一个整数:");
                 scanner.next();
             }
             number = scanner.nextInt();
             scanner.nextLine();
             if (requireConfirmation) {
                 Log.i("你输入的是 " + number);
-                Log.v("如果确认请输入任意字符，否则请输入N或n：");
+                Log.v("如果确认请输入任意字符，否则请输入N或n:");
                 String confirmation = scanner.nextLine().trim();
                 isValid = !confirmation.equalsIgnoreCase("N") || !confirmation.equalsIgnoreCase("n");
             } else {
@@ -43,7 +43,7 @@ public class smfScanner {
         boolean isValid = false;
         while (!isValid) {
             while (!scanner.hasNextInt()) {
-                Log.e("输入无效，请输入一个整数：");
+                Log.e("输入无效，请输入一个整数:");
                 scanner.next();
             }
             number = scanner.nextInt();
@@ -51,14 +51,14 @@ public class smfScanner {
             if (Pattern.matches(regex, Integer.toString(number))) {
                 if (requireConfirmation) {
                     Log.i("你输入的是 " + number);
-                    Log.v("如果确认请输入任意字符，否则请输入N或n：");
+                    Log.v("如果确认请输入任意字符，否则请输入N或n:");
                     String confirmation = scanner.nextLine().trim();
                     isValid = !confirmation.equalsIgnoreCase("N") || !confirmation.equalsIgnoreCase("n");
                 } else {
                     isValid = true;
                 }
             } else {
-                Log.e("输入的整数不符合正则表达式，请重新输入：");
+                Log.e("输入的整数不符合正则表达式，请重新输入:");
             }
         }
         return number;
@@ -69,16 +69,16 @@ public class smfScanner {
         boolean bool = false;
         boolean isValid = false;
         while (!isValid) {
-            Log.v("请输入Y或N：");
+            Log.v("请输入Y或N:");
             while (!scanner.hasNext("[YyNn]")) {
-                Log.e("输入无效，请输入Y或N：");
+                Log.e("输入无效，请输入Y或N:");
                 scanner.next();
             }
             bool = scanner.next().equalsIgnoreCase("Y");
             scanner.nextLine(); // consume newline left-over
             if (requireConfirmation) {
                 Log.i("你输入的是 " + (bool ? "Y" : "N"));
-                Log.v("如果确认请输入任意字符，否则请输入N或n：");
+                Log.v("如果确认请输入任意字符，否则请输入N或n:");
                 String confirmation = scanner.nextLine().trim();
                 isValid = !confirmation.equalsIgnoreCase("N") || !confirmation.equalsIgnoreCase("n");
             } else {
@@ -95,7 +95,7 @@ public class smfScanner {
         boolean isValid = false;
         while (!isValid) {
             inputContent.setLength(0); // clear the StringBuilder
-            Log.v("请输入内容，连续两次回车结束输入：");
+            Log.v("请输入内容，连续两次回车结束输入:");
             try {
                 int emptyLineCount = 0;
                 while (true) {
@@ -112,8 +112,8 @@ public class smfScanner {
                     inputContent.append(lineSeparator);
                 }
                 if (requireConfirmation) {
-                    Log.i("你输入的内容是：\n" + inputContent);
-                    Log.v("如果确认请输入任意字符，否则请输入N或n：");
+                    Log.i("你输入的内容是:\n" + inputContent);
+                    Log.v("如果确认请输入任意字符，否则请输入N或n:");
                     String confirmation = reader.readLine().trim();
                     isValid = !confirmation.equalsIgnoreCase("N") || !confirmation.equalsIgnoreCase("n");
                 } else {
@@ -134,8 +134,8 @@ public class smfScanner {
             try {
                 inputContent = reader.readLine();
                 if (requireConfirmation) {
-                    Log.i("你输入的内容是：" + inputContent);
-                    Log.v("如果确认请输入任意字符，否则请输入N或n：");
+                    Log.i("你输入的内容是:" + inputContent);
+                    Log.v("如果确认请输入任意字符，否则请输入N或n:");
                     String confirmation = reader.readLine().trim();
                     isValid = !confirmation.equalsIgnoreCase("N") || !confirmation.equalsIgnoreCase("n");
                 } else {
@@ -157,15 +157,15 @@ public class smfScanner {
                 inputContent = reader.readLine();
                 if (Pattern.matches(regex, inputContent)) {
                     if (requireConfirmation) {
-                        Log.i("你输入的内容是：" + inputContent);
-                        Log.v("如果确认请输入任意字符，否则请输入N或n：");
+                        Log.i("你输入的内容是:" + inputContent);
+                        Log.v("如果确认请输入任意字符，否则请输入N或n:");
                         String confirmation = reader.readLine().trim();
                         isValid = !confirmation.equalsIgnoreCase("N") || !confirmation.equalsIgnoreCase("n");
                     } else {
                         isValid = true;
                     }
                 } else {
-                    Log.e("输入的内容不符合正则表达式，请重新输入：");
+                    Log.e("输入的内容不符合正则表达式，请重新输入:");
                 }
             } catch (IOException e) {
                 e.printStackTrace();

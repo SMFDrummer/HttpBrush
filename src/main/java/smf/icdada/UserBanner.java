@@ -28,7 +28,7 @@ import static smf.icdada.HttpUtils.Strategy.apply;
  * @author SMF & icdada
  * @描述: 封号方法类
  * <p>
- * &#064;//  TODO: 2023/7/30  未完成的注释：封号方法类
+ * &#064;//  TODO: 2023/7/30  未完成的注释:封号方法类
  * </p>
  */
 public class UserBanner {
@@ -41,9 +41,9 @@ public class UserBanner {
         Path path = Paths.get(banuserPath);
         if (!Files.exists(path) || check) {
             int i;
-            Log.v("请输入账号UserId开始：");
+            Log.v("请输入账号UserId开始:");
             int start = smfScanner.smfInt(false, "^\\d{8}$");
-            Log.v("请输入账号UserId结束：");
+            Log.v("请输入账号UserId结束:");
             int end = smfScanner.smfInt(false, "^\\d{8}$");
             File file = new File(path.toUri());
             JSONObject parse = JSONObject.parse("{}");
@@ -69,8 +69,8 @@ public class UserBanner {
             try (FileWriter fileWriter = new FileWriter(file)) {
                 fileWriter.write(parse.toJSONString(JSONWriter.Feature.WriteMapNullValue, JSONWriter.Feature.PrettyFormat));
                 fileWriter.flush();
-                Log.s("配置文件已生成！文件名为：" + file.getName());
-                Log.i("生成路径位于：" + file.getPath());
+                Log.s("配置文件已生成！文件名为:" + file.getName());
+                Log.i("生成路径位于:" + file.getPath());
                 System.exit(0);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -124,7 +124,7 @@ public class UserBanner {
             for (int bannedUserId : bannedUserIds) {
                 sleep(100);
                 futures.add(executorService.submit(() -> {
-                    Log.v("账号：" + bannedUserId + " || 已读取，开始封禁");
+                    Log.v("账号:" + bannedUserId + " || 已读取，开始封禁");
                     banned(bannedUserId);
                 }));
             }
@@ -164,7 +164,7 @@ public class UserBanner {
                     if (!v437.isValid(0)) {
                         if (v437.isValid(10800)) break;
                         else {
-                            Log.v("账号：" + userId + " || 检查失败，正在重试…… || " + response437CheckBody);
+                            Log.v("账号:" + userId + " || 检查失败，正在重试…… || " + response437CheckBody);
                             refresh(userId);
                         }
                     } else if (v437.isNew() || i >= 10) {
@@ -179,7 +179,7 @@ public class UserBanner {
                             if (!v316.isValid(0)) {
                                 if (v316.isValid(10800)) break;
                                 else {
-                                    Log.v("账号：" + userId + " || 读取失败，正在重试…… || " + response316GetBody);
+                                    Log.v("账号:" + userId + " || 读取失败，正在重试…… || " + response316GetBody);
                                     refresh(userId);
                                 }
                             } else {
@@ -221,7 +221,7 @@ public class UserBanner {
                                             JsonUtil(oi, userId, true, false);
                                             break;
                                         } else {
-                                            Log.v("账号：" + userId + " || 封号失败，正在重试……");
+                                            Log.v("账号:" + userId + " || 封号失败，正在重试……");
                                         }
                                     }
                                 } else {

@@ -48,7 +48,7 @@ public class Base {
                         JSONObject jsonObject = JSONObject.parseObject(response);
                         if (jsonObject.containsKey("r")) {
                             if (jsonObject.getIntValue("r") == 20507) {
-                                Log.e("账号：" + userId + " || " + "账号被封禁，已自动跳出");
+                                Log.e("账号:" + userId + " || " + "账号被封禁，已自动跳出");
                                 uisk = new Result("banned", "banned");
                             } else if (jsonObject.getIntValue("r") == 0) {
                                 JSONObject dObject = jsonObject.getJSONObject("d");
@@ -121,7 +121,7 @@ public class Base {
      */
     public static int userIdGetter() {
         int userId;
-        Log.v("请输入拓维UserID，并按回车键继续：");
+        Log.v("请输入拓维UserID，并按回车键继续:");
         Scanner scanner = new Scanner(System.in);
         String input;
         Pattern pattern = Pattern.compile("^\\d+$");
@@ -167,7 +167,7 @@ public class Base {
                     }
                 }
             } else {
-                Log.e("用户库文件异常，请检查：" + System.getProperty("user.dir") + File.separator + "user.json文件是否存在");
+                Log.e("用户库文件异常，请检查:" + System.getProperty("user.dir") + File.separator + "user.json文件是否存在");
                 Scanner scanner = new Scanner(System.in);
                 scanner.nextLine();
                 System.exit(0);
@@ -184,7 +184,7 @@ public class Base {
      */
     public static void cryptoGuideLine() {
         try {
-            Log.v("请输入任意内容或数据包，输入空字段以结束：");
+            Log.v("请输入任意内容或数据包，输入空字段以结束:");
             String body = smfScanner.smfLongString(true);
             if (body.isBlank()) System.exit(0);
             if (JSON.isValidObject(body)) {
@@ -209,9 +209,9 @@ public class Base {
                 if (smfScanner.smfBoolean(false))
                     Log.a(HttpCrypto.decryptRES(HttpSender.doQuest(Inter.environment, body)));
             } else {
-                Log.e("自动检测失败，请手动输入数据包标识并选择功能：\n" + "\033[33m" + "请输入数据包标识：");
+                Log.e("自动检测失败，请手动输入数据包标识并选择功能:\n" + "\033[33m" + "请输入数据包标识:");
                 String identifier = smfScanner.smfString(true);
-                Log.d("请选择功能：\n[1] 请求加密\n[2] 请求解密\n[3] 响应加密\n[4] 响应解密\n[5] 获取密钥和偏移\n[6] 获取MD5");
+                Log.d("请选择功能:\n[1] 请求加密\n[2] 请求解密\n[3] 响应加密\n[4] 响应解密\n[5] 获取密钥和偏移\n[6] 获取MD5");
                 boolean keepRunning = true;
                 while (keepRunning) {
                     int choice = smfScanner.smfInt(false);
@@ -242,7 +242,7 @@ public class Base {
                             Log.s("MD5:" + new String(HttpCrypto.getMD5(body), StandardCharsets.UTF_8));
                             keepRunning = false;
                         }
-                        default -> Log.e("输入有误，请重新输入功能序号：");
+                        default -> Log.e("输入有误，请重新输入功能序号:");
                     }
                 }
             }

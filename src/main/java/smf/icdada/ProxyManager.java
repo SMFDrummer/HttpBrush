@@ -76,7 +76,7 @@ public class ProxyManager {
                 tempProxyHost = proxyData[0];
                 tempProxyPort = Integer.parseInt(proxyData[1]);
                 if (openConsole)
-                    Log.v("刷新的代理服务器地址为：" + tempProxyHost + "，端口为" + tempProxyPort);
+                    Log.v("刷新的代理服务器地址为:" + tempProxyHost + "，端口为" + tempProxyPort);
             } catch (Exception ignored) {
             }
         } while (!isProxyAvailable(tempProxyHost, tempProxyPort));
@@ -130,7 +130,7 @@ public class ProxyManager {
             int responseCode = connection.getResponseCode();
             if (responseCode != 200) {
                 if (openConsole)
-                    Log.e("拓维服务器停止响应（HttpError：" + responseCode + "），正在刷新IP……");
+                    Log.e("拓维服务器停止响应（HttpError:" + responseCode + "），正在刷新IP……");
                 return false;
             }
             return true;
