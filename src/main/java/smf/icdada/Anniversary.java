@@ -20,7 +20,7 @@ import static smf.icdada.HttpUtils.Base.*;
 public class Anniversary {
     public static void measure() {
         Map<Integer, String> userObjects = readUserObjects();
-        ExecutorService executorService = Executors.newFixedThreadPool(userObjects.size());
+        ExecutorService executorService = Executors.newFixedThreadPool(userObjects.size()+1);
         for (Map.Entry<Integer, String> userObject : userObjects.entrySet()) {
             sleep(100);
             executorService.submit(() -> {
@@ -48,17 +48,20 @@ public class Anniversary {
                 JSONArray usersArray = userData.getJSONArray("Users");
                 for (Object userElement : usersArray) {
                     JSONObject userObject = (JSONObject) userElement;
+                    int userId = userObject.getIntValue("userId");
                     if (userObject.containsKey("activate")) {
                         if (userObject.getBooleanValue("activate") && userObject.containsKey("inviteCode")) {
-                            int userId = userObject.getIntValue("userId");
                             String inviteCode = userObject.getString("inviteCode");
                             userObjects.put(userId, inviteCode);
+                        } else {
+                            Log.w("账号:" + userId + " || " + "未检测到邀请码，请确保已经完整运行功能4");
                         }
                     } else if (userObject.containsKey("inviteCode")) {
-                        int userId = userObject.getIntValue("userId");
                         String inviteCode = userObject.getString("inviteCode");
                         UserJsonUtils.JsonUtil(userId, "activate", true);
                         userObjects.put(userId, inviteCode);
+                    } else {
+                        Log.w("账号:" + userId + " || " + "未检测到邀请码，请确保已经完整运行功能4");
                     }
                 }
             } else {

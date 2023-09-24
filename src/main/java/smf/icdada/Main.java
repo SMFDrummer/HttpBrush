@@ -39,8 +39,8 @@ public class Main {
         Log.d("-> default.json");
         Log.v("""
                 更新日志:
-                * 添加创号系统
-                * 修复渠道问题
+                * 升级项目编译环境为JDK-21
+                * 修复封号方法
                 """);
         Inter.Setting();
         switch (Inter.inter) {

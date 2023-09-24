@@ -21,10 +21,10 @@ public class Create {
         try {
             Log.i("默认创建渠道将会读取default中channelId的值");
             Log.v("请输入需要创建账号的手机号:");
-            int phone = smfScanner.smfInt(true,"^\\d{11}$");
+            String phone = smfScanner.smfString(true,"^\\d{11}$");
             Log.v("请输入需要创建账号的密码:");
             String password = smfScanner.smfString(true);
-            makeNewUserWithPhone(String.valueOf(phone),password);
+            makeNewUserWithPhone(phone,password);
         } catch (Exception e) {
             Log.w(e.getMessage());
             e.printStackTrace();

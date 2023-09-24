@@ -42,23 +42,18 @@ public class UserBanner {
         if (!Files.exists(path) || check) {
             int i;
             Log.v("请输入账号UserId开始:");
-            int start = smfScanner.smfInt(false, "^\\d{8}$");
+            int start = smfScanner.smfInt(false, "^\\d{8,}$");
             Log.v("请输入账号UserId结束:");
-            int end = smfScanner.smfInt(false, "^\\d{8}$");
+            int end = smfScanner.smfInt(false, "^\\d{8,}$");
             File file = new File(path.toUri());
             JSONObject parse = JSONObject.parse("{}");
             JSONArray bannedUsers = new JSONArray();
             JSONArray account = new JSONArray();
             JSONObject object1 = new JSONObject();
-            JSONObject object2 = new JSONObject();
-            object1.put("severId", 109208);
+            object1.put("severId", Integer.parseInt(String.valueOf(Inter.appId) + Inter.channelId));
             object1.put("isBanned", false);
             object1.put("isProtected", false);
-            object2.put("severId", 109250);
-            object2.put("isBanned", false);
-            object2.put("isProtected", false);
             account.add(object1);
-            account.add(object2);
             for (i = start; i <= end; i++) {
                 JSONObject user = new JSONObject();
                 user.put("userId", i);
@@ -73,10 +68,11 @@ public class UserBanner {
                 Log.i("生成路径位于:" + file.getPath());
                 System.exit(0);
             } catch (Exception e) {
+                Log.w(e.getMessage());
                 e.printStackTrace();
             }
         } else {
-            Log.v("封号区间文件已存在，是否覆盖？(Y/N)");
+            Log.v("封号区间文件已存在，是否覆盖？");
             if (smfScanner.smfBoolean(false)) {
                 fileChecker(true);
             } else {
@@ -96,13 +92,13 @@ public class UserBanner {
                     JSONObject jsonObject = (JSONObject) bannedUser;
                     JSONArray account = jsonObject.getJSONArray("account");
                     JSONObject a1 = (JSONObject) account.get(0);
-                    JSONObject a2 = (JSONObject) account.get(1);
-                    if (
-                            !a1.getBooleanValue("isBanned") && !a1.getBooleanValue("isProtected") &&
-                                    !a2.getBooleanValue("isBanned") && !a2.getBooleanValue("isProtected")
-                    ) {
-                        bannedUserIds.add(jsonObject.getIntValue("userId"));
-
+                    if (a1.getIntValue("severId") != Integer.parseInt(String.valueOf(Inter.appId) + Inter.channelId)) {
+                        Log.w("警告:封号方法配置为" + Inter.appId + Inter.channelId + "渠道，但封号账号:" + jsonObject.getIntValue("userId") + "配置为" + a1.getIntValue("severId") + "渠道，你确定要这样做吗？");
+                        if (smfScanner.smfBoolean(false)) {
+                            if (!a1.getBooleanValue("isBanned") && !a1.getBooleanValue("isProtected")) {
+                                bannedUserIds.add(jsonObject.getIntValue("userId"));
+                            }
+                        }
                     }
                 }
             } else {
@@ -150,7 +146,7 @@ public class UserBanner {
         refresh(userId);
         Result uisk = getUisk(userId);
         if ("banned".equals(uisk.getUi()) && "banned".equals(uisk.getSk())) {
-            JsonUtil(oi, userId, true, false);
+            JsonUtil(userId, true, false);
         } else {
             Check.V437 v437 = new Check.V437();
             Check.V316 v316 = new Check.V316();
@@ -169,7 +165,7 @@ public class UserBanner {
                         }
                     } else if (v437.isNew() || i >= 10) {
                         print.normalPrint(userId, null, null, null);
-                        JsonUtil(oi, userId, false, true);
+                        JsonUtil(userId, false, true);
                         break;
                     } else while (true) {
                         try {
@@ -218,7 +214,7 @@ public class UserBanner {
                                         refresh(userId);
                                         uisk = getUisk(userId);
                                         if ("banned".equals(uisk.getUi()) && "banned".equals(uisk.getSk())) {
-                                            JsonUtil(oi, userId, true, false);
+                                            JsonUtil(userId, true, false);
                                             break;
                                         } else {
                                             Log.v("账号:" + userId + " || 封号失败，正在重试……");
@@ -226,7 +222,7 @@ public class UserBanner {
                                     }
                                 } else {
                                     print.normalPrint(userId, gem, snailCoin, chestnutPiece);
-                                    JsonUtil(oi, userId, false, true);
+                                    JsonUtil(userId, false, true);
                                     break;
                                 }
                             }
@@ -241,7 +237,7 @@ public class UserBanner {
         }
     }
 
-    private static void JsonUtil(int channel, int userId, boolean isBanned, boolean isProtected) {
+    private static void JsonUtil(int userId, boolean isBanned, boolean isProtected) {
         try {
             lock.writeLock().lock();
             Path path = Paths.get(banuserPath);
@@ -253,11 +249,17 @@ public class UserBanner {
                     JSONArray account = bannedUser.getJSONArray("account");
                     for (Object objectAccount : account) {
                         JSONObject userAccount = (JSONObject) objectAccount;
-                        if (userAccount.getIntValue("severId") == channel) {
+                        if (userAccount.getIntValue("severId") == UserBanner.oi) {
                             userAccount.put("isBanned", isBanned);
                             userAccount.put("isProtected", isProtected);
+                            return;
                         }
                     }
+                    JSONObject newAccount = new JSONObject();
+                    newAccount.put("severId", UserBanner.oi);
+                    newAccount.put("isBanned", isBanned);
+                    newAccount.put("isProtected", isProtected);
+                    account.add(newAccount);
                 }
             }
             String formattedJson = parse.toJSONString(JSONWriter.Feature.PrettyFormat, JSONWriter.Feature.WriteMapNullValue);
