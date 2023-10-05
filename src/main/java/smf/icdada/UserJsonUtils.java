@@ -21,6 +21,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static smf.icdada.HttpUtils.Base.*;
+import static smf.icdada.RequestType.V303;
+import static smf.icdada.RequestType.V316;
 
 /**
  * @author SMF & icdada
@@ -74,7 +76,7 @@ public class UserJsonUtils {
         Check.V316 v316 = new Check.V316();
         while (true) {
             try {
-                Future<String> future = executor.submit(() -> getResponseBody(userId, RequestType.GET.getRequestBody(userId)));
+                Future<String> future = executor.submit(() -> getResponseBody(V316,userId));
                 String response316Body = future.get(3, TimeUnit.SECONDS);
                 v316.setResponseBody(response316Body);
                 if (!v316.isValid(0)) {
@@ -99,7 +101,7 @@ public class UserJsonUtils {
         Check.V303 v303 = new Check.V303();
         while (true) {
             try {
-                Future<String> future = executor.submit(() -> getResponseBody(userId, RequestType.IN.getRequestBody(userId)));
+                Future<String> future = executor.submit(() -> getResponseBody(V303,userId));
                 String response303Body = future.get(3, TimeUnit.SECONDS);
                 v303.setResponseBody(response303Body);
                 if (!v303.isValid(0)) {

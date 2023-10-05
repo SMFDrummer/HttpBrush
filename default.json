@@ -10,12 +10,17 @@
     "#可以填入null的所有值列表，默认一级项为PropData，下列指向均可以置null#",
     "GlobalSettings - Inter - value",
     "GlobalSettings - ProxyType - value",
-    "GlobalSettings - Version - value",
+    "GlobalSettings - AndroidVersion - value",
+    "GlobalSettings - IOSVersion - value",
     "OtherSettings - PackageId - channelId"
   ],
   "PropData": {
     "GlobalSettings": {
       "#DESCRIPTION#": "全局设定值，若需要手动输入，请填入null",
+      "OpenConsole": {
+        "#DESCRIPTION#": "开启完整控制台输出",
+        "value": false
+      },
       "Inter": {
         "#DESCRIPTION#": "预选程序功能",
         "value": null
@@ -24,9 +29,13 @@
         "#DESCRIPTION#": "默认执行代理池类型",
         "value": 2
       },
-      "Version": {
-        "#DESCRIPTION#": "版本号",
-        "value": "3.1.9.1415"
+      "AndroidVersion": {
+        "#DESCRIPTION#": "安卓版本号",
+        "value": "3.2.0.1421"
+      },
+      "IOSVersion": {
+        "#DESCRIPTION#": "苹果版本号",
+        "value": "3.2.0.800"
       },
       "Environment": {
         "#DESCRIPTION#": "运行环境",

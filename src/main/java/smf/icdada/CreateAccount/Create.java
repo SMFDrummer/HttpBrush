@@ -21,9 +21,9 @@ public class Create {
         try {
             Log.i("默认创建渠道将会读取default中channelId的值");
             Log.v("请输入需要创建账号的手机号:");
-            String phone = smfScanner.smfString(true,"^\\d{11}$");
+            String phone = smfScanner.String(true,"^\\d{11}$");
             Log.v("请输入需要创建账号的密码:");
-            String password = smfScanner.smfString(true);
+            String password = smfScanner.String(true);
             makeNewUserWithPhone(phone,password);
         } catch (Exception e) {
             Log.w(e.getMessage());
@@ -34,7 +34,7 @@ public class Create {
         try {
             Log.i("默认创建渠道将会读取default中channelId的值");
             Log.v("请输入需要创建的账号数量:");
-            int num = smfScanner.smfInt(true);
+            int num = smfScanner.Int(true);
             makeNewUserQuickly(num);
         } catch (Exception e) {
             Log.w(e.getMessage());

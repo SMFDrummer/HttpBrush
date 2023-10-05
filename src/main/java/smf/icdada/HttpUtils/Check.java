@@ -3,8 +3,15 @@ package smf.icdada.HttpUtils;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-
+/**
+ * @author SMF & icdada
+ * @描述: Check响应检查类
+ * <p>
+ * 包含必要数据包的取值及检查方法。
+ * </p>
+ */
 public class Check {
+
     public static class V303 {
         private String responseBody;
 
@@ -90,15 +97,14 @@ public class Check {
 
             public boolean checkJSONArray(String key, String objectKey, Object objectValue) {
                 JSONArray jsonArray = d.getJSONArray(key);
-                if (jsonArray.isEmpty()) return false;
-                else {
+                if (!jsonArray.isEmpty()) {
                     for (Object object : jsonArray) {
                         JSONObject jsonObject = (JSONObject) object;
                         if (jsonObject.containsKey(objectKey) && jsonObject.get(objectKey).equals(objectValue))
                             return true;
                     }
-                    return false;
                 }
+                return false;
             }
         }
     }

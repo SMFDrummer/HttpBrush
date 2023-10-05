@@ -3,6 +3,7 @@ package smf.icdada.HttpUtils;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.JSONWriter;
 import smf.icdada.*;
 
 import java.io.File;
@@ -14,9 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.*;
-import java.util.regex.Pattern;
 
 import static smf.icdada.ProxyManager.proxy;
+import static smf.icdada.RequestType.V202;
 
 /**
  * @author SMF & icdada
@@ -41,7 +42,7 @@ public class Base {
         Proxy.put(userId, proxy);
         do {
             try {
-                Future<String> future = executor.submit(() -> getResponseBody(userId, RequestType.OI.getRequestBodyById(userId)));
+                Future<String> future = executor.submit(() -> getResponseBody(V202, userId));
                 try {
                     String response = future.get(10, TimeUnit.SECONDS);
                     if (JSON.isValidObject(response)) {
@@ -54,7 +55,7 @@ public class Base {
                                 JSONObject dObject = jsonObject.getJSONObject("d");
                                 String ui = dObject.getString("ui");
                                 String sk = dObject.getString("sk");
-                                if (Inter.inter == 10) {
+                                if (Inter.openConsole) {
                                     Log.i("userId:" + userId);
                                     Log.i("ui:" + ui);
                                     Log.i("sk:" + sk + "\n");
@@ -74,14 +75,40 @@ public class Base {
         return CompletableFuture.supplyAsync(() -> finalUisk, executor);
     }
 
-    public static String getResponseBody(int userId, String requestBody) {
+    public static String getResponseBody(RequestType index, int userId, Object... param) {
         try {
             Result proxy = getProxy(userId);
             return HttpCrypto.decryptRES(
                     HttpSender.doQuest(
                             Inter.environment,
                             HttpCrypto.encryptREQ(
-                                    requestBody
+                                    index.getRequestBody(index, userId, param)
+                            ),
+                            proxy.getProxyHost(),
+                            proxy.getProxyPort()
+                    )
+            );
+        } catch (Exception ignored) {
+            return "{\"r\":12202}";
+        }
+    }
+
+    public static String getResponseBody(int userId, String requestBody) {
+        try {
+            Result uisk = getUisk(userId);
+            Result proxy = getProxy(userId);
+            JSONObject parse = JSONObject.parse(requestBody);
+            JSONObject t = parse.getJSONObject("t");
+            if (t.containsKey("pi") && t.containsKey("ui") && t.containsKey("sk")) {
+                t.put("pi", uisk.getUi());
+                t.put("sk", uisk.getSk());
+                t.put("ui", uisk.getUi());
+            }
+            return HttpCrypto.decryptRES(
+                    HttpSender.doQuest(
+                            Inter.environment,
+                            HttpCrypto.encryptREQ(
+                                    parse.toJSONString(JSONWriter.Feature.WriteMapNullValue)
                             ),
                             proxy.getProxyHost(),
                             proxy.getProxyPort()
@@ -115,30 +142,33 @@ public class Base {
         return Proxy.get(userId);
     }
 
-    /**
-     * @return userId
-     * @描述: userId监听用户输入获取方法
-     */
-    public static int userIdGetter() {
-        int userId;
-        Log.v("请输入拓维UserID，并按回车键继续:");
-        Scanner scanner = new Scanner(System.in);
-        String input;
-        Pattern pattern = Pattern.compile("^\\d+$");
-        while (true) {
-            input = scanner.nextLine().trim();
-            if (pattern.matcher(input).matches() && input.length() == 8) {
-                userId = Integer.parseInt(input);
-                if (userId > 0) {
-                    break;
-                } else {
-                    Log.e("请输入正确的UserID");
-                }
-            } else {
-                Log.e("输入无效，请输入正确的UserID");
-            }
+    private static String removeQuotes(String str) {
+        if (str != null && str.length() >= 2 && str.startsWith("\"") && str.endsWith("\"")) {
+            return str.substring(1, str.length() - 1);
         }
-        return userId;
+        return str;
+    }
+
+    public static String getFilePath() {
+        Log.v("请输入完整的Strategy配置文件路径");
+        while (true) {
+            String filePath = smfScanner.String(false);
+            filePath = removeQuotes(filePath);
+            if (Files.exists(Paths.get(filePath))) {
+                return filePath;
+            } else Log.e("文件不存在，请检查路径并重新输入");
+        }
+    }
+
+    public static String getFilePath(String filePath) {
+        filePath = removeQuotes(filePath);
+        if (Files.exists(Paths.get(filePath))) {
+            return filePath;
+        } else {
+            Log.e(filePath + "路径配置文件不存在，传参出现严重错误，程序退出");
+            System.exit(0);
+            return null;
+        }
     }
 
     /**
@@ -185,7 +215,7 @@ public class Base {
     public static void cryptoGuideLine() {
         try {
             Log.v("请输入任意内容或数据包，输入空字段以结束:");
-            String body = smfScanner.smfLongString(true);
+            String body = smfScanner.LongString(true);
             if (body.isBlank()) System.exit(0);
             if (JSON.isValidObject(body)) {
                 JSONObject jsonObject = JSONObject.parse(body);
@@ -193,7 +223,7 @@ public class Base {
                     if (jsonObject.containsKey("t")) {
                         Log.a(HttpCrypto.encryptREQ(body));
                         Log.v("是否发送数据包取得响应？(Y/N)");
-                        if (smfScanner.smfBoolean(false))
+                        if (smfScanner.Boolean(false))
                             Log.a(HttpCrypto.decryptRES(HttpSender.doQuest(Inter.environment, HttpCrypto.encryptREQ(body))));
                     }
                     if (jsonObject.containsKey("e")) {
@@ -206,15 +236,15 @@ public class Base {
             } else if (body.startsWith("--_{{}}_")) {
                 Log.a(HttpCrypto.decryptREQ(body));
                 Log.v("是否发送数据包取得响应？(Y/N)");
-                if (smfScanner.smfBoolean(false))
+                if (smfScanner.Boolean(false))
                     Log.a(HttpCrypto.decryptRES(HttpSender.doQuest(Inter.environment, body)));
             } else {
                 Log.e("自动检测失败，请手动输入数据包标识并选择功能:\n" + "\033[33m" + "请输入数据包标识:");
-                String identifier = smfScanner.smfString(true);
+                String identifier = smfScanner.String(true);
                 Log.d("请选择功能:\n[1] 请求加密\n[2] 请求解密\n[3] 响应加密\n[4] 响应解密\n[5] 获取密钥和偏移\n[6] 获取MD5");
                 boolean keepRunning = true;
                 while (keepRunning) {
-                    int choice = smfScanner.smfInt(false);
+                    int choice = smfScanner.Int(false);
                     switch (choice) {
                         case 1 -> {
                             Log.a(HttpCrypto.encryptREQ(identifier, body));

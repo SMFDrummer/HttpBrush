@@ -19,11 +19,6 @@ import static smf.icdada.HttpUtils.Base.sleep;
  */
 @SuppressWarnings("unused")
 public class ProxyManager {
-    public static boolean openConsole = false;
-
-    public static void console(boolean openConsole) {
-        ProxyManager.openConsole = openConsole;
-    }
 
     private static String[] proxyGetter() throws IOException, URISyntaxException {
         int invalidRequestCount = 0;
@@ -48,7 +43,7 @@ public class ProxyManager {
                 }
             }
 
-            if (openConsole) Log.e("代理服务器地址获取失败，正在重新获取……");
+            if (Inter.openConsole) Log.e("代理服务器地址获取失败，正在重新获取……");
             sleep(1000);
             if (Inter.proxyType == 1) {
                 invalidRequestCount++;
@@ -75,7 +70,7 @@ public class ProxyManager {
                 String[] proxyData = proxyGetter();
                 tempProxyHost = proxyData[0];
                 tempProxyPort = Integer.parseInt(proxyData[1]);
-                if (openConsole)
+                if (Inter.openConsole)
                     Log.v("刷新的代理服务器地址为:" + tempProxyHost + "，端口为" + tempProxyPort);
             } catch (Exception ignored) {
             }
@@ -129,7 +124,7 @@ public class ProxyManager {
             connection.setRequestMethod("GET");
             int responseCode = connection.getResponseCode();
             if (responseCode != 200) {
-                if (openConsole)
+                if (Inter.openConsole)
                     Log.e("拓维服务器停止响应（HttpError:" + responseCode + "），正在刷新IP……");
                 return false;
             }
@@ -142,15 +137,32 @@ public class ProxyManager {
     private static boolean isProxyAvailable(String proxyHost, int proxyPort) {
         try {
             sleep(500);
-            String responseI4CheckBody = HttpSender.doQuest(Inter.environment, RequestType.I4.getRequestBody(), proxyHost, proxyPort);
+            String responseI4CheckBody = getResponseBody(proxyHost,proxyPort);
             if (responseI4CheckBody != null) {
                 JSONObject jsonObject = JSONObject.parse(responseI4CheckBody);
                 return jsonObject.containsKey("i") && jsonObject.getIntValue("r") == 0;
             }
             return false;
         } catch (Exception e) {
-            if (openConsole) Log.e("I4校验异常，正在刷新IP……");
+            if (Inter.openConsole) Log.e("I4校验异常，正在刷新IP……");
             return false;
+        }
+    }
+
+    private static String getResponseBody(String proxyHost, int proxyPort) {
+        try {
+            return HttpCrypto.decryptRES(
+                    HttpSender.doQuest(
+                            Inter.environment,
+                            HttpCrypto.encryptREQ(
+                                    RequestType.I4.getRequestBody()
+                            ),
+                            proxyHost,
+                            proxyPort
+                    )
+            );
+        } catch (Exception ignored) {
+            return "{\"r\":12202}";
         }
     }
 }

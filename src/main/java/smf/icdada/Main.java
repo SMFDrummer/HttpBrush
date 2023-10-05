@@ -3,6 +3,7 @@ package smf.icdada;
 import smf.icdada.CreateAccount.Create;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -22,26 +23,21 @@ import static smf.icdada.HttpUtils.Strategy.maker;
 
 public class Main {
     public static void main(String[] args) {
-        startConsole();
-        Inter.PreCheck();
+        Console.startConsole();
         String version = getProperties().getProperty("app.version");
-        System.out.println("""
-                ██╗  ██╗████████╗████████╗██████╗       ██████╗ ██████╗ ██╗   ██╗███████╗██╗  ██╗
-                ██║  ██║╚══██╔══╝╚══██╔══╝██╔══██╗      ██╔══██╗██╔══██╗██║   ██║██╔════╝██║  ██║
-                ███████║   ██║      ██║   ██████╔╝      ██████╔╝██████╔╝██║   ██║███████╗███████║
-                ██╔══██║   ██║      ██║   ██╔═══╝       ██╔══██╗██╔══██╗██║   ██║╚════██║██╔══██║
-                ██║  ██║   ██║      ██║   ██║           ██████╔╝██║  ██║╚██████╔╝███████║██║  ██║
-                ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚═╝           ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝
-                """);
         Log.i(String.format("HttpBrush 正式版本:%s", version));
-        Log.i(String.format("程序作者:SMF & icdada；协同测试:%s", Inter.getTestBy()));
         Log.v(String.format("请检查 %s 目录下程序运行环境是否存在完整配置", System.getProperty("user.dir")));
         Log.d("-> default.json");
+        Inter.PreCheck();
+        Log.i(String.format("程序作者:SMF & icdada；协同测试:%s", Inter.getTestBy()));
         Log.v("""
                 更新日志:
-                * 升级项目编译环境为JDK-21
-                * 修复封号方法
-                """);
+                * 去除巨大丑陋的标头
+                * 重要更新，重写自定义发包，现在功能更加完善强大
+                * 重写枚举，重写基础类、检查类，新增数据包格式化类
+                * default.json配置更新，新增IOS版本与控制台输出控制选项
+                * 由于自定义发包更新，封号方法等需要绑定文件配置的必须使用新配置才能正常运行
+                ●""");
         Inter.Setting();
         switch (Inter.inter) {
             case 1 -> cryptoGuideLine();
@@ -50,7 +46,7 @@ public class Main {
             case 4, 10 -> UserJsonUtils.measure();
             case 5 -> UserJsonUtils.JsonCutter();
             case 6 -> maker();
-            case 7 -> apply(userIdGetter());
+            case 7 -> apply(smfScanner.Int(true, "^\\d{8,}$"));
             case 8 -> Anniversary.brush();
             case 9 -> Anniversary.measure();
             case 11 -> Create.Single();
@@ -64,36 +60,14 @@ public class Main {
         }
         System.exit(0);
     }
-
-    private static void startConsole() {
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        Runnable clearConsoleTask = Main::clearConsole;
-        scheduler.scheduleAtFixedRate(clearConsoleTask, 15, 5, TimeUnit.MINUTES);
-        sleep(1000);
-    }
-
     private static Properties getProperties() {
         Properties properties = new Properties();
         try {
             properties.load(Main.class.getClassLoader().getResourceAsStream("application.properties"));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Log.w(e.getMessage());
+            e.printStackTrace();
         }
         return properties;
     }
-
-    private static void clearConsole() {
-        try {
-            if (System.getProperty("os.name").contains("Windows")) {
-                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-            } else {
-                System.out.print("\033[H\033[2J");
-                System.out.flush();
-            }
-            Log.v("已清空控制台，控制台定时触发已加载");
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
 }

@@ -1,5 +1,8 @@
 package smf.icdada;
 
+import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.JSONWriter;
+
 import static smf.icdada.HttpUtils.Base.getUisk;
 
 /**
@@ -11,70 +14,124 @@ import static smf.icdada.HttpUtils.Base.getUisk;
  */
 @SuppressWarnings("unused")
 public enum RequestType {
-    I4("--_{{}}_\n" + "Content-Disposition: form-data; name=\"req\"\n" + "\n" + "I4\n" + "--_{{}}_"),
-    OI("{\"i\":\"V202\",\"r\":0,\"t\":{\"ci\":\"93\",\"cv\":\"" + Inter.version + "\",\"di\":\"\",\"li\":\"486efa91941f659207c906eed2e70dfe\",\"oi\":\"" + Inter.appId + Inter.channelId + "X%d\",\"pi\":\"\",\"r\":\"703740081\",\"s\":\"a3fa45b7cfc5c85201dc139bab0ee6fb\",\"ui\":\"\"}}"),
-    IN("{\"i\":\"V303\",\"r\":0,\"t\":{\"al\":[{\"id\":10868,\"abi\":0,\"type\":1,\"config_version\":1}],\"ci\":\"93\",\"cs\":\"0\",\"pack\":\""+Inter.packageValue+"\",\"pi\":\"%s\",\"sk\":\"%s\",\"ui\":\"%s\",\"v\":\"" + Inter.version + "\"}}"),
-    ANNI_BRUSH("{\"i\":\"V876\",\"r\":0,\"t\":{\"code\":\"%s\",\"pi\":\"%s\",\"sk\":\"%s\",\"star\":\"50\",\"ui\":\"%s\"}}"),
-    GET("{\"i\":\"V316\",\"r\":0,\"t\":{\"b\":\"0\",\"n\":\"\",\"pi\":\"%s\",\"sk\":\"%s\",\"ui\":\"%s\"}}"),
-    ISNEW("{\"i\":\"V437\",\"r\":0,\"t\":{\"pi\":\"%s\",\"sk\":\"%s\",\"ui\":\"%s\"}}"),
-    ANNI_GET("{\"i\":\"V877\",\"r\":0,\"t\":{\"index\":\"%d\",\"pi\":\"%s\",\"sk\":\"%s\",\"ui\":\"%s\"}}"),
-    ANNI_BEAN_GACHA("{\"i\":\"V878\",\"r\":0,\"t\":{\"pi\":\"%s\",\"sk\":\"%s\",\"type\":\"0\",\"ui\":\"%s\"}}"),
-    ANNI_BEAN_GET("{\"i\":\"V878\",\"r\":0,\"t\":{\"bai\":\"0\",\"gi\":\"0\",\"pi\":\"%s\",\"sk\":\"%s\",\"type\":\"1\",\"ui\":\"%s\"}}");
+    I4("{\"i\":\"I4\",\"r\":0,\"t\":{}}"),
+    V202("{\"i\":\"V202\",\"r\":0,\"t\":{\"ci\":\"93\",\"di\":\"\",\"li\":\"486efa91941f659207c906eed2e70dfe\",\"oi\":null,\"pi\":\"\",\"r\":\"703740081\",\"s\":\"a3fa45b7cfc5c85201dc139bab0ee6fb\",\"ui\":\"\"}}"),
+    V303("{\"i\":\"V303\",\"r\":0,\"t\":{\"al\":[{\"id\":null,\"abi\":0,\"type\":1,\"config_version\":1}],\"ci\":\"93\",\"cs\":\"0\",\"pack\":null,\"pi\":null,\"sk\":null,\"ui\":null,\"v\":null}}"),
+    V316("{\"i\":\"V316\",\"r\":0,\"t\":{\"b\":\"0\",\"n\":\"\",\"pi\":null,\"sk\":null,\"ui\":null}}"),
+    V323("{\"i\":\"V323\",\"r\":0,\"t\":{\"ad\":\"0\",\"l\":[1199,1199,0,0,0],\"pi\":null,\"sk\":null,\"t\":\"0\",\"ui\":null}}"),
+    V437("{\"i\":\"V437\",\"r\":0,\"t\":{\"pi\":null,\"sk\":null,\"ui\":null}}"),
+    V876("{\"i\":\"V876\",\"r\":0,\"t\":{\"code\":null,\"pi\":null,\"sk\":null,\"star\":\"50\",\"ui\":null}}"),
+    V877("{\"i\":\"V877\",\"r\":0,\"t\":{\"index\":null,\"pi\":null,\"sk\":null,\"ui\":null}}"),
+    V878("{\"i\":\"V878\",\"r\":0,\"t\":{\"pi\":null,\"sk\":null,\"type\":null,\"ui\":null}}"),
+    V902("{\"i\":\"V902\",\"r\":0,\"t\":{\"n\":\"20\",\"pi\":null,\"s\":\"1\",\"sk\":null,\"t\":\"4\",\"ui\":null}}"),
+    V904("{\"i\":\"V904\",\"r\":0,\"t\":{\"pi\":null,\"sk\":null,\"t\":null,\"ui\":null}}"),
+    V927("{\"i\":\"V927\",\"r\":0,\"t\":{\"fr\":{\"t\":\"1\",\"l\":\"2\",\"g\":\"3\",\"s\":\"9888\",\"r\":\"1\",\"b\":\"1.000000\"},\"g\":\"1\",\"on\":\"726c0c5a88d349f986085e29ca731151\",\"pi\":null,\"pr\":{\"pl\":null},\"sk\":null,\"ui\":null}}"),
+    V993("{\"i\":\"V993\",\"r\":0,\"t\":{\"giftId\":null,\"pi\":null,\"sk\":null,\"ui\":null}}"),
+    V9999("");
     private final String requestBody;
 
     RequestType(String requestBody) {
         this.requestBody = requestBody;
     }
 
-    /**
-     * @描述: 该方法适用于RequestType.I4 aka I4
-     */
     public String getRequestBody() {
-        return String.format(requestBody);
+        return requestBody;
     }
 
-    /**
-     * @param userId 8位用户id
-     * @描述: 该方法适用于RequestType.IN aka V303
-     * @描述: 该方法适用于RequestType.GET aka V316
-     * @描述: 该方法适用于RequestType.ISNEW aka V437
-     * @描述: 该方法适用于RequestType.ANNI_BEAN* aka V878
-     */
-    public String getRequestBody(int userId) {
+    public String getRequestBody(RequestType index, int userId, Object... param) {
         Result uisk = getUisk(userId);
-        String ui = uisk.getUi();
+        String xi = uisk.getUi();
         String sk = uisk.getSk();
-        return String.format(requestBody, ui, sk, ui);
+        JSONObject parse = JSONObject.parse(getRequestBody());
+        JSONObject t = parse.getJSONObject("t");
+        t.put("ver_", Inter.iosVersion);
+        switch (index) {
+            case V202 -> {
+                t.put("oi", Inter.oi + "X" + userId);
+                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+            }
+            case V303 -> {
+                JSONObject al = t.getJSONArray("al").getJSONObject(0);
+                al.put("id", param[0]);
+                t.put("pack", Inter.packageValue);
+                t.put("pi", xi);
+                t.put("sk", sk);
+                t.put("ui", xi);
+                t.put("v", Inter.androidVersion);
+                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+            }
+            case V316, V323, V437, V902 -> {
+                t.put("pi", xi);
+                t.put("sk", sk);
+                t.put("ui", xi);
+                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+            }
+            case V876 -> {
+                t.put("code", param[0]);
+                t.put("pi", xi);
+                t.put("sk", sk);
+                t.put("ui", xi);
+                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+            }
+            case V877 -> {
+                t.put("index", param[0]);
+                t.put("pi", xi);
+                t.put("sk", sk);
+                t.put("ui", xi);
+                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+            }
+            case V878 -> {
+                if (param[0].equals("1")) {
+                    t.put("bai", "0");
+                    t.put("gi", "0");
+                }
+                t.put("type", param[0]);
+                t.put("pi", xi);
+                t.put("sk", sk);
+                t.put("ui", xi);
+                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+            }
+            case V904 -> {
+                t.put("t", param[0]);
+                t.put("pi", xi);
+                t.put("sk", sk);
+                t.put("ui", xi);
+                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+            }
+            case V927 -> {
+                JSONObject pr = t.getJSONObject("pr");
+                t.put("pl", param[0]);
+                t.put("pi", xi);
+                t.put("sk", sk);
+                t.put("ui", xi);
+                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+            }
+            case V993 -> {
+                t.put("giftId", param[0]);
+                t.put("pi", xi);
+                t.put("sk", sk);
+                t.put("ui", xi);
+                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+            }
+            default -> {
+                return requestBody;
+            }
+        }
     }
 
-    /**
-     * @param userId 8位用户id
-     * @param index  数据包数值参量
-     * @描述: 该方法适用于RequestType.ANNI_GET aka V877
-     */
-    public String getRequestBody(int userId, int index) {
-        Result uisk = getUisk(userId);
-        String ui = uisk.getUi();
-        String sk = uisk.getSk();
-        return String.format(requestBody, index, ui, sk, ui);
+    public static boolean checkRequestBody(String identifier) {
+        for (RequestType requestType : RequestType.values()) {
+            if (requestType.name().startsWith(identifier)) return true;
+        }
+        return false;
     }
 
-    /**
-     * @param userId     8位用户id
-     * @param inviteCode 数据包字符串参量
-     * @描述: 该方法适用于RequestType.ANNI_BRUSH aka V876
-     */
-    public String getRequestBody(int userId, String inviteCode) {
-        Result uisk = getUisk(userId);
-        String ui = uisk.getUi();
-        String sk = uisk.getSk();
-        return String.format(requestBody, inviteCode, ui, sk, ui);
+    public static void printRequestBody(String identifier) {
+        for (RequestType requestType : RequestType.values()) {
+            if (requestType.name().startsWith(identifier)) {
+                Log.a("数据包标识:" + requestType.name() + " || " + requestType.getRequestBody());
+            }
+        }
     }
 
-    /**
-     * @描述: 该方法适用于RequestType.OI aka V202
-     */
-    public String getRequestBodyById(int userId) {
-        return String.format(requestBody, userId);
-    }
 }

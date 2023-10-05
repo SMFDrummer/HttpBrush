@@ -17,14 +17,17 @@ import java.util.Scanner;
  * </p>
  */
 public class Inter {
+    public static boolean openConsole;
     public static int inter;
     public static int proxyType;
-    public static String version;
+    public static String androidVersion;
+    public static String iosVersion;
     public static boolean environment;
     public static int appId;
     public static int channelId;
     public static String packageValue;
     protected static String defaultUrl = System.getProperty("user.dir") + File.separator + "default.json";
+    public static String oi;
 
     public static void PreCheck() {
         try {
@@ -46,6 +49,9 @@ public class Inter {
                     Log.e("配置文件异常，程序结束");
                     throw new Exception();
                 }
+            } else {
+                Log.w("配置文件缺失，请检查默认配置是否存在，程序退出");
+                System.exit(0);
             }
         } catch (Exception e) {
             Log.e("配置文件异常:");
@@ -78,9 +84,11 @@ public class Inter {
     }
 
     private static void setGlobalSetting() {
+        openConsole = getGlobalSetting("OpenConsole") == null ? openConsole() : (boolean) getGlobalSetting("OpenConsole");
         inter = getGlobalSetting("Inter") == null ? inter() : (int) getGlobalSetting("Inter");
         proxyType = getGlobalSetting("ProxyType") == null ? proxyType() : (int) getGlobalSetting("ProxyType");
-        version = getGlobalSetting("Version") == null ? version() : (String) getGlobalSetting("Version");
+        androidVersion = getGlobalSetting("AndroidVersion") == null ? androidVersion() : (String) getGlobalSetting("AndroidVersion");
+        iosVersion = getGlobalSetting("IOSVersion") == null ? iosVersion() : (String) getGlobalSetting("IOSVersion");
         environment = getGlobalSetting("Environment") == null ? environment() : (boolean) getGlobalSetting("Environment");
     }
 
@@ -89,6 +97,7 @@ public class Inter {
             appId = getOtherSetting("PackageId").getIntValue("appId");
             channelId = getOtherSetting("PackageId").get("channelId") == null ? channelId() : getOtherSetting("PackageId").getIntValue("channelId");
             packageValue = packageValue();
+            oi = String.valueOf(Inter.appId) + Inter.channelId;
         } catch (Exception e) {
             Log.e("配置文件异常:");
             e.printStackTrace();
@@ -117,6 +126,10 @@ public class Inter {
             e.printStackTrace();
         }
         return new JSONObject();
+    }
+
+    private static boolean openConsole() {
+        return false;
     }
 
     private static int inter() {
@@ -211,12 +224,17 @@ public class Inter {
                 [1] 本地代理池(需要提前开启HttpBrushProxyPool)
                 [2] 在线代理池""");
         Log.v("请输入序号并按回车键继续……:");
-        return smfScanner.smfInt(false, "^[1|2]+$");
+        return smfScanner.Int(false, "^[1|2]+$");
     }
 
-    private static String version() {
-        Log.v("请输入版本号，格式为${VersionName}.${VersionCode}，如1.2.3.1234");
-        return smfScanner.smfString(false, "^\\d{1}\\.\\d{1}\\.\\d{1}\\.\\d{4}$");
+    private static String androidVersion() {
+        Log.v("请输入安卓版本号，格式为${VersionName}.${VersionCode}，如1.2.3.1234");
+        return smfScanner.String(false, "^\\d{1}\\.\\d{1}\\.\\d{1}\\.\\d{4}$");
+    }
+
+    private static String iosVersion() {
+        Log.v("请输入苹果版本号，格式为${VersionName}.${VersionCode}，如1.2.3.123");
+        return smfScanner.String(false, "^\\d{1}\\.\\d{1}\\.\\d{1}\\.\\d{3,}$");
     }
 
     private static boolean environment() {
@@ -243,7 +261,7 @@ public class Inter {
             }
             stringBuilder.append("]+$");
             Log.v("请输入渠道Id，并按回车键继续……:");
-            channelId = smfScanner.smfInt(false, stringBuilder.toString());
+            channelId = smfScanner.Int(false, stringBuilder.toString());
         } catch (Exception e) {
             Log.e("配置文件异常:");
             e.printStackTrace();
@@ -257,7 +275,7 @@ public class Inter {
             JSONArray packages = parse.getJSONObject("PropData").getJSONObject("OtherSettings").getJSONObject("PackageId").getJSONArray("package");
             for (Object object : packages) {
                 JSONObject jsonObject = (JSONObject) object;
-                if (Integer.parseInt(String.valueOf(appId) + channelId) == jsonObject.getIntValue("id")) {
+                if (channelId == jsonObject.getIntValue("id")) {
                     return jsonObject.getString("value");
                 }
             }

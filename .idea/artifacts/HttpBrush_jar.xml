@@ -5,10 +5,8 @@
       <element id="archive" name="HttpBrush.jar">
         <element id="module-output" name="HttpBrush" />
       </element>
-      <element id="library" level="project" name="Maven: com.google.code.gson:gson:2.10.1" />
-      <element id="library" level="project" name="Maven: org.json:json:20220924" />
-      <element id="library" level="project" name="Maven: org.bouncycastle:bcprov-jdk18on:1.73" />
-      <element id="library" level="project" name="Maven: com.alibaba.fastjson2:fastjson2:2.0.29" />
+      <element id="library" level="project" name="Maven: com.alibaba.fastjson2:fastjson2:2.0.40" />
+      <element id="library" level="project" name="Maven: org.bouncycastle:bcprov-jdk18on:1.76" />
     </root>
   </artifact>
 </component>

@@ -23,6 +23,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static smf.icdada.HttpUtils.Base.*;
 import static smf.icdada.HttpUtils.Strategy.apply;
+import static smf.icdada.RequestType.V316;
+import static smf.icdada.RequestType.V437;
 
 /**
  * @author SMF & icdada
@@ -34,23 +36,23 @@ import static smf.icdada.HttpUtils.Strategy.apply;
 public class UserBanner {
     public static final ReadWriteLock lock = new ReentrantReadWriteLock();
     private static final String banuserPath = System.getProperty("user.dir") + File.separator + "banuser.json";
-    private static final int oi = Integer.parseInt(String.valueOf(Inter.appId) + Inter.channelId);
-    private static final Print print = new Print();
+    private static final String bannerStrategyConfig = System.getProperty("user.dir") + File.separator + "bannerConfig.json";
+
 
     public static void fileChecker(boolean check) {
         Path path = Paths.get(banuserPath);
         if (!Files.exists(path) || check) {
             int i;
             Log.v("请输入账号UserId开始:");
-            int start = smfScanner.smfInt(false, "^\\d{8,}$");
+            int start = smfScanner.Int(false, "^\\d{8,}$");
             Log.v("请输入账号UserId结束:");
-            int end = smfScanner.smfInt(false, "^\\d{8,}$");
+            int end = smfScanner.Int(false, "^\\d{8,}$");
             File file = new File(path.toUri());
             JSONObject parse = JSONObject.parse("{}");
             JSONArray bannedUsers = new JSONArray();
             JSONArray account = new JSONArray();
             JSONObject object1 = new JSONObject();
-            object1.put("severId", Integer.parseInt(String.valueOf(Inter.appId) + Inter.channelId));
+            object1.put("serverId", Integer.parseInt(String.valueOf(Inter.appId) + Inter.channelId));
             object1.put("isBanned", false);
             object1.put("isProtected", false);
             account.add(object1);
@@ -73,7 +75,7 @@ public class UserBanner {
             }
         } else {
             Log.v("封号区间文件已存在，是否覆盖？");
-            if (smfScanner.smfBoolean(false)) {
+            if (smfScanner.Boolean(false)) {
                 fileChecker(true);
             } else {
                 System.exit(0);
@@ -92,13 +94,15 @@ public class UserBanner {
                     JSONObject jsonObject = (JSONObject) bannedUser;
                     JSONArray account = jsonObject.getJSONArray("account");
                     JSONObject a1 = (JSONObject) account.get(0);
-                    if (a1.getIntValue("severId") != Integer.parseInt(String.valueOf(Inter.appId) + Inter.channelId)) {
-                        Log.w("警告:封号方法配置为" + Inter.appId + Inter.channelId + "渠道，但封号账号:" + jsonObject.getIntValue("userId") + "配置为" + a1.getIntValue("severId") + "渠道，你确定要这样做吗？");
-                        if (smfScanner.smfBoolean(false)) {
+                    if (a1.getIntValue("serverId") != Integer.parseInt(String.valueOf(Inter.appId) + Inter.channelId)) {
+                        Log.w("警告:封号方法配置为" + Inter.appId + Inter.channelId + "渠道，但封号账号:" + jsonObject.getIntValue("userId") + "配置为" + a1.getIntValue("serverId") + "渠道，你确定要这样做吗？");
+                        if (smfScanner.Boolean(false)) {
                             if (!a1.getBooleanValue("isBanned") && !a1.getBooleanValue("isProtected")) {
                                 bannedUserIds.add(jsonObject.getIntValue("userId"));
                             }
                         }
+                    } else if (!a1.getBooleanValue("isBanned") && !a1.getBooleanValue("isProtected")) {
+                        bannedUserIds.add(jsonObject.getIntValue("userId"));
                     }
                 }
             } else {
@@ -154,7 +158,7 @@ public class UserBanner {
             while (true) {
                 i++;
                 try {
-                    Future<String> futureV437 = executor.submit(() -> getResponseBody(userId, RequestType.ISNEW.getRequestBody(userId)));
+                    Future<String> futureV437 = executor.submit(() -> getResponseBody(V437,userId));
                     String response437CheckBody = futureV437.get(3, TimeUnit.SECONDS);
                     v437.setResponseBody(response437CheckBody);
                     if (!v437.isValid(0)) {
@@ -164,12 +168,12 @@ public class UserBanner {
                             refresh(userId);
                         }
                     } else if (v437.isNew() || i >= 10) {
-                        print.normalPrint(userId, null, null, null);
+                        checkPrint(userId);
                         JsonUtil(userId, false, true);
                         break;
                     } else while (true) {
                         try {
-                            Future<String> futureV316 = executor.submit(() -> getResponseBody(userId, RequestType.GET.getRequestBody(userId)));
+                            Future<String> futureV316 = executor.submit(() -> getResponseBody(V316,userId));
                             String response316GetBody = futureV316.get(3, TimeUnit.SECONDS);
                             v316.setResponseBody(response316GetBody);
                             if (!v316.isValid(0)) {
@@ -209,8 +213,8 @@ public class UserBanner {
                                     }
                                 }
                                 if (snailCoin >= 500000 || chestnutPiece >= 3000 || gem >= 2000000) {
-                                    print.abnormalPrint(userId, gem, snailCoin, chestnutPiece);
-                                    if (apply(userId, true)) {
+                                    checkPrint(userId, gem, snailCoin, chestnutPiece);
+                                    if (apply(userId,bannerStrategyConfig)) {
                                         refresh(userId);
                                         uisk = getUisk(userId);
                                         if ("banned".equals(uisk.getUi()) && "banned".equals(uisk.getSk())) {
@@ -221,7 +225,7 @@ public class UserBanner {
                                         }
                                     }
                                 } else {
-                                    print.normalPrint(userId, gem, snailCoin, chestnutPiece);
+                                    checkPrint(userId, gem, snailCoin, chestnutPiece);
                                     JsonUtil(userId, false, true);
                                     break;
                                 }
@@ -237,7 +241,7 @@ public class UserBanner {
         }
     }
 
-    private static void JsonUtil(int userId, boolean isBanned, boolean isProtected) {
+    public static void JsonUtil(int userId, boolean isBanned, boolean isProtected) {
         try {
             lock.writeLock().lock();
             Path path = Paths.get(banuserPath);
@@ -247,19 +251,21 @@ public class UserBanner {
                 JSONObject bannedUser = (JSONObject) object;
                 if (bannedUser.getIntValue("userId") == userId) {
                     JSONArray account = bannedUser.getJSONArray("account");
+                    boolean isNewAccount = false;
                     for (Object objectAccount : account) {
                         JSONObject userAccount = (JSONObject) objectAccount;
-                        if (userAccount.getIntValue("severId") == UserBanner.oi) {
+                        if (userAccount.getString("serverId").equals(Inter.oi)) {
                             userAccount.put("isBanned", isBanned);
                             userAccount.put("isProtected", isProtected);
-                            return;
-                        }
+                        } else isNewAccount = true;
                     }
-                    JSONObject newAccount = new JSONObject();
-                    newAccount.put("severId", UserBanner.oi);
-                    newAccount.put("isBanned", isBanned);
-                    newAccount.put("isProtected", isProtected);
-                    account.add(newAccount);
+                    if (isNewAccount) {
+                        JSONObject newAccount = new JSONObject();
+                        newAccount.put("serverId", Inter.oi);
+                        newAccount.put("isBanned", isBanned);
+                        newAccount.put("isProtected", isProtected);
+                        account.add(newAccount);
+                    }
                 }
             }
             String formattedJson = parse.toJSONString(JSONWriter.Feature.PrettyFormat, JSONWriter.Feature.WriteMapNullValue);
@@ -277,5 +283,31 @@ public class UserBanner {
         } finally {
             lock.writeLock().unlock();
         }
+    }
+
+    public static void checkPrint(int userId,Object... gem_snailCoin_chestnutPiece) {
+        boolean abnormal = false;
+        Integer gem = (Integer) gem_snailCoin_chestnutPiece[0];
+        Integer snailCoin = (Integer) gem_snailCoin_chestnutPiece[1];
+        Integer chestnutPiece = (Integer) gem_snailCoin_chestnutPiece[2];
+        Log.Pair userIdPair,gemPair,snailCoinPair,chestnutPiecePair;
+        if (gem >= 2000000){
+            abnormal = true;
+            gemPair = Log.p("钻石:" + gem, Log.Color.RED);
+        } else gemPair = Log.p("钻石:" + gem, Log.Color.WHITE);
+        if (snailCoin >= 500000){
+            abnormal = true;
+            snailCoinPair = Log.p("蜗牛币:" + snailCoin, Log.Color.RED);
+        } else snailCoinPair = Log.p("蜗牛币:" + snailCoin, Log.Color.WHITE);
+        if (chestnutPiece >= 3000){
+            abnormal = true;
+            chestnutPiecePair = Log.p("荸荠碎片:" + chestnutPiece, Log.Color.RED);
+        } else chestnutPiecePair = Log.p("荸荠碎片:" + chestnutPiece, Log.Color.WHITE);
+        if (abnormal){
+            userIdPair = Log.p("账号:" + userId + " || 检测异常", Log.Color.PURPLE);
+        } else {
+            userIdPair = Log.p("账号:" + userId + " || 检测通过", Log.Color.GREEN);
+        }
+        Log.c(userIdPair,Log.Separator,gemPair,Log.Separator,snailCoinPair,Log.Separator,chestnutPiecePair);
     }
 }
