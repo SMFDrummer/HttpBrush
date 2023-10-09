@@ -7,12 +7,14 @@ import com.alibaba.fastjson2.JSONWriter;
 import smf.icdada.*;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.*;
 
@@ -29,7 +31,8 @@ import static smf.icdada.RequestType.V202;
 public class Base {
     private static final ConcurrentHashMap<Integer, Result> Account = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Integer, Result> Proxy = new ConcurrentHashMap<>();
-    private static final ExecutorService executor = Executors.newFixedThreadPool(1000);
+    private static final ConcurrentHashMap<Integer, Integer> Users = new ConcurrentHashMap<>();
+    private static final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
     /**
      * @param userId 八位用户ID
@@ -56,9 +59,13 @@ public class Base {
                                 String ui = dObject.getString("ui");
                                 String sk = dObject.getString("sk");
                                 if (Inter.openConsole) {
-                                    Log.i("userId:" + userId);
-                                    Log.i("ui:" + ui);
-                                    Log.i("sk:" + sk + "\n");
+                                    Log.c(
+                                            Log.p("userId:" + userId, Log.Color.BLUE),
+                                            Log.Separator,
+                                            Log.p("ui:" + ui, Log.Color.BLUE),
+                                            Log.Separator,
+                                            Log.p("sk:" + sk, Log.Color.BLUE)
+                                    );
                                 }
                                 uisk = new Result(ui, sk);
                             }
@@ -76,9 +83,11 @@ public class Base {
     }
 
     public static String getResponseBody(RequestType index, int userId, Object... param) {
+        String responseBody;
         try {
             Result proxy = getProxy(userId);
-            return HttpCrypto.decryptRES(
+            if (Inter.openConsole) Log.d("[SEND] " + index.getRequestBody(index, userId, param));
+            responseBody = HttpCrypto.decryptRES(
                     HttpSender.doQuest(
                             Inter.environment,
                             HttpCrypto.encryptREQ(
@@ -89,11 +98,14 @@ public class Base {
                     )
             );
         } catch (Exception ignored) {
-            return "{\"r\":12202}";
+            responseBody = "{\"r\":12202}";
         }
+        if (Inter.openConsole) Log.w("[RECV] " + responseBody);
+        return responseBody;
     }
 
     public static String getResponseBody(int userId, String requestBody) {
+        String responseBody;
         try {
             Result uisk = getUisk(userId);
             Result proxy = getProxy(userId);
@@ -104,7 +116,8 @@ public class Base {
                 t.put("sk", uisk.getSk());
                 t.put("ui", uisk.getUi());
             }
-            return HttpCrypto.decryptRES(
+            if (Inter.openConsole) Log.d("[SEND] " + parse.toJSONString(JSONWriter.Feature.WriteMapNullValue));
+            responseBody = HttpCrypto.decryptRES(
                     HttpSender.doQuest(
                             Inter.environment,
                             HttpCrypto.encryptREQ(
@@ -115,8 +128,10 @@ public class Base {
                     )
             );
         } catch (Exception ignored) {
-            return "{\"r\":12202}";
+            responseBody = "{\"r\":12202}";
         }
+        if (Inter.openConsole) Log.w("[RECV] " + responseBody);
+        return responseBody;
     }
 
     public static void refresh(int userId) {
@@ -140,6 +155,18 @@ public class Base {
 
     public static Result getProxy(int userId) {
         return Proxy.get(userId);
+    }
+
+    public static List<Integer> getUserList() {
+        List<Integer> userList = new ArrayList<>();
+        for (Map.Entry<Integer, Integer> entry : Users.entrySet()) {
+            userList.add(entry.getKey());
+        }
+        return userList;
+    }
+
+    public static int getIndex(int userId) {
+        return Users.get(userId);
     }
 
     private static String removeQuotes(String str) {
@@ -172,29 +199,31 @@ public class Base {
     }
 
     /**
-     * @return userIds
-     * @描述: userId批量获取方法
+     * @描述: UsersMap初始化方法
      */
-    public static List<Integer> readUserIds() {
-        List<Integer> userIds = new ArrayList<>();
+    public static void initUsersMap() {
         try {
             String stringUrl = System.getProperty("user.dir") + File.separator + "user.json";
             Path userPath = Paths.get(stringUrl);
             if (Files.exists(userPath)) {
                 JSONObject userData = JSONObject.parse(Files.readString(userPath));
                 JSONArray usersArray = userData.getJSONArray("Users");
-                for (Object userElement : usersArray) {
-                    JSONObject userObject = (JSONObject) userElement;
+                for (int i = 0; i < usersArray.size(); i++) {
+                    JSONObject userObject = usersArray.getJSONObject(i);
                     if (userObject.containsKey("activate")) {
                         if (userObject.getBooleanValue("activate")) {
                             int userId = userObject.getIntValue("userId");
-                            userIds.add(userId);
+                            Users.put(userId, i);
                         }
                     } else {
                         int userId = userObject.getIntValue("userId");
-                        UserJsonUtils.JsonUtil(userId, "activate", true);
-                        userIds.add(userId);
+                        userObject.put("activate", true);
+                        Users.put(userId, i);
                     }
+                }
+                try (FileWriter fileWriter = new FileWriter(stringUrl)) {
+                    fileWriter.write(userData.toJSONString(JSONWriter.Feature.PrettyFormat, JSONWriter.Feature.WriteMapNullValue));
+                    fileWriter.flush();
                 }
             } else {
                 Log.e("用户库文件异常，请检查:" + System.getProperty("user.dir") + File.separator + "user.json文件是否存在");
@@ -206,7 +235,6 @@ public class Base {
             Log.w(e.getMessage());
             e.printStackTrace();
         }
-        return userIds;
     }
 
     /**

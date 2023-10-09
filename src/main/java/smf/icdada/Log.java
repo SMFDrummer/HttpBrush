@@ -6,28 +6,7 @@ package smf.icdada;
  * @描述: Log染色输出类
  */
 public class Log {
-    public enum Color {
-        BLACK("\033[30m"),
-        RED("\033[31m"),
-        GREEN("\033[32m"),
-        YELLOW("\033[33m"),
-        BLUE("\033[94m"),
-        PURPLE("\033[35m"),
-        CYAN("\033[36m"),
-        WHITE("\033[37m"),
-        RESET("\033[0m");
-        private final String color;
-
-        Color(String color) {
-            this.color = color;
-        }
-
-        @Override
-        public String toString() {
-            return color;
-        }
-    }
-    public static Pair Separator = p(" || ",Color.WHITE);
+    public static Pair Separator = p(" || ", Color.WHITE);
 
     /**
      * @描述: Error - 红色 - 错误
@@ -98,6 +77,35 @@ public class Log {
     }
 
     /**
+     * @描述: 创建Pair对象
+     */
+    public static Pair p(Object content, Color color) {
+        return new Pair(content, color);
+    }
+
+    public enum Color {
+        BLACK("\033[30m"),
+        RED("\033[31m"),
+        GREEN("\033[32m"),
+        YELLOW("\033[33m"),
+        BLUE("\033[94m"),
+        PURPLE("\033[35m"),
+        CYAN("\033[36m"),
+        WHITE("\033[37m"),
+        RESET("\033[0m");
+        private final String color;
+
+        Color(String color) {
+            this.color = color;
+        }
+
+        @Override
+        public String toString() {
+            return color;
+        }
+    }
+
+    /**
      * @描述: 颜色和内容的键值对
      */
     public static class Pair {
@@ -108,12 +116,5 @@ public class Log {
             this.content = content;
             this.color = color;
         }
-    }
-
-    /**
-     * @描述: 创建Pair对象
-     */
-    public static Pair p(Object content, Color color) {
-        return new Pair(content, color);
     }
 }

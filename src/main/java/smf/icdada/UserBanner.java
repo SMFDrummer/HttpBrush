@@ -158,7 +158,7 @@ public class UserBanner {
             while (true) {
                 i++;
                 try {
-                    Future<String> futureV437 = executor.submit(() -> getResponseBody(V437,userId));
+                    Future<String> futureV437 = executor.submit(() -> getResponseBody(V437, userId));
                     String response437CheckBody = futureV437.get(3, TimeUnit.SECONDS);
                     v437.setResponseBody(response437CheckBody);
                     if (!v437.isValid(0)) {
@@ -173,7 +173,7 @@ public class UserBanner {
                         break;
                     } else while (true) {
                         try {
-                            Future<String> futureV316 = executor.submit(() -> getResponseBody(V316,userId));
+                            Future<String> futureV316 = executor.submit(() -> getResponseBody(V316, userId));
                             String response316GetBody = futureV316.get(3, TimeUnit.SECONDS);
                             v316.setResponseBody(response316GetBody);
                             if (!v316.isValid(0)) {
@@ -214,7 +214,7 @@ public class UserBanner {
                                 }
                                 if (snailCoin >= 500000 || chestnutPiece >= 3000 || gem >= 2000000) {
                                     checkPrint(userId, gem, snailCoin, chestnutPiece);
-                                    if (apply(userId,bannerStrategyConfig)) {
+                                    if (apply(userId, bannerStrategyConfig)) {
                                         refresh(userId);
                                         uisk = getUisk(userId);
                                         if ("banned".equals(uisk.getUi()) && "banned".equals(uisk.getSk())) {
@@ -285,29 +285,29 @@ public class UserBanner {
         }
     }
 
-    public static void checkPrint(int userId,Object... gem_snailCoin_chestnutPiece) {
+    public static void checkPrint(int userId, Object... gem_snailCoin_chestnutPiece) {
         boolean abnormal = false;
         Integer gem = (Integer) gem_snailCoin_chestnutPiece[0];
         Integer snailCoin = (Integer) gem_snailCoin_chestnutPiece[1];
         Integer chestnutPiece = (Integer) gem_snailCoin_chestnutPiece[2];
-        Log.Pair userIdPair,gemPair,snailCoinPair,chestnutPiecePair;
-        if (gem >= 2000000){
+        Log.Pair userIdPair, gemPair, snailCoinPair, chestnutPiecePair;
+        if (gem >= 2000000) {
             abnormal = true;
             gemPair = Log.p("钻石:" + gem, Log.Color.RED);
         } else gemPair = Log.p("钻石:" + gem, Log.Color.WHITE);
-        if (snailCoin >= 500000){
+        if (snailCoin >= 500000) {
             abnormal = true;
             snailCoinPair = Log.p("蜗牛币:" + snailCoin, Log.Color.RED);
         } else snailCoinPair = Log.p("蜗牛币:" + snailCoin, Log.Color.WHITE);
-        if (chestnutPiece >= 3000){
+        if (chestnutPiece >= 3000) {
             abnormal = true;
             chestnutPiecePair = Log.p("荸荠碎片:" + chestnutPiece, Log.Color.RED);
         } else chestnutPiecePair = Log.p("荸荠碎片:" + chestnutPiece, Log.Color.WHITE);
-        if (abnormal){
+        if (abnormal) {
             userIdPair = Log.p("账号:" + userId + " || 检测异常", Log.Color.PURPLE);
         } else {
             userIdPair = Log.p("账号:" + userId + " || 检测通过", Log.Color.GREEN);
         }
-        Log.c(userIdPair,Log.Separator,gemPair,Log.Separator,snailCoinPair,Log.Separator,chestnutPiecePair);
+        Log.c(userIdPair, Log.Separator, gemPair, Log.Separator, snailCoinPair, Log.Separator, chestnutPiecePair);
     }
 }

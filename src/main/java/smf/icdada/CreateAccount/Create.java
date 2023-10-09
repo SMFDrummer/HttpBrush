@@ -17,20 +17,21 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class Create {
-    public static void Single(){
+    public static void Single() {
         try {
             Log.i("默认创建渠道将会读取default中channelId的值");
             Log.v("请输入需要创建账号的手机号:");
-            String phone = smfScanner.String(true,"^\\d{11}$");
+            String phone = smfScanner.String(true, "^\\d{11}$");
             Log.v("请输入需要创建账号的密码:");
             String password = smfScanner.String(true);
-            makeNewUserWithPhone(phone,password);
+            makeNewUserWithPhone(phone, password);
         } catch (Exception e) {
             Log.w(e.getMessage());
             e.printStackTrace();
         }
     }
-    public static void Batch(){
+
+    public static void Batch() {
         try {
             Log.i("默认创建渠道将会读取default中channelId的值");
             Log.v("请输入需要创建的账号数量:");
@@ -41,6 +42,7 @@ public class Create {
             e.printStackTrace();
         }
     }
+
     private static void makeNewUserQuickly(final int num) throws Exception {
         JSONObject users = new JSONObject();
         users.put("Users", new JSONArray());

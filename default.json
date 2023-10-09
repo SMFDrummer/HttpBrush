@@ -19,7 +19,7 @@
       "#DESCRIPTION#": "全局设定值，若需要手动输入，请填入null",
       "OpenConsole": {
         "#DESCRIPTION#": "开启完整控制台输出",
-        "value": false
+        "value": true
       },
       "Inter": {
         "#DESCRIPTION#": "预选程序功能",
@@ -31,11 +31,11 @@
       },
       "AndroidVersion": {
         "#DESCRIPTION#": "安卓版本号",
-        "value": "3.2.0.1421"
+        "value": "3.2.0"
       },
       "IOSVersion": {
         "#DESCRIPTION#": "苹果版本号",
-        "value": "3.2.0.800"
+        "value": "3.2.1.804"
       },
       "Environment": {
         "#DESCRIPTION#": "运行环境",

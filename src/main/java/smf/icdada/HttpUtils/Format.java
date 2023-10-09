@@ -24,6 +24,7 @@ public class Format {
         }
         return false;
     }
+
     private static Class<?> getSubclass(String className) {
         Class<?>[] subclasses = Format.class.getDeclaredClasses();
         for (Class<?> subclass : subclasses) {
@@ -33,6 +34,7 @@ public class Format {
         }
         return null;
     }
+
     public static JSONArray writeFormat(String className) {
         Class<?> subclass = Format.getSubclass(className);
         if (subclass != null) {
@@ -48,9 +50,10 @@ public class Format {
         }
         return null;
     }
-    protected static JSONObject write(String key, String type){
+
+    protected static JSONObject write(String key, String type) {
         JSONObject jsonObject = new JSONObject();
-        Log.v("请输入自定义键"+key+"的值，类型为"+type);
+        Log.v("请输入自定义键" + key + "的值，类型为" + type);
         Object value = switch (type) {
             case "int" -> smfScanner.Int(false);
             case "double" -> smfScanner.Double(false);
@@ -59,57 +62,64 @@ public class Format {
             case "JSONArray" -> smfScanner.JSONArray(false);
             default -> null;
         };
-        jsonObject.put("key",key);
-        jsonObject.put("type",type);
-        jsonObject.put("value",value);
+        jsonObject.put("key", key);
+        jsonObject.put("type", type);
+        jsonObject.put("value", value);
         return jsonObject;
     }
+
     public static class V303 {
         public static JSONArray write() {
             JSONArray jsonArray = new JSONArray();
-            jsonArray.add(Format.write("id","int"));
+            jsonArray.add(Format.write("id", "int"));
             return jsonArray;
         }
     }
+
     public static class V876 {
         public static JSONArray write() {
             JSONArray jsonArray = new JSONArray();
-            jsonArray.add(Format.write("code","String"));
+            jsonArray.add(Format.write("code", "String"));
             return jsonArray;
         }
     }
+
     public static class V877 {
         public static JSONArray write() {
             JSONArray jsonArray = new JSONArray();
-            jsonArray.add(Format.write("index","String"));
+            jsonArray.add(Format.write("index", "String"));
             return jsonArray;
         }
     }
+
     public static class V878 {
         public static JSONArray write() {
             JSONArray jsonArray = new JSONArray();
-            jsonArray.add(Format.write("type","String"));
+            jsonArray.add(Format.write("type", "String"));
             return jsonArray;
         }
     }
+
     public static class V904 {
         public static JSONArray write() {
             JSONArray jsonArray = new JSONArray();
-            jsonArray.add(Format.write("t","String"));
+            jsonArray.add(Format.write("t", "String"));
             return jsonArray;
         }
     }
+
     public static class V927 {
         public static JSONArray write() {
             JSONArray jsonArray = new JSONArray();
-            jsonArray.add(Format.write("pl","JSONArray"));
+            jsonArray.add(Format.write("pl", "JSONArray"));
             return jsonArray;
         }
     }
+
     public static class V993 {
         public static JSONArray write() {
             JSONArray jsonArray = new JSONArray();
-            jsonArray.add(Format.write("giftId","String"));
+            jsonArray.add(Format.write("giftId", "String"));
             return jsonArray;
         }
     }

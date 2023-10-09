@@ -15,7 +15,7 @@ import static smf.icdada.HttpUtils.Base.getUisk;
 @SuppressWarnings("unused")
 public enum RequestType {
     I4("{\"i\":\"I4\",\"r\":0,\"t\":{}}"),
-    V202("{\"i\":\"V202\",\"r\":0,\"t\":{\"ci\":\"93\",\"di\":\"\",\"li\":\"486efa91941f659207c906eed2e70dfe\",\"oi\":null,\"pi\":\"\",\"r\":\"703740081\",\"s\":\"a3fa45b7cfc5c85201dc139bab0ee6fb\",\"ui\":\"\"}}"),
+    V202("{\"i\":\"V202\",\"r\":0,\"t\":{\"ci\":\"93\",\"cv\":null,\"di\":\"\",\"li\":\"486efa91941f659207c906eed2e70dfe\",\"oi\":null,\"pi\":\"\",\"r\":\"703740081\",\"s\":\"a3fa45b7cfc5c85201dc139bab0ee6fb\",\"ui\":\"\"}}"),
     V303("{\"i\":\"V303\",\"r\":0,\"t\":{\"al\":[{\"id\":null,\"abi\":0,\"type\":1,\"config_version\":1}],\"ci\":\"93\",\"cs\":\"0\",\"pack\":null,\"pi\":null,\"sk\":null,\"ui\":null,\"v\":null}}"),
     V316("{\"i\":\"V316\",\"r\":0,\"t\":{\"b\":\"0\",\"n\":\"\",\"pi\":null,\"sk\":null,\"ui\":null}}"),
     V323("{\"i\":\"V323\",\"r\":0,\"t\":{\"ad\":\"0\",\"l\":[1199,1199,0,0,0],\"pi\":null,\"sk\":null,\"t\":\"0\",\"ui\":null}}"),
@@ -34,91 +34,6 @@ public enum RequestType {
         this.requestBody = requestBody;
     }
 
-    public String getRequestBody() {
-        return requestBody;
-    }
-
-    public String getRequestBody(RequestType index, int userId, Object... param) {
-        Result uisk = getUisk(userId);
-        String xi = uisk.getUi();
-        String sk = uisk.getSk();
-        JSONObject parse = JSONObject.parse(getRequestBody());
-        JSONObject t = parse.getJSONObject("t");
-        t.put("ver_", Inter.iosVersion);
-        switch (index) {
-            case V202 -> {
-                t.put("oi", Inter.oi + "X" + userId);
-                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
-            }
-            case V303 -> {
-                JSONObject al = t.getJSONArray("al").getJSONObject(0);
-                al.put("id", param[0]);
-                t.put("pack", Inter.packageValue);
-                t.put("pi", xi);
-                t.put("sk", sk);
-                t.put("ui", xi);
-                t.put("v", Inter.androidVersion);
-                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
-            }
-            case V316, V323, V437, V902 -> {
-                t.put("pi", xi);
-                t.put("sk", sk);
-                t.put("ui", xi);
-                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
-            }
-            case V876 -> {
-                t.put("code", param[0]);
-                t.put("pi", xi);
-                t.put("sk", sk);
-                t.put("ui", xi);
-                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
-            }
-            case V877 -> {
-                t.put("index", param[0]);
-                t.put("pi", xi);
-                t.put("sk", sk);
-                t.put("ui", xi);
-                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
-            }
-            case V878 -> {
-                if (param[0].equals("1")) {
-                    t.put("bai", "0");
-                    t.put("gi", "0");
-                }
-                t.put("type", param[0]);
-                t.put("pi", xi);
-                t.put("sk", sk);
-                t.put("ui", xi);
-                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
-            }
-            case V904 -> {
-                t.put("t", param[0]);
-                t.put("pi", xi);
-                t.put("sk", sk);
-                t.put("ui", xi);
-                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
-            }
-            case V927 -> {
-                JSONObject pr = t.getJSONObject("pr");
-                t.put("pl", param[0]);
-                t.put("pi", xi);
-                t.put("sk", sk);
-                t.put("ui", xi);
-                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
-            }
-            case V993 -> {
-                t.put("giftId", param[0]);
-                t.put("pi", xi);
-                t.put("sk", sk);
-                t.put("ui", xi);
-                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
-            }
-            default -> {
-                return requestBody;
-            }
-        }
-    }
-
     public static boolean checkRequestBody(String identifier) {
         for (RequestType requestType : RequestType.values()) {
             if (requestType.name().startsWith(identifier)) return true;
@@ -130,6 +45,113 @@ public enum RequestType {
         for (RequestType requestType : RequestType.values()) {
             if (requestType.name().startsWith(identifier)) {
                 Log.a("数据包标识:" + requestType.name() + " || " + requestType.getRequestBody());
+            }
+        }
+    }
+
+    public String getRequestBody() {
+        return requestBody;
+    }
+
+    public String getRequestBody(RequestType index, int userId, Object... param) {
+        JSONObject parse = JSONObject.parse(getRequestBody());
+        JSONObject t = parse.getJSONObject("t");
+        t.put("ver_", Inter.iosVersion);
+        switch (index) {
+            case V202 -> {
+                t.put("cv", Inter.androidVersion);
+                t.put("oi", Inter.oi + "X" + userId);
+                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+            }
+            case V303 -> {
+                Result uisk = getUisk(userId);
+                String xi = uisk.getUi();
+                String sk = uisk.getSk();
+                JSONObject al = t.getJSONArray("al").getJSONObject(0);
+                al.put("id", param[0]);
+                t.put("pack", Inter.packageValue);
+                t.put("pi", xi);
+                t.put("sk", sk);
+                t.put("ui", xi);
+                t.put("v", Inter.androidVersion);
+                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+            }
+            case V316, V323, V437, V902 -> {
+                Result uisk = getUisk(userId);
+                String xi = uisk.getUi();
+                String sk = uisk.getSk();
+                t.put("pi", xi);
+                t.put("sk", sk);
+                t.put("ui", xi);
+                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+            }
+            case V876 -> {
+                Result uisk = getUisk(userId);
+                String xi = uisk.getUi();
+                String sk = uisk.getSk();
+                t.put("code", param[0]);
+                t.put("pi", xi);
+                t.put("sk", sk);
+                t.put("ui", xi);
+                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+            }
+            case V877 -> {
+                Result uisk = getUisk(userId);
+                String xi = uisk.getUi();
+                String sk = uisk.getSk();
+                t.put("index", param[0]);
+                t.put("pi", xi);
+                t.put("sk", sk);
+                t.put("ui", xi);
+                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+            }
+            case V878 -> {
+                Result uisk = getUisk(userId);
+                String xi = uisk.getUi();
+                String sk = uisk.getSk();
+                if (param[0].equals("1")) {
+                    t.put("bai", "0");
+                    t.put("gi", "0");
+                }
+                t.put("type", param[0]);
+                t.put("pi", xi);
+                t.put("sk", sk);
+                t.put("ui", xi);
+                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+            }
+            case V904 -> {
+                Result uisk = getUisk(userId);
+                String xi = uisk.getUi();
+                String sk = uisk.getSk();
+                t.put("t", param[0]);
+                t.put("pi", xi);
+                t.put("sk", sk);
+                t.put("ui", xi);
+                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+            }
+            case V927 -> {
+                Result uisk = getUisk(userId);
+                String xi = uisk.getUi();
+                String sk = uisk.getSk();
+                JSONObject pr = t.getJSONObject("pr");
+                t.put("pl", param[0]);
+                t.put("pi", xi);
+                t.put("sk", sk);
+                t.put("ui", xi);
+                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+            }
+            case V993 -> {
+                Result uisk = getUisk(userId);
+                String xi = uisk.getUi();
+                String sk = uisk.getSk();
+                t.put("giftId", param[0]);
+                t.put("pi", xi);
+                t.put("sk", sk);
+                t.put("ui", xi);
+                return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+            }
+            default -> {
+                return requestBody;
             }
         }
     }

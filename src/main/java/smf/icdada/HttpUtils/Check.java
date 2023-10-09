@@ -3,6 +3,7 @@ package smf.icdada.HttpUtils;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+
 /**
  * @author SMF & icdada
  * @描述: Check响应检查类
@@ -130,6 +131,24 @@ public class Check {
             JSONObject d = JSON.parseObject(responseBody).getJSONObject("d");
             if (d.containsKey("isnew")) return d.getBooleanValue("isnew");
             else return true;
+        }
+    }
+
+    public static class V904 {
+        private String responseBody;
+
+        public void setResponseBody(String responseBody) {
+            this.responseBody = responseBody;
+        }
+
+        public boolean isValid(int r) {
+            if (JSON.isValidObject(responseBody)) {
+                JSONObject jsonObject = JSON.parseObject(responseBody);
+                if (r == 0) return jsonObject.getIntValue("r") == r &&
+                        jsonObject.containsKey("d") &&
+                        JSON.isValidObject(jsonObject.getString("d"));
+                else return jsonObject.getIntValue("r") == r;
+            } else return false;
         }
     }
 }

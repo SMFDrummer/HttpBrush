@@ -122,7 +122,7 @@ public class Strategy {
                                                             String responseBody = future.get(3, TimeUnit.SECONDS);
                                                             if (
                                                                     JSONObject.parseObject(responseBody).getIntValue("r") == r ||
-                                                                    JSONObject.parseObject(responseBody).getIntValue("r") == 0
+                                                                            JSONObject.parseObject(responseBody).getIntValue("r") == 0
                                                             )
                                                                 p++;
                                                         }
@@ -140,7 +140,8 @@ public class Strategy {
                                     }
                                 }
                             }
-                        } return true;
+                        }
+                        return true;
                     } else {
                         System.exit(0);
                     }

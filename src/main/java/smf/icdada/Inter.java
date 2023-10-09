@@ -26,8 +26,8 @@ public class Inter {
     public static int appId;
     public static int channelId;
     public static String packageValue;
-    protected static String defaultUrl = System.getProperty("user.dir") + File.separator + "default.json";
     public static String oi;
+    protected static String defaultUrl = System.getProperty("user.dir") + File.separator + "default.json";
 
     public static void PreCheck() {
         try {
@@ -143,12 +143,14 @@ public class Inter {
                 [4] user.json用户库状态刷新
                 [5] user.json用户库拆解
                 [6] 发送数据包配置生成器
-                [7] 自定义发送数据包组
-                [8] 周年庆邀请活动单一刷取
-                [9] 周年庆邀请活动批量刷取(user.json)
+                [7] 自定义发送数据包组(单一用户)
+                [8] 周年庆邀请活动刷取(单一用户)
+                [9] 周年庆邀请活动刷取(user.json)
                 [10] user.json用户库保护
-                [11] 创建账号(使用手机号与密码)
-                [12] 创建账号(批量创建)
+                [11] 拓维官服创建账号(使用手机号与密码)
+                [12] 拓维官服创建账号(批量创建)
+                [13] 剧院币一键成号刷取(单一用户)
+                [14] 剧院币一键成号刷取(user.json)
                 [0] 退出程序""");
         Log.v("请输入序号并按回车键继续……:");
         while (keepRunning) {
@@ -181,15 +183,15 @@ public class Inter {
                         keepRunning = false;
                     }
                     case 7 -> {
-                        Log.s("自定义发送数据包组");
+                        Log.s("自定义发送数据包组(单一用户)");
                         keepRunning = false;
                     }
                     case 8 -> {
-                        Log.s("周年庆邀请活动单一刷取");
+                        Log.s("周年庆邀请活动刷取(单一用户)");
                         keepRunning = false;
                     }
                     case 9 -> {
-                        Log.s("周年庆邀请活动批量刷取(user.json)");
+                        Log.s("周年庆邀请活动刷取(user.json)");
                         keepRunning = false;
                     }
                     case 10 -> {
@@ -197,11 +199,19 @@ public class Inter {
                         keepRunning = false;
                     }
                     case 11 -> {
-                        Log.s("创建账号(使用手机号与密码)");
+                        Log.s("拓维官服创建账号(使用手机号与密码)");
                         keepRunning = false;
                     }
                     case 12 -> {
-                        Log.s("创建账号(批量创建)");
+                        Log.s("拓维官服创建账号(批量创建)");
+                        keepRunning = false;
+                    }
+                    case 13 -> {
+                        Log.s("剧院币一键成号刷取(单一用户)");
+                        keepRunning = false;
+                    }
+                    case 14 -> {
+                        Log.s("剧院币一键成号刷取(user.json)");
                         keepRunning = false;
                     }
                     case 99 -> {
@@ -228,8 +238,8 @@ public class Inter {
     }
 
     private static String androidVersion() {
-        Log.v("请输入安卓版本号，格式为${VersionName}.${VersionCode}，如1.2.3.1234");
-        return smfScanner.String(false, "^\\d{1}\\.\\d{1}\\.\\d{1}\\.\\d{4}$");
+        Log.v("请输入安卓版本号，格式为${VersionName}，如1.2.3");
+        return smfScanner.String(false, "^\\d{1}\\.\\d{1}\\.\\d{1}$");
     }
 
     private static String iosVersion() {

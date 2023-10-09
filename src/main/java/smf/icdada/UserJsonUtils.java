@@ -32,7 +32,8 @@ public class UserJsonUtils {
     private static final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public static void measure() {
-        List<Integer> userIds = readUserIds();
+        initUsersMap();
+        List<Integer> userIds = getUserList();
         ExecutorService executorService = Executors.newFixedThreadPool(userIds.size());
         for (int userId : userIds) {
             sleep(100);
@@ -56,7 +57,7 @@ public class UserJsonUtils {
             refresh(userId);
         } catch (Exception e) {
             e.printStackTrace();
-            break;
+            return;
         }
         refresh(userId);
         Result uisk = getUisk(userId);
@@ -76,7 +77,7 @@ public class UserJsonUtils {
         Check.V316 v316 = new Check.V316();
         while (true) {
             try {
-                Future<String> future = executor.submit(() -> getResponseBody(V316,userId));
+                Future<String> future = executor.submit(() -> getResponseBody(V316, userId));
                 String response316Body = future.get(3, TimeUnit.SECONDS);
                 v316.setResponseBody(response316Body);
                 if (!v316.isValid(0)) {
@@ -101,7 +102,7 @@ public class UserJsonUtils {
         Check.V303 v303 = new Check.V303();
         while (true) {
             try {
-                Future<String> future = executor.submit(() -> getResponseBody(V303,userId));
+                Future<String> future = executor.submit(() -> getResponseBody(V303, userId, 10868));
                 String response303Body = future.get(3, TimeUnit.SECONDS);
                 v303.setResponseBody(response303Body);
                 if (!v303.isValid(0)) {
@@ -123,6 +124,9 @@ public class UserJsonUtils {
         }
     }
 
+    /**
+     * @描述: user.json文件编辑方法，请确保运行该方法前已经初始化Users，否则会回报空指针异常
+     */
     public static <T> void JsonUtil(int userId, String key, T value) {
         String filePath = System.getProperty("user.dir") + File.separator + "user.json";
         String tempFilePath = System.getProperty("user.dir") + File.separator + "temp" + File.separator + UUID.randomUUID() + ".tmp";
@@ -131,12 +135,8 @@ public class UserJsonUtils {
             String jsonString = Files.readString(Path.of(filePath));
             JSONObject parse = JSONObject.parseObject(jsonString);
             JSONArray usersArray = parse.getJSONArray("Users");
-            for (int i = 0; i < usersArray.size(); i++) {
-                JSONObject userObj = usersArray.getJSONObject(i);
-                if (userObj.getIntValue("userId") == userId) {
-                    userObj.put(key, value);
-                }
-            }
+            JSONObject userObj = usersArray.getJSONObject(getIndex(userId));
+            userObj.put(key, value);
             String formattedJson = parse.toJSONString(JSONWriter.Feature.PrettyFormat, JSONWriter.Feature.WriteMapNullValue);
             try (FileWriter fileWriter = new FileWriter(tempFilePath)) {
                 fileWriter.write(formattedJson);
@@ -144,7 +144,7 @@ public class UserJsonUtils {
             }
             Files.move(Paths.get(tempFilePath), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
             Files.deleteIfExists(Paths.get(tempFilePath)); // 删除临时文件
-            Log.s("账号:" + userId + " || 处理完成");
+            if (Inter.openConsole) Log.s("账号:" + userId + " || 处理完成");
         } catch (Exception e) {
             Log.w(e.getMessage());
             e.printStackTrace();

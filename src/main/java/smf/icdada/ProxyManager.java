@@ -137,7 +137,7 @@ public class ProxyManager {
     private static boolean isProxyAvailable(String proxyHost, int proxyPort) {
         try {
             sleep(500);
-            String responseI4CheckBody = getResponseBody(proxyHost,proxyPort);
+            String responseI4CheckBody = getResponseBody(proxyHost, proxyPort);
             if (responseI4CheckBody != null) {
                 JSONObject jsonObject = JSONObject.parse(responseI4CheckBody);
                 return jsonObject.containsKey("i") && jsonObject.getIntValue("r") == 0;
