@@ -2,12 +2,17 @@ package smf.icdada;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.JSONPath;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
+
+import static smf.icdada.Inter.SettingType.GlobalSettings;
+import static smf.icdada.Inter.SettingType.OtherSettings;
+
 
 /**
  * @author SMF & icdada
@@ -17,6 +22,7 @@ import java.util.Scanner;
  * </p>
  */
 public class Inter {
+    private static final String defaultUrl = System.getProperty("user.dir") + File.separator + "default.json";
     public static boolean openConsole;
     public static int inter;
     public static int proxyType;
@@ -27,7 +33,7 @@ public class Inter {
     public static int channelId;
     public static String packageValue;
     public static String oi;
-    protected static String defaultUrl = System.getProperty("user.dir") + File.separator + "default.json";
+    private static JSONObject defaultParse = new JSONObject();
 
     public static void PreCheck() {
         try {
@@ -38,13 +44,13 @@ public class Inter {
             }
             Path defaultJsonPath = Paths.get(defaultUrl);
             if (Files.exists(defaultJsonPath)) {
-                JSONObject jsonObject = JSONObject.parse(Files.readString(defaultJsonPath));
+                defaultParse = JSONObject.parse(Files.readString(defaultJsonPath));
                 if (
-                        !jsonObject.containsKey("PropInfo") ||
-                                !jsonObject.getString("PropInfo").equals("HttpBrushPropertySheet") ||
-                                !jsonObject.containsKey("AuthorInfo") ||
-                                !jsonObject.getJSONObject("AuthorInfo").containsKey("Developer") ||
-                                !jsonObject.getJSONObject("AuthorInfo").getString("Developer").equals("SMF")
+                        !defaultParse.containsKey("PropInfo") ||
+                                !defaultParse.getString("PropInfo").equals("HttpBrushPropertySheet") ||
+                                !defaultParse.containsKey("AuthorInfo") ||
+                                !defaultParse.getJSONObject("AuthorInfo").containsKey("Developer") ||
+                                !defaultParse.getJSONObject("AuthorInfo").getString("Developer").equals("SMF")
                 ) {
                     Log.e("配置文件异常，程序结束");
                     throw new Exception();
@@ -62,8 +68,7 @@ public class Inter {
     public static String getTestBy() {
         StringBuilder stringBuilder = new StringBuilder();
         try {
-            JSONObject jsonObject = JSONObject.parse(Files.readString(Paths.get(defaultUrl)));
-            JSONArray jsonArray = jsonObject.getJSONObject("AuthorInfo").getJSONArray("TestBy");
+            JSONArray jsonArray = (JSONArray) JSONPath.eval(defaultParse, "$.AuthorInfo.TestBy");
             for (int i = 0; i < jsonArray.size(); i++) {
                 String s = jsonArray.getString(i);
                 stringBuilder.append(s);
@@ -84,19 +89,20 @@ public class Inter {
     }
 
     private static void setGlobalSetting() {
-        openConsole = getGlobalSetting("OpenConsole") == null ? openConsole() : (boolean) getGlobalSetting("OpenConsole");
-        inter = getGlobalSetting("Inter") == null ? inter() : (int) getGlobalSetting("Inter");
-        proxyType = getGlobalSetting("ProxyType") == null ? proxyType() : (int) getGlobalSetting("ProxyType");
-        androidVersion = getGlobalSetting("AndroidVersion") == null ? androidVersion() : (String) getGlobalSetting("AndroidVersion");
-        iosVersion = getGlobalSetting("IOSVersion") == null ? iosVersion() : (String) getGlobalSetting("IOSVersion");
-        environment = getGlobalSetting("Environment") == null ? environment() : (boolean) getGlobalSetting("Environment");
+        openConsole = getSetting(GlobalSettings, ".OpenConsole.value") == null ? openConsole() : (boolean) getSetting(GlobalSettings, ".OpenConsole.value");
+        inter = getSetting(GlobalSettings, ".Inter.value") == null ? inter() : (int) getSetting(GlobalSettings, ".Inter.value");
+        proxyType = getSetting(GlobalSettings, ".ProxyType.value") == null ? proxyType() : (int) getSetting(GlobalSettings, ".ProxyType.value");
+        androidVersion = getSetting(GlobalSettings, ".AndroidVersion.value") == null ? androidVersion() : getSetting(GlobalSettings, ".AndroidVersion.value").toString();
+        iosVersion = getSetting(GlobalSettings, ".IOSVersion.value") == null ? iosVersion() : getSetting(GlobalSettings, ".IOSVersion.value").toString();
+        environment = getSetting(GlobalSettings, ".Environment.value") == null ? environment() : (boolean) getSetting(GlobalSettings, ".Environment.value");
     }
 
     private static void setOtherSetting() {
         try {
-            appId = getOtherSetting("PackageId").getIntValue("appId");
-            channelId = getOtherSetting("PackageId").get("channelId") == null ? channelId() : getOtherSetting("PackageId").getIntValue("channelId");
-            packageValue = packageValue();
+            JSONArray packages = (JSONArray) getSetting(OtherSettings, ".PackageId.package");
+            appId = (int) getSetting(OtherSettings, ".PackageId.appId");
+            channelId = getSetting(OtherSettings, ".PackageId.channelId") == null ? channelId(packages) : (int) getSetting(OtherSettings, ".PackageId.channelId");
+            packageValue = packageValue(packages);
             oi = String.valueOf(Inter.appId) + Inter.channelId;
         } catch (Exception e) {
             Log.e("配置文件异常:");
@@ -104,28 +110,14 @@ public class Inter {
         }
     }
 
-    private static Object getGlobalSetting(String key) {
+    private static Object getSetting(SettingType type, String keyPathElement) {
         try {
-            JSONObject jsonObject = JSONObject.parse(Files.readString(Paths.get(defaultUrl)));
-            JSONObject GlobalSettings = jsonObject.getJSONObject("PropData").getJSONObject("GlobalSettings");
-            return GlobalSettings.getJSONObject(key).get("value");
+            return JSONPath.eval(defaultParse, "$.PropData." + type + keyPathElement);
         } catch (Exception e) {
             Log.e("配置文件异常:");
             e.printStackTrace();
+            return new Object();
         }
-        return new Object();
-    }
-
-    private static JSONObject getOtherSetting(String key) {
-        try {
-            JSONObject jsonObject = JSONObject.parse(Files.readString(Paths.get(defaultUrl)));
-            JSONObject OtherSetting = jsonObject.getJSONObject("PropData").getJSONObject("OtherSettings");
-            return OtherSetting.getJSONObject(key);
-        } catch (Exception e) {
-            Log.e("配置文件异常:");
-            e.printStackTrace();
-        }
-        return new JSONObject();
     }
 
     private static boolean openConsole() {
@@ -151,6 +143,8 @@ public class Inter {
                 [12] 拓维官服创建账号(批量创建)
                 [13] 剧院币一键成号刷取(单一用户)
                 [14] 剧院币一键成号刷取(user.json)
+                [15] 完美存档刷取(单一用户)
+                [16] 完美存档刷取(user.json)
                 [0] 退出程序""");
         Log.v("请输入序号并按回车键继续……:");
         while (keepRunning) {
@@ -214,6 +208,14 @@ public class Inter {
                         Log.s("剧院币一键成号刷取(user.json)");
                         keepRunning = false;
                     }
+                    case 15 -> {
+                        Log.s("完美存档刷取(单一用户)");
+                        keepRunning = false;
+                    }
+                    case 16 -> {
+                        Log.s("完美存档刷取(user.json)");
+                        keepRunning = false;
+                    }
                     case 99 -> {
                         Log.d("Debug - HttpBrushTest - main");
                         keepRunning = false;
@@ -234,7 +236,7 @@ public class Inter {
                 [1] 本地代理池(需要提前开启HttpBrushProxyPool)
                 [2] 在线代理池""");
         Log.v("请输入序号并按回车键继续……:");
-        return smfScanner.Int(false, "^[1|2]+$");
+        return smfScanner.Int(false, "^[1|2]$");
     }
 
     private static String androidVersion() {
@@ -251,11 +253,9 @@ public class Inter {
         return true;
     }
 
-    private static int channelId() {
+    private static int channelId(JSONArray packages) {
         int channelId = 208;
         try {
-            JSONObject parse = JSONObject.parse(Files.readString(Paths.get(defaultUrl)));
-            JSONArray packages = parse.getJSONObject("PropData").getJSONObject("OtherSettings").getJSONObject("PackageId").getJSONArray("package");
             StringBuilder stringBuilder = new StringBuilder("^[");
             Log.v("请输入渠道，以下是目前所有可用的渠道:");
             for (int i = 0; i < packages.size(); i++) {
@@ -279,20 +279,18 @@ public class Inter {
         return channelId;
     }
 
-    private static String packageValue() {
+    private static String packageValue(JSONArray packages) {
         try {
-            JSONObject parse = JSONObject.parse(Files.readString(Paths.get(defaultUrl)));
-            JSONArray packages = parse.getJSONObject("PropData").getJSONObject("OtherSettings").getJSONObject("PackageId").getJSONArray("package");
-            for (Object object : packages) {
-                JSONObject jsonObject = (JSONObject) object;
-                if (channelId == jsonObject.getIntValue("id")) {
-                    return jsonObject.getString("value");
-                }
-            }
+            return JSONPath.eval(packages, "$[?(@.id == " + channelId + ")].value").toString();
         } catch (Exception e) {
             Log.e("配置文件异常:");
             e.printStackTrace();
+            return null;
         }
-        return null;
+    }
+
+    enum SettingType {
+        GlobalSettings,
+        OtherSettings
     }
 }

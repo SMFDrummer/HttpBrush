@@ -5,7 +5,11 @@ import com.alibaba.fastjson2.JSONObject;
 import smf.icdada.Log;
 import smf.icdada.smfScanner;
 
+import java.lang.String;
 import java.lang.reflect.Method;
+
+import static smf.icdada.HttpUtils.Format.DataType.String;
+import static smf.icdada.HttpUtils.Format.DataType.*;
 
 /**
  * @author SMF & icdada
@@ -51,27 +55,46 @@ public class Format {
         return null;
     }
 
-    protected static JSONObject write(String key, String type) {
+    public static JSONObject write(String keyPath, DataType type) {
         JSONObject jsonObject = new JSONObject();
-        Log.v("请输入自定义键" + key + "的值，类型为" + type);
+        Log.v("请输入预设键路径" + keyPath + "的值，类型为" + type);
         Object value = switch (type) {
-            case "int" -> smfScanner.Int(false);
-            case "double" -> smfScanner.Double(false);
-            case "String" -> smfScanner.String(false);
-            case "JSONObject" -> smfScanner.JSONObject(false);
-            case "JSONArray" -> smfScanner.JSONArray(false);
-            default -> null;
+            case Int -> smfScanner.Int(false);
+            case Double -> smfScanner.Double(false);
+            case String -> smfScanner.String(false);
+            case JSONObject -> smfScanner.JSONObject(false);
+            case JSONArray -> smfScanner.JSONArray(false);
         };
-        jsonObject.put("key", key);
-        jsonObject.put("type", type);
+        jsonObject.put("keyPath", keyPath);
+        jsonObject.put("type", type.toString());
         jsonObject.put("value", value);
         return jsonObject;
+    }
+
+    public enum DataType {
+        Int,
+        Double,
+        String,
+        JSONObject,
+        JSONArray
+    }
+
+    public static class V302 {
+        public static JSONArray write() {
+            JSONArray jsonArray = new JSONArray();
+            Log.i("刷取道具配置，格式模板为：[{\"i\":Int,\"q\":Int,\"f\":String}]");
+            jsonArray.add(Format.write("$.t.o", JSONArray));
+            Log.i("通关数，通常为不超过INT_MAX的整数，但不建议填写过高数值");
+            jsonArray.add(Format.write("$.t.uk", Int));
+            return jsonArray;
+        }
     }
 
     public static class V303 {
         public static JSONArray write() {
             JSONArray jsonArray = new JSONArray();
-            jsonArray.add(Format.write("id", "int"));
+            Log.i("欲进入的活动ID，通常为五位整数");
+            jsonArray.add(Format.write("$.t.al[0].id", Int));
             return jsonArray;
         }
     }
@@ -79,7 +102,8 @@ public class Format {
     public static class V876 {
         public static JSONArray write() {
             JSONArray jsonArray = new JSONArray();
-            jsonArray.add(Format.write("code", "String"));
+            Log.i("待刷取的邀请码，格式为9字符全大写");
+            jsonArray.add(Format.write("$.t.code", String));
             return jsonArray;
         }
     }
@@ -87,7 +111,8 @@ public class Format {
     public static class V877 {
         public static JSONArray write() {
             JSONArray jsonArray = new JSONArray();
-            jsonArray.add(Format.write("index", "String"));
+            Log.i("数据包序号，通常为不超过10的整数");
+            jsonArray.add(Format.write("$.t.index", String));
             return jsonArray;
         }
     }
@@ -95,7 +120,9 @@ public class Format {
     public static class V878 {
         public static JSONArray write() {
             JSONArray jsonArray = new JSONArray();
-            jsonArray.add(Format.write("type", "String"));
+            Log.w("不建议该数据包使用默认模板");
+            Log.i("抽取魔豆奖励，通常为0或1");
+            jsonArray.add(Format.write("$.t.type", String));
             return jsonArray;
         }
     }
@@ -103,7 +130,8 @@ public class Format {
     public static class V904 {
         public static JSONArray write() {
             JSONArray jsonArray = new JSONArray();
-            jsonArray.add(Format.write("t", "String"));
+            Log.i("剧院币刷取，通常为7");
+            jsonArray.add(Format.write("$.t.t", String));
             return jsonArray;
         }
     }
@@ -111,7 +139,9 @@ public class Format {
     public static class V927 {
         public static JSONArray write() {
             JSONArray jsonArray = new JSONArray();
-            jsonArray.add(Format.write("pl", "JSONArray"));
+            Log.i("无尽检测植物列表，格式模板为：[{\"i\":Int,\"q\":Int}]");
+            Log.e("高危险值，请填写前后务必慎重！");
+            jsonArray.add(Format.write("$t.pr.pl", JSONArray));
             return jsonArray;
         }
     }
@@ -119,7 +149,8 @@ public class Format {
     public static class V993 {
         public static JSONArray write() {
             JSONArray jsonArray = new JSONArray();
-            jsonArray.add(Format.write("giftId", "String"));
+            Log.i("获取3000钻石任务，值一般为0到3的其中一个");
+            jsonArray.add(Format.write("$.t.giftId", String));
             return jsonArray;
         }
     }

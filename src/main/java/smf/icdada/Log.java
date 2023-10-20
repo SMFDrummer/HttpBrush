@@ -58,10 +58,10 @@ public class Log {
     }
 
     /**
-     * @描述: Back - 黑色 - 背景
+     * @描述: Bar - 自定义颜色 - 进度条
      */
-    public static void b(String message) {
-        System.out.println(Color.BLACK + message + Color.RESET);
+    public static void b(Pair pair) {
+        System.out.println(String.valueOf(pair.color) + pair.content + Color.RESET);
     }
 
     /**

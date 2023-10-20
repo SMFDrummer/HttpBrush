@@ -1,8 +1,9 @@
 package smf.icdada.HttpUtils;
 
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.JSONPath;
+import smf.icdada.Result;
 
 /**
  * @author SMF & icdada
@@ -12,14 +13,60 @@ import com.alibaba.fastjson2.JSONObject;
  * </p>
  */
 public class Check {
-
-    public static class V303 {
-        private String responseBody;
+    private static class V {
+        public Data data;
+        protected String responseBody;
 
         public void setResponseBody(String responseBody) {
             this.responseBody = responseBody;
+            data = new Data(setData());
         }
 
+        public boolean isValid(int r) {
+            if (JSON.isValidObject(responseBody)) {
+                JSONObject jsonObject = JSON.parseObject(responseBody);
+                if (r == 0) return jsonObject.getIntValue("r") == r &&
+                        jsonObject.containsKey("d") &&
+                        JSON.isValidObject(jsonObject.getString("d"));
+                else return jsonObject.getIntValue("r") == r;
+            } else return false;
+        }
+
+        public JSONObject setData() {
+            return JSON.parseObject(responseBody).getJSONObject("d");
+        }
+
+        public record Data(JSONObject data) {
+            public boolean containsKey(String keyPath) {
+                return JSONPath.contains(data, keyPath);
+            }
+
+            public Object get(String keyPath) {
+                return JSONPath.eval(data, keyPath);
+            }
+
+            public Object get(JSONPath keyPath) {
+                return keyPath.eval(data);
+            }
+        }
+    }
+
+    public static class Any extends V {
+
+    }
+
+    public static class V202 extends V {
+        public Result getUisk() {
+            return new Result(data.get("$.ui").toString(), data.get("$.sk").toString());
+        }
+    }
+
+    public static class V302 extends V {
+
+    }
+
+    public static class V303 extends V {
+        @Override
         public boolean isValid(int r) {
             if (JSON.isValidObject(responseBody)) {
                 JSONObject jsonObject = JSON.parseObject(responseBody);
@@ -31,124 +78,32 @@ public class Check {
             } else return false;
         }
 
-        public class data {
-            private final JSONObject data = JSON.parseObject(JSON.parseObject(responseBody).getJSONArray("d").getJSONObject(0).getString("data"));
-
-            public boolean containsKey(String key) {
-                return data.containsKey(key);
-            }
-
-            public String getString(String key) {
-                return data.getString(key);
-            }
-
-            public int getIntValue(String key) {
-                return data.getIntValue(key);
-            }
-
-            public JSONObject getData() {
-                return data;
-            }
-
-            public JSONObject getJSONObject(String key) {
-                return data.getJSONObject(key);
-            }
-
-            public JSONArray getJSONArray(String key) {
-                return data.getJSONArray(key);
-            }
+        @Override
+        public JSONObject setData() {
+            return JSON.parseObject(JSON.parseObject(responseBody).getJSONArray("d").getJSONObject(0).getString("data"));
         }
     }
 
-    public static class V316 {
-        private String responseBody;
-
-        public void setResponseBody(String responseBody) {
-            this.responseBody = responseBody;
-        }
-
-        public boolean isValid(int r) {
-            if (JSON.isValidObject(responseBody)) {
-                JSONObject jsonObject = JSON.parseObject(responseBody);
-                if (r == 0) return jsonObject.getIntValue("r") == r &&
-                        jsonObject.containsKey("d") &&
-                        JSON.isValidObject(jsonObject.getString("d"));
-                else return jsonObject.getIntValue("r") == r;
-            } else return false;
-        }
-
-        public class d {
-            private final JSONObject d = JSON.parseObject(responseBody).getJSONObject("d");
-
-            public boolean containsKey(String key) {
-                return d.containsKey(key);
-            }
-
-            public JSONObject getData() {
-                return d;
-            }
-
-            public JSONObject getJSONObject(String key) {
-                return d.getJSONObject(key);
-            }
-
-            public JSONArray getJSONArray(String key) {
-                return d.getJSONArray(key);
-            }
-
-            public boolean checkJSONArray(String key, String objectKey, Object objectValue) {
-                JSONArray jsonArray = d.getJSONArray(key);
-                if (!jsonArray.isEmpty()) {
-                    for (Object object : jsonArray) {
-                        JSONObject jsonObject = (JSONObject) object;
-                        if (jsonObject.containsKey(objectKey) && jsonObject.get(objectKey).equals(objectValue))
-                            return true;
-                    }
-                }
-                return false;
-            }
-        }
+    public static class V316 extends V {
     }
 
-    public static class V437 {
-        private String responseBody;
-
-        public void setResponseBody(String responseBody) {
-            this.responseBody = responseBody;
-        }
-
-        public boolean isValid(int r) {
-            if (JSON.isValidObject(responseBody)) {
-                JSONObject jsonObject = JSON.parseObject(responseBody);
-                if (r == 0) return jsonObject.getIntValue("r") == r &&
-                        jsonObject.containsKey("d") &&
-                        JSON.isValidObject(jsonObject.getString("d"));
-                else return jsonObject.getIntValue("r") == r;
-            } else return false;
-        }
-
+    public static class V437 extends V {
         public boolean isNew() {
-            JSONObject d = JSON.parseObject(responseBody).getJSONObject("d");
-            if (d.containsKey("isnew")) return d.getBooleanValue("isnew");
+            if (data.containsKey("isnew")) return (boolean) data.get("isnew");
             else return true;
         }
     }
 
-    public static class V904 {
-        private String responseBody;
+    public static class V877 extends V {
+    }
 
-        public void setResponseBody(String responseBody) {
-            this.responseBody = responseBody;
-        }
+    public static class V878 extends V {
+    }
 
-        public boolean isValid(int r) {
-            if (JSON.isValidObject(responseBody)) {
-                JSONObject jsonObject = JSON.parseObject(responseBody);
-                if (r == 0) return jsonObject.getIntValue("r") == r &&
-                        jsonObject.containsKey("d") &&
-                        JSON.isValidObject(jsonObject.getString("d"));
-                else return jsonObject.getIntValue("r") == r;
-            } else return false;
-        }
+    public static class V904 extends V {
+    }
+
+    public static class V927 extends V {
+
     }
 }

@@ -84,9 +84,8 @@ public class UserJsonUtils {
                     Log.v("账号:" + userId + " || 读取失败，正在重试…… || " + response316Body);
                     if (!v316.isValid(20013)) refresh(userId);
                 } else {
-                    Check.V316.d d = v316.new d();
-                    if (d.containsKey("p")) {
-                        int fg = d.getJSONObject("p").getIntValue("fg");
+                    if (v316.data.containsKey("$.p")) {
+                        int fg = (int) v316.data.get("$.p.fg");
                         Log.s("账号:" + userId + " || 已获取钻石数量:" + fg);
                         return fg;
                     }
@@ -111,9 +110,8 @@ public class UserJsonUtils {
                         refresh(userId);
                     }
                 } else {
-                    Check.V303.data data = v303.new data();
-                    if (data.containsKey("code") && !data.getString("code").isBlank()) {
-                        String inviteCode = data.getString("code");
+                    if (v303.data.containsKey("$.code") && v303.data.get("$.code") != null) {
+                        String inviteCode = v303.data.get("$.code").toString();
                         Log.s("账号:" + userId + " || 已获取邀请码:" + inviteCode);
                         return inviteCode;
                     }
@@ -132,7 +130,8 @@ public class UserJsonUtils {
         String tempFilePath = System.getProperty("user.dir") + File.separator + "temp" + File.separator + UUID.randomUUID() + ".tmp";
         try {
             lock.writeLock().lock(); // 获取写锁
-            String jsonString = Files.readString(Path.of(filePath));
+            Path target = Paths.get(filePath);
+            String jsonString = Files.readString(target);
             JSONObject parse = JSONObject.parseObject(jsonString);
             JSONArray usersArray = parse.getJSONArray("Users");
             JSONObject userObj = usersArray.getJSONObject(getIndex(userId));
@@ -142,8 +141,9 @@ public class UserJsonUtils {
                 fileWriter.write(formattedJson);
                 fileWriter.flush();
             }
-            Files.move(Paths.get(tempFilePath), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
-            Files.deleteIfExists(Paths.get(tempFilePath)); // 删除临时文件
+            Path temp = Paths.get(tempFilePath);
+            Files.move(temp, target, StandardCopyOption.REPLACE_EXISTING);
+            Files.deleteIfExists(temp); // 删除临时文件
             if (Inter.openConsole) Log.s("账号:" + userId + " || 处理完成");
         } catch (Exception e) {
             Log.w(e.getMessage());

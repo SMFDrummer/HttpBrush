@@ -8,11 +8,11 @@
   },
   "#PROPCANBENULL#": [
     "#可以填入null的所有值列表，默认一级项为PropData，下列指向均可以置null#",
-    "GlobalSettings - Inter - value",
-    "GlobalSettings - ProxyType - value",
-    "GlobalSettings - AndroidVersion - value",
-    "GlobalSettings - IOSVersion - value",
-    "OtherSettings - PackageId - channelId"
+    "$.PropData.GlobalSettings.Inter.value",
+    "$.PropData.GlobalSettings.ProxyType.value",
+    "$.PropData.GlobalSettings.AndroidVersion.value",
+    "$.PropData.GlobalSettings.IOSVersion.value",
+    "$.PropData.OtherSettings.PackageId.channelId"
   ],
   "PropData": {
     "GlobalSettings": {

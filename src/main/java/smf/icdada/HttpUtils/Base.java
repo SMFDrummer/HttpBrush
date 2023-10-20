@@ -15,7 +15,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.concurrent.*;
 
 import static smf.icdada.ProxyManager.proxy;
@@ -43,32 +42,25 @@ public class Base {
         Result uisk = null;
         Result proxy = proxy();
         Proxy.put(userId, proxy);
+        Check.V202 v202 = new Check.V202();
         do {
             try {
                 Future<String> future = executor.submit(() -> getResponseBody(V202, userId));
                 try {
-                    String response = future.get(10, TimeUnit.SECONDS);
-                    if (JSON.isValidObject(response)) {
-                        JSONObject jsonObject = JSONObject.parseObject(response);
-                        if (jsonObject.containsKey("r")) {
-                            if (jsonObject.getIntValue("r") == 20507) {
-                                Log.e("账号:" + userId + " || " + "账号被封禁，已自动跳出");
-                                uisk = new Result("banned", "banned");
-                            } else if (jsonObject.getIntValue("r") == 0) {
-                                JSONObject dObject = jsonObject.getJSONObject("d");
-                                String ui = dObject.getString("ui");
-                                String sk = dObject.getString("sk");
-                                if (Inter.openConsole) {
-                                    Log.c(
-                                            Log.p("userId:" + userId, Log.Color.BLUE),
-                                            Log.Separator,
-                                            Log.p("ui:" + ui, Log.Color.BLUE),
-                                            Log.Separator,
-                                            Log.p("sk:" + sk, Log.Color.BLUE)
-                                    );
-                                }
-                                uisk = new Result(ui, sk);
-                            }
+                    v202.setResponseBody(future.get(10, TimeUnit.SECONDS));
+                    if (v202.isValid(20507)) {
+                        Log.e("账号:" + userId + " || " + "账号被封禁，已自动跳出");
+                        uisk = new Result("banned", "banned");
+                    } else if (v202.isValid(0)) {
+                        uisk = v202.getUisk();
+                        if (Inter.openConsole) {
+                            Log.c(
+                                    Log.p("userId:" + userId, Log.Color.BLUE),
+                                    Log.Separator,
+                                    Log.p("ui:" + uisk.getUi(), Log.Color.BLUE),
+                                    Log.Separator,
+                                    Log.p("sk:" + uisk.getSk(), Log.Color.BLUE)
+                            );
                         }
                     }
                 } catch (Exception ignored) {
@@ -104,17 +96,19 @@ public class Base {
         return responseBody;
     }
 
-    public static String getResponseBody(int userId, String requestBody) {
+    public static String getResponseBody(String requestBody, int userId, boolean replaceUisk) {
         String responseBody;
         try {
-            Result uisk = getUisk(userId);
-            Result proxy = getProxy(userId);
-            JSONObject parse = JSONObject.parse(requestBody);
+            JSONObject parse = JSON.parseObject(requestBody);
             JSONObject t = parse.getJSONObject("t");
-            if (t.containsKey("pi") && t.containsKey("ui") && t.containsKey("sk")) {
-                t.put("pi", uisk.getUi());
-                t.put("sk", uisk.getSk());
-                t.put("ui", uisk.getUi());
+            Result proxy = getProxy(userId);
+            if (replaceUisk) {
+                Result uisk = getUisk(userId);
+                if (t.containsKey("pi") && t.containsKey("ui") && t.containsKey("sk")) {
+                    t.put("pi", uisk.getUi());
+                    t.put("sk", uisk.getSk());
+                    t.put("ui", uisk.getUi());
+                }
             }
             if (Inter.openConsole) Log.d("[SEND] " + parse.toJSONString(JSONWriter.Feature.WriteMapNullValue));
             responseBody = HttpCrypto.decryptRES(
@@ -206,7 +200,7 @@ public class Base {
             String stringUrl = System.getProperty("user.dir") + File.separator + "user.json";
             Path userPath = Paths.get(stringUrl);
             if (Files.exists(userPath)) {
-                JSONObject userData = JSONObject.parse(Files.readString(userPath));
+                JSONObject userData = JSON.parseObject(Files.readString(userPath));
                 JSONArray usersArray = userData.getJSONArray("Users");
                 for (int i = 0; i < usersArray.size(); i++) {
                     JSONObject userObject = usersArray.getJSONObject(i);
@@ -227,8 +221,6 @@ public class Base {
                 }
             } else {
                 Log.e("用户库文件异常，请检查:" + System.getProperty("user.dir") + File.separator + "user.json文件是否存在");
-                Scanner scanner = new Scanner(System.in);
-                scanner.nextLine();
                 System.exit(0);
             }
         } catch (Exception e) {
@@ -242,7 +234,7 @@ public class Base {
      */
     public static void cryptoGuideLine() {
         try {
-            Log.v("请输入任意内容或数据包，输入空字段以结束:");
+            Log.v("请输入任意内容或数据包，多次按下回车继续，输入空字段以结束:");
             String body = smfScanner.LongString(true);
             if (body.isBlank()) System.exit(0);
             if (JSON.isValidObject(body)) {
@@ -267,12 +259,16 @@ public class Base {
                 if (smfScanner.Boolean(false))
                     Log.a(HttpCrypto.decryptRES(HttpSender.doQuest(Inter.environment, body)));
             } else {
-                Log.e("自动检测失败，请手动输入数据包标识并选择功能:\n" + "\033[33m" + "请输入数据包标识:");
-                String identifier = smfScanner.String(true);
-                Log.d("请选择功能:\n[1] 请求加密\n[2] 请求解密\n[3] 响应加密\n[4] 响应解密\n[5] 获取密钥和偏移\n[6] 获取MD5");
+                Log.e("自动检测失败");
+                Log.d("请选择功能:\n[1] 请求加密\n[2] 请求解密\n[3] 响应加密\n[4] 响应解密\n[5] 获取密钥和偏移\n[6] 获取MD5\n[7] 中文版数字加密\n[8] 中文版数字解密");
                 boolean keepRunning = true;
                 while (keepRunning) {
+                    String identifier = null;
                     int choice = smfScanner.Int(false);
+                    if (choice != 6 && choice != 7 && choice != 8) {
+                        Log.v("请输入数据包标识:");
+                        identifier = smfScanner.String(true);
+                    }
                     switch (choice) {
                         case 1 -> {
                             Log.a(HttpCrypto.encryptREQ(identifier, body));
@@ -300,6 +296,24 @@ public class Base {
                             Log.s("MD5:" + new String(HttpCrypto.getMD5(body), StandardCharsets.UTF_8));
                             keepRunning = false;
                         }
+                        case 7 -> {
+                            int i = extractInteger(body);
+                            if (i != Integer.MAX_VALUE) {
+                                Log.s("加密后的数字为:" + NumberCrypto.encrypt(i));
+                            } else {
+                                Log.e("你看看你输入了点什么东西");
+                            }
+                            keepRunning = false;
+                        }
+                        case 8 -> {
+                            int i = extractInteger(body);
+                            if (i != Integer.MAX_VALUE) {
+                                Log.s("解密后的数字为:" + NumberCrypto.decrypt(i));
+                            } else {
+                                Log.e("你看看你输入了点什么东西");
+                            }
+                            keepRunning = false;
+                        }
                         default -> Log.e("输入有误，请重新输入功能序号:");
                     }
                 }
@@ -308,6 +322,20 @@ public class Base {
         } catch (Exception e) {
             Log.w(e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    private static int extractInteger(String str) {
+        StringBuilder integerPart = new StringBuilder();
+        for (char c : str.toCharArray()) {
+            if (Character.isDigit(c)) {
+                integerPart.append(c);
+            }
+        }
+        if (!integerPart.isEmpty()) {
+            return Integer.parseInt(integerPart.toString());
+        } else {
+            return Integer.MAX_VALUE;
         }
     }
 

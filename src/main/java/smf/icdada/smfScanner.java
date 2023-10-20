@@ -146,7 +146,7 @@ public class smfScanner {
     public static String LongString(boolean requireConfirmation) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         StringBuilder inputContent = new StringBuilder();
-        String lineSeparator = System.lineSeparator();
+        String lineSeparator = System.getProperty("line.separator");
         boolean isValid = false;
         while (!isValid) {
             inputContent.setLength(0);
@@ -165,11 +165,10 @@ public class smfScanner {
                     }
                     inputContent.append(line);
                     inputContent.append(lineSeparator);
-                    inputContent.setLength(inputContent.length() - lineSeparator.length());
-                    while (inputContent.charAt(inputContent.length() - 1) == '\n' || inputContent.charAt(inputContent.length() - 1) == '\r' || inputContent.charAt(inputContent.length() - 1) == '\t') {
-                        inputContent.setLength(inputContent.length() - 1);
-                    }
                 }
+                int lastNewLineIndex = inputContent.lastIndexOf("\n");
+                int secondLastNewLineIndex = inputContent.lastIndexOf("\n", lastNewLineIndex - 1);
+                inputContent.delete(secondLastNewLineIndex + 1, inputContent.length());
                 if (requireConfirmation) {
                     Log.i("你输入的内容是:\n" + inputContent);
                     Log.v("如果确认请输入任意字符，否则请输入N或n:");
@@ -184,6 +183,7 @@ public class smfScanner {
         }
         return inputContent.toString();
     }
+
 
     public static String String(boolean requireConfirmation) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));

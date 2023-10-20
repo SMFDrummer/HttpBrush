@@ -1,9 +1,6 @@
 package smf.icdada.HttpUtils;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
-import com.alibaba.fastjson2.JSONWriter;
+import com.alibaba.fastjson2.*;
 import smf.icdada.Log;
 import smf.icdada.RequestType;
 import smf.icdada.Result;
@@ -15,13 +12,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.stream.IntStream;
 
 import static smf.icdada.HttpUtils.Base.*;
 
@@ -39,8 +32,8 @@ public class Strategy {
     public static boolean apply(int userId, Object... filePathString) {
         try {
             String filePath;
-            if (filePathString != null) {
-                filePath = getFilePath((String) filePathString[0]);
+            if (filePathString != null && filePathString.length > 0) {
+                filePath = getFilePath(filePathString[0].toString());
             } else {
                 filePath = getFilePath();
             }
@@ -61,85 +54,35 @@ public class Strategy {
                             int packageOrder2 = o2.getInteger("Order");
                             return Integer.compare(packageOrder1, packageOrder2);
                         });
-                        for (JSONObject aPackage : sendPackages) {
-                            String identifier = aPackage.getString("Identifier");
-                            JSONObject body = aPackage.getJSONObject("Body");
+                        for (JSONObject Package : sendPackages) {
+                            String identifier = Package.getString("Identifier");
+                            JSONObject body = Package.getJSONObject("Body");
                             if (!RequestType.checkRequestBody(identifier) && !body.getBooleanValue("override")) {
                                 Log.w("由于未找到默认模板且未启用覆写，程序无法执行，即将退出");
                                 System.exit(0);
-                            } else {
-                                int cycleIndex = aPackage.getIntValue("CycleIndex");
-                                JSONArray config = body.getJSONArray("config");
-                                Object[] param = getParam(config);
-                                ExecutorService service = Executors.newFixedThreadPool(cycleIndex + 1);
-                                boolean keepRunning = true;
-                                while (keepRunning) {
-                                    List<Future<String>> futures = new ArrayList<>();
-                                    if (body.getBooleanValue("override")) {
-                                        if (cycleIndex > 0) {
-                                            for (int i = 1; i <= cycleIndex; i++) {
-                                                futures.add(service.submit(() -> getResponseBody(userId, body.getString("value"))));
-                                                if (aPackage.getBooleanValue("CheckSuccess")) {
-                                                    JSONObject checkPoint = aPackage.getJSONObject("CheckPoint");
-                                                    int r = 0;
-                                                    if (checkPoint.getBooleanValue("override")) {
-                                                        r = checkPoint.getIntValue("value");
-                                                    }
-                                                    try {
-                                                        int p = 0;
-                                                        for (Future<String> future : futures) {
-                                                            String responseBody = future.get(3, TimeUnit.SECONDS);
-                                                            if (
-                                                                    JSONObject.parseObject(responseBody).getIntValue("r") == r ||
-                                                                            JSONObject.parseObject(responseBody).getIntValue("r") == 0
-                                                            )
-                                                                p++;
-                                                        }
-                                                        if (p == cycleIndex) keepRunning = false;
-                                                    } catch (Exception e) {
-                                                        refresh(userId);
-                                                    }
-                                                } else {
-                                                    keepRunning = false;
-                                                }
+                            }
+                            String requestBody = formatRequestBody(Package, userId);
+                            int cycleIndex = Package.getIntValue("CycleIndex");
+                            boolean replaceUisk = (boolean) JSONPath.eval(Package, "$.Body.account");
+                            ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+                            Check.Any any = new Check.Any();
+                            IntStream.range(0, cycleIndex).forEach(i -> {
+                                while (true) {
+                                    Future<String> future = executor.submit(() -> getResponseBody(requestBody, userId, replaceUisk));
+                                    try {
+                                        any.setResponseBody(future.get(3, TimeUnit.SECONDS));
+                                        if (Package.getBooleanValue("CheckSuccess")) {
+                                            boolean success = any.isValid(0);
+                                            if ((boolean) JSONPath.eval(Package, "$.CheckPoint.override")) {
+                                                success = any.isValid((int) JSONPath.eval(Package, "$.CheckPoint.value"));
                                             }
-                                        } else {
-                                            keepRunning = false;
-                                        }
-                                    } else {
-                                        if (cycleIndex > 0) {
-                                            for (int i = 1; i <= cycleIndex; i++) {
-                                                futures.add(service.submit(() -> getResponseBody(RequestType.valueOf(identifier), userId, param)));
-                                                if (aPackage.getBooleanValue("CheckSuccess")) {
-                                                    JSONObject checkPoint = aPackage.getJSONObject("CheckPoint");
-                                                    int r = 0;
-                                                    if (checkPoint.getBooleanValue("override")) {
-                                                        r = checkPoint.getIntValue("value");
-                                                    }
-                                                    try {
-                                                        int p = 0;
-                                                        for (Future<String> future : futures) {
-                                                            String responseBody = future.get(3, TimeUnit.SECONDS);
-                                                            if (
-                                                                    JSONObject.parseObject(responseBody).getIntValue("r") == r ||
-                                                                            JSONObject.parseObject(responseBody).getIntValue("r") == 0
-                                                            )
-                                                                p++;
-                                                        }
-                                                        if (p == cycleIndex) keepRunning = false;
-                                                    } catch (Exception e) {
-                                                        refresh(userId);
-                                                    }
-                                                } else {
-                                                    keepRunning = false;
-                                                }
-                                            }
-                                        } else {
-                                            keepRunning = false;
-                                        }
+                                            if (success) break;
+                                        } else break;
+                                    } catch (Exception ignored) {
+                                        refresh(userId);
                                     }
                                 }
-                            }
+                            });
                         }
                         return true;
                     } else {
@@ -160,26 +103,27 @@ public class Strategy {
         return false;
     }
 
-    private static Object[] getParam(JSONArray config) {
-        if (!config.isEmpty()) {
-            Object[] param = new Object[config.size()];
-            int i = 0;
-            for (Object configElement : config) {
-                JSONObject jsonObject = (JSONObject) configElement;
-                param[i] = switch (jsonObject.getString("type")) {
-                    case "int" -> (Integer) jsonObject.get("value");
-                    case "double" -> (double) jsonObject.get("value");
-                    case "String" -> (String) jsonObject.get("value");
-                    case "JSONObject" -> (JSONObject) jsonObject.get("value");
-                    case "JSONArray" -> (JSONArray) jsonObject.get("value");
-                    default -> jsonObject.get("value");
-                };
-                i++;
-            }
-            return param;
-        } else {
-            return null;
+    private static String formatRequestBody(JSONObject Package, int userId) {
+        RequestType V = RequestType.valueOf(JSONPath.eval(Package, "$.Identifier").toString());
+        JSONObject requestBody = (boolean) JSONPath.eval(Package, "$.Body.override") ?
+                (JSONObject) JSONPath.eval(Package, "$.Body.value") :
+                JSON.parseObject(V.getRequestBody(V, userId));
+        ConcurrentHashMap<String, Object> configs = new ConcurrentHashMap<>();
+        for (Object o : (JSONArray) JSONPath.eval(Package, "$.Body.config")) {
+            JSONObject config = (JSONObject) o;
+            Object value = switch (Format.DataType.valueOf(config.getString("type"))) {
+                case Int -> (Integer) config.get("value");
+                case Double -> (Double) config.get("value");
+                case String -> config.get("value").toString();
+                case JSONObject -> (JSONObject) config.get("value");
+                case JSONArray -> (JSONArray) config.get("value");
+            };
+            configs.put(config.getString("keyPath"), value);
         }
+        if (!configs.isEmpty()) {
+            configs.forEach((keyPath, value) -> JSONPath.of(keyPath).set(requestBody, value));
+        }
+        return requestBody.toJSONString(JSONWriter.Feature.WriteMapNullValue);
     }
 
     /**
@@ -202,95 +146,52 @@ public class Strategy {
             Log.v("请输入数据包标识:");
             String packageIdentifier = smfScanner.String(false, "^[V|I]\\d{1,}$");
             JSONObject packageBody = new JSONObject();
-            boolean override = false;
+            boolean override;
             String value = "";
             JSONArray config = new JSONArray();
             if (RequestType.checkRequestBody(packageIdentifier)) {
                 Log.s("找到默认模板如下");
                 RequestType.printRequestBody(packageIdentifier);
                 Log.v("是否使用默认模板？");
-                if (!smfScanner.Boolean(false)) {
-                    override = true;
-                    Log.v("请输入数据包，格式为标准irt结构或t结构");
-                    Log.w("数据包仅支持替换pi、ui与sk，其他必要值请自行填入，程序不支持替换");
-                    while (true) {
-                        value = smfScanner.LongString(true);
-                        if (JSON.isValidObject(value)) {
-                            JSONObject parseBody = JSONObject.parse(value);
-                            if (!parseBody.containsKey("i") || !parseBody.getString("i").startsWith(packageIdentifier)) {
-                                JSONObject parseValue = new JSONObject();
-                                parseValue.put("i", packageIdentifier);
-                                parseValue.put("r", 0);
-                                parseValue.put("t", parseBody);
-                                parseBody = parseValue;
-                            }
-                            JSONObject t = parseBody.getJSONObject("t");
-                            if (
-                                    t.containsKey("pi") &&
-                                            t.containsKey("sk") &&
-                                            t.containsKey("ui")
-                            ) {
-                                t.put("pi", "%s");
-                                t.put("sk", "%s");
-                                t.put("ui", "%s");
-                                parseBody.put("t", t);
-                            }
-                            value = parseBody.toJSONString(JSONWriter.Feature.WriteMapNullValue);
-                            break;
-                        } else Log.e("输入的数据包不符合规范，请重新输入");
+                override = !smfScanner.Boolean(false);
+                if (!override) {
+                    if (Format.hasSubclass(packageIdentifier)) {
+                        config = Format.writeFormat(packageIdentifier);
                     }
-                } else if (Format.hasSubclass(packageIdentifier)) {
-                    config = Format.writeFormat(packageIdentifier);
+                } else {
+                    value = processRequestBody(packageIdentifier);
+                    config = processConfig();
                 }
             } else {
                 Log.e("未找到默认模板");
                 override = true;
-                Log.v("请输入数据包，格式为标准irt结构或t结构");
-                Log.w("数据包仅支持替换pi、ui与sk，其他必要值请自行填入，程序不支持替换");
-                while (true) {
-                    value = smfScanner.LongString(true);
-                    if (JSON.isValidObject(value)) {
-                        JSONObject parseBody = JSONObject.parse(value);
-                        if (!parseBody.containsKey("i") || !parseBody.getString("i").startsWith(packageIdentifier)) {
-                            JSONObject parseValue = new JSONObject();
-                            parseValue.put("i", packageIdentifier);
-                            parseValue.put("r", 0);
-                            parseValue.put("t", parseBody);
-                            parseBody = parseValue;
-                        }
-                        JSONObject t = parseBody.getJSONObject("t");
-                        if (
-                                t.containsKey("pi") &&
-                                        t.containsKey("sk") &&
-                                        t.containsKey("ui")
-                        ) {
-                            t.put("pi", "%s");
-                            t.put("sk", "%s");
-                            t.put("ui", "%s");
-                            parseBody.put("t", t);
-                        }
-                        value = parseBody.toJSONString(JSONWriter.Feature.WriteMapNullValue);
-                        break;
-                    } else Log.e("输入的数据包不符合规范，请重新输入");
-                }
+                value = processRequestBody(packageIdentifier);
+                config = processConfig();
             }
+            Log.v("是否需要程序自动更新账号信息？");
+            boolean account = smfScanner.Boolean(false);
             packageBody.put("override", override);
             packageBody.put("value", value);
+            packageBody.put("account", account);
             packageBody.put("config", config);
             aPackage.put("Identifier", packageIdentifier);
             aPackage.put("Body", packageBody);
             Log.v("请输入执行次数:");
             int cycleIndex = smfScanner.Int(false, "^[1-9]\\d*$");
             aPackage.put("CycleIndex", cycleIndex);
-            Log.v("是否需要检测改包是否发送成功？");
+            Log.v("是否需要检测数据包是否发送成功？");
             boolean checkSuccess = smfScanner.Boolean(false);
             aPackage.put("CheckSuccess", checkSuccess);
-            Log.v("是否需要变更发包成功检测的r的值？");
-            boolean overrideR = smfScanner.Boolean(false);
+            boolean overrideR = false;
+            int valueR = 0;
+            if (checkSuccess) {
+                Log.v("是否需要变更发包成功检测的r的值？");
+                overrideR = smfScanner.Boolean(false);
+            }
             CheckPoint.put("override", overrideR);
             if (overrideR) {
                 Log.v("请输入发包成功检测的r的值:");
-                int valueR = smfScanner.Int(false, "^\\d+$");
+                valueR = smfScanner.Int(false, "^\\d+$");
                 CheckPoint.put("value", valueR);
             }
             aPackage.put("CheckPoint", CheckPoint);
@@ -310,5 +211,44 @@ public class Strategy {
         Log.s("配置文件已生成！文件名为:" + strategy.getName());
         Log.i("生成路径位于:" + strategy.getPath());
         System.exit(0);
+    }
+
+    private static String processRequestBody(String identifier) {
+        String value;
+        Log.v("请输入数据包，格式为标准irt结构或t结构");
+        while (true) {
+            value = smfScanner.LongString(true);
+            if (JSON.isValidObject(value)) {
+                JSONObject parseBody = JSON.parseObject(value);
+                if (!parseBody.containsKey("i") || !parseBody.getString("i").equals(identifier)) {
+                    JSONObject parseValue = new JSONObject();
+                    parseValue.put("i", identifier);
+                    parseValue.put("r", 0);
+                    parseValue.put("t", parseBody);
+                    parseBody = parseValue;
+                }
+                value = parseBody.toJSONString(JSONWriter.Feature.WriteMapNullValue);
+                break;
+            } else Log.e("输入的数据包不符合规范，请重新输入");
+        }
+        return value;
+    }
+
+    private static JSONArray processConfig() {
+        JSONArray config = new JSONArray();
+        Log.i("数据包内容自定义，请根据提示输入正确的路径配置、类型以及自定义值");
+        Log.v("是否添加自定义配置？");
+        while (smfScanner.Boolean(false)) {
+            Log.v("请输入正确的键路径，以$.t开始");
+            String keyPath = smfScanner.String(true, "^\\$.t");
+            Log.v("请输入键值类型");
+            Log.i("Int(整数)、Double(小数)、String(字符串)、JSONObject(JSON对象{})、JSONArray(JSON数组[])");
+            String type = smfScanner.String(false, "^[Int|Double|String|JSONObject|JSONArray]$");
+            JSONObject configElement = Format.write(keyPath, Format.DataType.valueOf(type));
+            config.add(configElement);
+            Log.v("是否要继续添加？");
+            if (!smfScanner.Boolean(false)) break;
+        }
+        return config;
     }
 }

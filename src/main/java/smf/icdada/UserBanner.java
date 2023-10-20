@@ -2,6 +2,7 @@ package smf.icdada;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.JSONPath;
 import com.alibaba.fastjson2.JSONWriter;
 import smf.icdada.HttpUtils.Check;
 
@@ -13,6 +14,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,11 +22,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.IntStream;
 
 import static smf.icdada.HttpUtils.Base.*;
-import static smf.icdada.HttpUtils.Strategy.apply;
-import static smf.icdada.RequestType.V316;
-import static smf.icdada.RequestType.V437;
+import static smf.icdada.RequestType.*;
 
 /**
  * @author SMF & icdada
@@ -36,8 +37,6 @@ import static smf.icdada.RequestType.V437;
 public class UserBanner {
     public static final ReadWriteLock lock = new ReentrantReadWriteLock();
     private static final String banuserPath = System.getProperty("user.dir") + File.separator + "banuser.json";
-    private static final String bannerStrategyConfig = System.getProperty("user.dir") + File.separator + "bannerConfig.json";
-
 
     public static void fileChecker(boolean check) {
         Path path = Paths.get(banuserPath);
@@ -146,7 +145,7 @@ public class UserBanner {
     }
 
     private static void banned(int userId) {
-        ExecutorService executor = Executors.newFixedThreadPool(2);
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
         refresh(userId);
         Result uisk = getUisk(userId);
         if ("banned".equals(uisk.getUi()) && "banned".equals(uisk.getSk())) {
@@ -154,6 +153,9 @@ public class UserBanner {
         } else {
             Check.V437 v437 = new Check.V437();
             Check.V316 v316 = new Check.V316();
+            JSONPath snailCoinPath = JSONPath.of("$.il[?(@.i == '23400')].q");
+            JSONPath chestnutPiecePath = JSONPath.of("$.pcl[?(@.i == '22000090')].q");
+            JSONPath gemPath = JSONPath.of("$.p.fg");
             int i = 0;
             while (true) {
                 i++;
@@ -183,38 +185,12 @@ public class UserBanner {
                                     refresh(userId);
                                 }
                             } else {
-                                Check.V316.d d = v316.new d();
-                                int snailCoin = 0, chestnutPiece = 0, gem = 0;
-                                //钻石
-                                if (d.containsKey("p")) {
-                                    JSONObject p = d.getJSONObject("p");
-                                    if (p.containsKey("fg")) {
-                                        gem = Integer.parseInt(p.getString("fg"));
-                                    }
-                                }
-                                //蜗牛币
-                                if (d.containsKey("il")) {
-                                    JSONArray il = d.getJSONArray("il");
-                                    for (Object object : il) {
-                                        JSONObject ilObject = (JSONObject) object;
-                                        if ("23400".equals(ilObject.getString("i"))) {
-                                            snailCoin = Integer.parseInt(ilObject.getString("q"));
-                                        }
-                                    }
-                                }
-                                //荸荠碎片
-                                if (d.containsKey("pcl")) {
-                                    JSONArray blank = d.getJSONArray("pcl");
-                                    for (Object object : blank) {
-                                        JSONObject blankObject = (JSONObject) object;
-                                        if ("22000090".equals(blankObject.getString("i"))) {
-                                            chestnutPiece = Integer.parseInt(blankObject.getString("q"));
-                                        }
-                                    }
-                                }
+                                int snailCoin = Optional.ofNullable((Integer) snailCoinPath.eval(v316.data)).orElse(0);
+                                int chestnutPiece = Optional.ofNullable((Integer) chestnutPiecePath.eval(v316.data)).orElse(0);
+                                int gem = Optional.ofNullable((Integer) gemPath.eval(v316.data)).orElse(0);
                                 if (snailCoin >= 500000 || chestnutPiece >= 3000 || gem >= 2000000) {
                                     checkPrint(userId, gem, snailCoin, chestnutPiece);
-                                    if (apply(userId, bannerStrategyConfig)) {
+                                    if (applyBanner(userId, executor)) {
                                         refresh(userId);
                                         uisk = getUisk(userId);
                                         if ("banned".equals(uisk.getUi()) && "banned".equals(uisk.getSk())) {
@@ -241,32 +217,49 @@ public class UserBanner {
         }
     }
 
+    private static boolean applyBanner(int userId, ExecutorService executor) {
+        try {
+            Future<String> futureV303 = executor.submit(() -> getResponseBody(V303, userId, 10800));
+            Check.V303 v303 = new Check.V303();
+            v303.setResponseBody(futureV303.get(3, TimeUnit.SECONDS));
+            if (v303.isValid(0)) {
+                int count = 0;
+                Check.V927 v927 = new Check.V927();
+                JSONArray pl = new JSONArray("[{\"i\":111067,\"q\":1},{\"i\":200030,\"q\":2},{\"i\":200053,\"q\":2},{\"i\":200054,\"q\":2},{\"i\":200055,\"q\":1}]");
+                List<Future<String>> futures = new ArrayList<>();
+                IntStream.range(0, 4).forEach(i -> futures.add(executor.submit(() -> getResponseBody(V927, userId, pl))));
+                for (Future<String> future : futures) {
+                    v927.setResponseBody(future.get(3, TimeUnit.SECONDS));
+                    if (v927.isValid(0) || v927.isValid(20013)) count++;
+                }
+                return count == 4;
+            } else {
+                return false;
+            }
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
     public static void JsonUtil(int userId, boolean isBanned, boolean isProtected) {
         try {
             lock.writeLock().lock();
             Path path = Paths.get(banuserPath);
             JSONObject parse = JSONObject.parse(Files.readString(path));
-            JSONArray bannedUsers = parse.getJSONArray("BannedUsers");
-            for (Object object : bannedUsers) {
-                JSONObject bannedUser = (JSONObject) object;
-                if (bannedUser.getIntValue("userId") == userId) {
-                    JSONArray account = bannedUser.getJSONArray("account");
-                    boolean isNewAccount = false;
-                    for (Object objectAccount : account) {
-                        JSONObject userAccount = (JSONObject) objectAccount;
-                        if (userAccount.getString("serverId").equals(Inter.oi)) {
-                            userAccount.put("isBanned", isBanned);
-                            userAccount.put("isProtected", isProtected);
-                        } else isNewAccount = true;
-                    }
-                    if (isNewAccount) {
-                        JSONObject newAccount = new JSONObject();
-                        newAccount.put("serverId", Inter.oi);
-                        newAccount.put("isBanned", isBanned);
-                        newAccount.put("isProtected", isProtected);
-                        account.add(newAccount);
-                    }
-                }
+            JSONPath userPath = JSONPath.of("$.BannedUsers[?(@.userId == " + userId + ")].account");
+            JSONPath accountPath = JSONPath.of("$.BannedUsers[?(@.userId == " + userId + ")].account[?(@.serverId == " + Integer.parseInt(Inter.oi) + ")]");
+            Object userAccount = accountPath.eval(parse);
+            if (userAccount != null) {
+                JSONObject user = (JSONObject) userAccount;
+                user.put("isBanned", isBanned);
+                user.put("isProtected", isProtected);
+            } else {
+                JSONArray users = (JSONArray) userPath.eval(parse);
+                JSONObject accountObject = new JSONObject();
+                accountObject.put("serverId", Integer.parseInt(Inter.oi));
+                accountObject.put("isBanned", isBanned);
+                accountObject.put("isProtected", isProtected);
+                users.add(accountObject);
             }
             String formattedJson = parse.toJSONString(JSONWriter.Feature.PrettyFormat, JSONWriter.Feature.WriteMapNullValue);
             String tempFileName = System.getProperty("user.dir") + File.separator + "temp" + File.separator + UUID.randomUUID() + ".tmp";

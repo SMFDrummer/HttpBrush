@@ -73,7 +73,7 @@ public class Create {
     private static void makeNewUserWithPhone(final String phone, final String password) throws Exception {
         Log.a(DESUtil.decrypt(Objects.requireNonNull(HttpClientClass.SendReqGetRes(DESUtil.encrypt("head={\"appId\":" + Inter.appId + ",\"channelId\":" + Inter.channelId + ",\"sdkVersion\":\"2.0.0\"}&verifySMS={\"phone\":\"" + phone + "\",\"smsType\":\"register\"}&md5=c871511533afd4154ac5576e20a5bdcd").getBytes(), "genVerifySms"))));
         // 创建一个固定大小的线程池，指定并发执行的线程数
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
         // 定义一个整数变量i，初始值为0，每次循环后加1，直到达到9999或者注册成功为止
         for (int i = 0; i <= 9999; i++) {
             // 对于每个i，提交一个实现了Callable接口的任务，该任务可以返回一个结果
@@ -115,9 +115,6 @@ public class Create {
                 // 处理异常
                 Log.w(e.getMessage());
                 e.printStackTrace();
-            } finally {
-                // 关闭线程池
-                executorService.shutdown();
             }
         }
     }

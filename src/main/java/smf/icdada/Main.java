@@ -26,12 +26,12 @@ public class Main {
         Log.d("-> default.json");
         Inter.PreCheck();
         Log.i(String.format("程序作者:SMF & icdada；协同测试:%s", Inter.getTestBy()));
+        Log.w("欢呼吧！程序已经更新到6.0版本！");
         Log.v("""
                 更新日志:
-                * 重写用户库文件编辑方法，现在更加稳定快速
-                * 添加功能13与14，并将基础方法使用异步虚拟线程重写
-                * 修复了让人啼笑皆非的Bug
-                ●""");
+                * 加入完美存档刷取方法
+                * 加入方法刷取进度
+                * 修复bug""");
         Inter.Setting();
         switch (Inter.inter) {
             case 1 -> cryptoGuideLine();
@@ -40,13 +40,18 @@ public class Main {
             case 4, 10 -> UserJsonUtils.measure();
             case 5 -> UserJsonUtils.JsonCutter();
             case 6 -> maker();
-            case 7 -> apply(smfScanner.Int(true, "^\\d{8,}$"));
+            case 7 -> {
+                Log.v("请输入拓维userId");
+                apply(smfScanner.Int(true, "^\\d{8,}$"));
+            }
             case 8 -> Anniversary.brush();
             case 9 -> Anniversary.measure();
             case 11 -> Create.Single();
             case 12 -> Create.Batch();
             case 13 -> TheaterCoin.theaterMesh();
             case 14 -> TheaterCoin.measure();
+            case 15 -> PerfectArchive.single();
+            case 16 -> PerfectArchive.measure();
             case 99 -> HttpBrushTest.main(args);
             case 0 -> System.exit(0);
             default -> {
