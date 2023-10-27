@@ -54,6 +54,8 @@ public class Strategy {
                             int packageOrder2 = o2.getInteger("Order");
                             return Integer.compare(packageOrder1, packageOrder2);
                         });
+                        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+                        Check.Any any = new Check.Any();
                         for (JSONObject Package : sendPackages) {
                             String identifier = Package.getString("Identifier");
                             JSONObject body = Package.getJSONObject("Body");
@@ -64,13 +66,11 @@ public class Strategy {
                             String requestBody = formatRequestBody(Package, userId);
                             int cycleIndex = Package.getIntValue("CycleIndex");
                             boolean replaceUisk = (boolean) JSONPath.eval(Package, "$.Body.account");
-                            ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-                            Check.Any any = new Check.Any();
                             IntStream.range(0, cycleIndex).forEach(i -> {
                                 while (true) {
                                     Future<String> future = executor.submit(() -> getResponseBody(requestBody, userId, replaceUisk));
                                     try {
-                                        any.setResponseBody(future.get(3, TimeUnit.SECONDS));
+                                        any.setResponseBody(future.get(10, TimeUnit.SECONDS));
                                         if (Package.getBooleanValue("CheckSuccess")) {
                                             boolean success = any.isValid(0);
                                             if ((boolean) JSONPath.eval(Package, "$.CheckPoint.override")) {

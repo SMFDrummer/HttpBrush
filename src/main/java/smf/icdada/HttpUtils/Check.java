@@ -33,7 +33,9 @@ public class Check {
         }
 
         public JSONObject setData() {
-            return JSON.parseObject(responseBody).getJSONObject("d");
+            String parseString = JSON.parseObject(responseBody).getString("d");
+            if (JSON.isValidObject(parseString)) return JSON.parseObject(responseBody).getJSONObject("d");
+            else return new JSONObject();
         }
 
         public record Data(JSONObject data) {
@@ -51,8 +53,20 @@ public class Check {
         }
     }
 
-    public static class Any extends V {
+    public static class Any {
+        private String responseBody;
 
+        public void setResponseBody(String responseBody) {
+            this.responseBody = responseBody;
+        }
+
+        public boolean isValid(int r) {
+            if (JSON.isValidObject(responseBody)) {
+                JSONObject jsonObject = JSON.parseObject(responseBody);
+                if (r == 0) return jsonObject.getIntValue("r") == r && jsonObject.containsKey("d");
+                else return jsonObject.getIntValue("r") == r;
+            } else return false;
+        }
     }
 
     public static class V202 extends V {
@@ -62,7 +76,14 @@ public class Check {
     }
 
     public static class V302 extends V {
-
+        @Override
+        public boolean isValid(int r) {
+            if (JSON.isValidObject(responseBody)) {
+                JSONObject jsonObject = JSON.parseObject(responseBody);
+                if (r == 0) return jsonObject.getIntValue("r") == r && jsonObject.containsKey("d");
+                else return jsonObject.getIntValue("r") == r;
+            } else return false;
+        }
     }
 
     public static class V303 extends V {
@@ -101,6 +122,9 @@ public class Check {
     }
 
     public static class V904 extends V {
+    }
+    public static class V921 extends V {
+
     }
 
     public static class V927 extends V {

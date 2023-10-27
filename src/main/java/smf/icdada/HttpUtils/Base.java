@@ -67,7 +67,11 @@ public class Base {
                     proxy = proxy();
                     Proxy.put(userId, proxy);
                 }
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                if (Inter.openConsole) {
+                    Log.w(e.getMessage());
+                    e.printStackTrace();
+                }
             }
         } while (uisk == null);
         Result finalUisk = uisk;
@@ -89,7 +93,11 @@ public class Base {
                             proxy.getProxyPort()
                     )
             );
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            if (Inter.openConsole) {
+                Log.w(e.getMessage());
+                e.printStackTrace();
+            }
             responseBody = "{\"r\":12202}";
         }
         if (Inter.openConsole) Log.w("[RECV] " + responseBody);
@@ -121,7 +129,11 @@ public class Base {
                             proxy.getProxyPort()
                     )
             );
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            if (Inter.openConsole) {
+                Log.w(e.getMessage());
+                e.printStackTrace();
+            }
             responseBody = "{\"r\":12202}";
         }
         if (Inter.openConsole) Log.w("[RECV] " + responseBody);
@@ -138,7 +150,11 @@ public class Base {
                     break;
                 }
                 sleep(5000);
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                if (Inter.openConsole) {
+                    Log.w(e.getMessage());
+                    e.printStackTrace();
+                }
             }
         }
     }

@@ -26,11 +26,9 @@ public class Main {
         Log.d("-> default.json");
         Inter.PreCheck();
         Log.i(String.format("程序作者:SMF & icdada；协同测试:%s", Inter.getTestBy()));
-        Log.w("欢呼吧！程序已经更新到6.0版本！");
         Log.v("""
                 更新日志:
-                * 加入完美存档刷取方法
-                * 加入方法刷取进度
+                * 完善完美存档刷取功能
                 * 修复bug""");
         Inter.Setting();
         switch (Inter.inter) {

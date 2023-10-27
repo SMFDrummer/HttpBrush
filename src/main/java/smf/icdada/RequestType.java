@@ -27,6 +27,7 @@ public enum RequestType {
     V878("{\"i\":\"V878\",\"r\":0,\"t\":{\"pi\":null,\"sk\":null,\"type\":null,\"ui\":null}}"),
     V902("{\"i\":\"V902\",\"r\":0,\"t\":{\"n\":\"20\",\"pi\":null,\"s\":\"1\",\"sk\":null,\"t\":\"4\",\"ui\":null}}"),
     V904("{\"i\":\"V904\",\"r\":0,\"t\":{\"pi\":null,\"sk\":null,\"t\":null,\"ui\":null}}"),
+    V921("{\"i\":\"V921\",\"r\":0,\"t\":{\"oi\":null,\"pi\":null,\"sk\":null,\"ui\":null}}"),
     V927("{\"i\":\"V927\",\"r\":0,\"t\":{\"fr\":{\"t\":\"1\",\"l\":\"2\",\"g\":\"3\",\"s\":\"9888\",\"r\":\"1\",\"b\":\"1.000000\"},\"g\":\"1\",\"on\":\"726c0c5a88d349f986085e29ca731151\",\"pi\":null,\"pr\":{\"pl\":null},\"sk\":null,\"ui\":null}}"),
     V993("{\"i\":\"V993\",\"r\":0,\"t\":{\"giftId\":null,\"pi\":null,\"sk\":null,\"ui\":null}}"),
     V9999("");
@@ -114,6 +115,7 @@ public enum RequestType {
                 t.put("type", param[0]);
             }
             case V904 -> t.put("t", param[0]);
+            case V921 -> t.put("oi",param[0]);
             case V927 -> {
                 JSONObject pr = t.getJSONObject("pr");
                 t.put("pl", param[0]);

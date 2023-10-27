@@ -135,6 +135,14 @@ public class Format {
             return jsonArray;
         }
     }
+    public static class V921 {
+        public static JSONArray write() {
+            JSONArray jsonArray = new JSONArray();
+            Log.i("广告刷新，需填入活动id");
+            jsonArray.add(Format.write("$.t.oi", String));
+            return jsonArray;
+        }
+    }
 
     public static class V927 {
         public static JSONArray write() {

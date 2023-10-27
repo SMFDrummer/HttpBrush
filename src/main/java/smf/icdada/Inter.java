@@ -281,7 +281,7 @@ public class Inter {
 
     private static String packageValue(JSONArray packages) {
         try {
-            return JSONPath.eval(packages, "$[?(@.id == " + channelId + ")].value").toString();
+            return JSONPath.eval(packages, "$[?(@.id == " + channelId + ")][0].value").toString();
         } catch (Exception e) {
             Log.e("配置文件异常:");
             e.printStackTrace();
