@@ -11,8 +11,8 @@ public class ProgressBar {
     private final long progressMax;
     private final boolean usePercentage;
     private final DecimalFormat Decimal = new DecimalFormat("#.##%");
-    private long previousProgressValue = 0;
     private final int outLines;
+    private long previousProgressValue = 0;
 
     ProgressBar(String progressTitle, long progressMax, boolean usePercentage) {
         this.progressTitle = progressTitle;

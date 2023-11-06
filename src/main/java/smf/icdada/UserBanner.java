@@ -16,8 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -41,10 +39,9 @@ public class UserBanner {
     public static void fileChecker(boolean check) {
         Path path = Paths.get(banuserPath);
         if (!Files.exists(path) || check) {
-            int i;
-            Log.v("请输入账号UserId开始:");
+            Log.v("请输入账号UserId开始");
             int start = smfScanner.Int(false, "^\\d{8,}$");
-            Log.v("请输入账号UserId结束:");
+            Log.v("请输入账号UserId结束");
             int end = smfScanner.Int(false, "^\\d{8,}$");
             File file = new File(path.toUri());
             JSONObject parse = JSONObject.parse("{}");
@@ -55,12 +52,12 @@ public class UserBanner {
             object1.put("isBanned", false);
             object1.put("isProtected", false);
             account.add(object1);
-            for (i = start; i <= end; i++) {
+            IntStream.range(start, end + 1).forEach(i -> {
                 JSONObject user = new JSONObject();
-                user.put("userId", i);
+                user.put("userId", String.valueOf(i));
                 user.put("account", account);
                 bannedUsers.add(user);
-            }
+            });
             parse.put("BannedUsers", bannedUsers);
             try (FileWriter fileWriter = new FileWriter(file)) {
                 fileWriter.write(parse.toJSONString(JSONWriter.Feature.WriteMapNullValue, JSONWriter.Feature.PrettyFormat));
@@ -82,8 +79,8 @@ public class UserBanner {
         }
     }
 
-    private static List<Integer> readBannedUser() {
-        List<Integer> bannedUserIds = new ArrayList<>();
+    private static List<String> readBannedUser() {
+        List<String> bannedUserIds = new ArrayList<>();
         Path path = Paths.get(banuserPath);
         try {
             if (Files.exists(path)) {
@@ -97,11 +94,11 @@ public class UserBanner {
                         Log.w("警告:封号方法配置为" + Inter.appId + Inter.channelId + "渠道，但封号账号:" + jsonObject.getIntValue("userId") + "配置为" + a1.getIntValue("serverId") + "渠道，你确定要这样做吗？");
                         if (smfScanner.Boolean(false)) {
                             if (!a1.getBooleanValue("isBanned") && !a1.getBooleanValue("isProtected")) {
-                                bannedUserIds.add(jsonObject.getIntValue("userId"));
+                                bannedUserIds.add(jsonObject.getString("userId"));
                             }
                         }
                     } else if (!a1.getBooleanValue("isBanned") && !a1.getBooleanValue("isProtected")) {
-                        bannedUserIds.add(jsonObject.getIntValue("userId"));
+                        bannedUserIds.add(jsonObject.getString("userId"));
                     }
                 }
             } else {
@@ -116,13 +113,12 @@ public class UserBanner {
     }
 
     public static void bannedFunction() {
-        List<Integer> bannedUserIds = readBannedUser();
-        ExecutorService executorService = Executors.newFixedThreadPool(25000);
+        List<String> bannedUserIds = readBannedUser();
         List<Future<?>> futures = new ArrayList<>();
         do {
-            for (int bannedUserId : bannedUserIds) {
+            for (String bannedUserId : bannedUserIds) {
                 sleep(100);
-                futures.add(executorService.submit(() -> {
+                futures.add(getExecutor(bannedUserId).submit(() -> {
                     Log.v("账号:" + bannedUserId + " || 已读取，开始封禁");
                     banned(bannedUserId);
                 }));
@@ -134,18 +130,11 @@ public class UserBanner {
                 }
             bannedUserIds = readBannedUser();
         } while (!bannedUserIds.isEmpty());
-        executorService.shutdown();
-        try {
-            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         Log.s("所有账号封禁完成，程序退出");
         System.exit(0);
     }
 
-    private static void banned(int userId) {
-        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+    private static void banned(String userId) {
         refresh(userId);
         Result uisk = getUisk(userId);
         if ("banned".equals(uisk.getUi()) && "banned".equals(uisk.getSk())) {
@@ -160,7 +149,7 @@ public class UserBanner {
             while (true) {
                 i++;
                 try {
-                    Future<String> futureV437 = executor.submit(() -> getResponseBody(V437, userId));
+                    Future<String> futureV437 = getExecutor(userId).submit(() -> getResponseBody(V437, userId));
                     String response437CheckBody = futureV437.get(3, TimeUnit.SECONDS);
                     v437.setResponseBody(response437CheckBody);
                     if (!v437.isValid(0)) {
@@ -175,7 +164,7 @@ public class UserBanner {
                         break;
                     } else while (true) {
                         try {
-                            Future<String> futureV316 = executor.submit(() -> getResponseBody(V316, userId));
+                            Future<String> futureV316 = getExecutor(userId).submit(() -> getResponseBody(V316, userId));
                             String response316GetBody = futureV316.get(3, TimeUnit.SECONDS);
                             v316.setResponseBody(response316GetBody);
                             if (!v316.isValid(0)) {
@@ -190,7 +179,7 @@ public class UserBanner {
                                 int gem = Optional.ofNullable((Integer) gemPath.eval(v316.data)).orElse(0);
                                 if (snailCoin >= 500000 || chestnutPiece >= 3000 || gem >= 2000000) {
                                     checkPrint(userId, gem, snailCoin, chestnutPiece);
-                                    if (applyBanner(userId, executor)) {
+                                    if (applyBanner(userId)) {
                                         refresh(userId);
                                         uisk = getUisk(userId);
                                         if ("banned".equals(uisk.getUi()) && "banned".equals(uisk.getSk())) {
@@ -217,9 +206,9 @@ public class UserBanner {
         }
     }
 
-    private static boolean applyBanner(int userId, ExecutorService executor) {
+    private static boolean applyBanner(String userId) {
         try {
-            Future<String> futureV303 = executor.submit(() -> getResponseBody(V303, userId, 10800));
+            Future<String> futureV303 = getExecutor(userId).submit(() -> getResponseBody(V303, userId, 10800));
             Check.V303 v303 = new Check.V303();
             v303.setResponseBody(futureV303.get(3, TimeUnit.SECONDS));
             if (v303.isValid(0)) {
@@ -227,7 +216,7 @@ public class UserBanner {
                 Check.V927 v927 = new Check.V927();
                 JSONArray pl = new JSONArray("[{\"i\":111067,\"q\":1},{\"i\":200030,\"q\":2},{\"i\":200053,\"q\":2},{\"i\":200054,\"q\":2},{\"i\":200055,\"q\":1}]");
                 List<Future<String>> futures = new ArrayList<>();
-                IntStream.range(0, 4).forEach(i -> futures.add(executor.submit(() -> getResponseBody(V927, userId, pl))));
+                IntStream.range(0, 4).forEach(i -> futures.add(getExecutor(userId).submit(() -> getResponseBody(V927, userId, pl))));
                 for (Future<String> future : futures) {
                     v927.setResponseBody(future.get(3, TimeUnit.SECONDS));
                     if (v927.isValid(0) || v927.isValid(20013)) count++;
@@ -241,13 +230,13 @@ public class UserBanner {
         }
     }
 
-    public static void JsonUtil(int userId, boolean isBanned, boolean isProtected) {
+    public static void JsonUtil(String userId, boolean isBanned, boolean isProtected) {
         try {
             lock.writeLock().lock();
             Path path = Paths.get(banuserPath);
             JSONObject parse = JSONObject.parse(Files.readString(path));
-            JSONPath userPath = JSONPath.of("$.BannedUsers[?(@.userId == " + userId + ")].account");
-            JSONPath accountPath = JSONPath.of("$.BannedUsers[?(@.userId == " + userId + ")].account[?(@.serverId == " + Integer.parseInt(Inter.oi) + ")]");
+            JSONPath userPath = JSONPath.of("$.BannedUsers[?(@.userId == '" + userId + "')].account");
+            JSONPath accountPath = JSONPath.of("$.BannedUsers[?(@.userId == '" + userId + "')].account[?(@.serverId == " + Integer.parseInt(Inter.oi) + ")]");
             Object userAccount = accountPath.eval(parse);
             if (userAccount != null) {
                 JSONObject user = (JSONObject) userAccount;
@@ -278,7 +267,7 @@ public class UserBanner {
         }
     }
 
-    public static void checkPrint(int userId, Object... gem_snailCoin_chestnutPiece) {
+    public static void checkPrint(String userId, Object... gem_snailCoin_chestnutPiece) {
         boolean abnormal = false;
         Integer gem = (Integer) gem_snailCoin_chestnutPiece[0];
         Integer snailCoin = (Integer) gem_snailCoin_chestnutPiece[1];

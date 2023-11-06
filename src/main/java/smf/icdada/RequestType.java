@@ -22,6 +22,7 @@ public enum RequestType {
     V322("{\"i\":\"V322\",\"r\":0,\"t\":{\"acd\":{\"g\":null,\"ubn\":0,\"uebn\":0,\"upnl\":[]},\"fr\":\"1\",\"pi\":null,\"pr\":{\"pl\":[]},\"ri\":{\"l\":null,\"ml\":9,\"lwml\":0,\"lc\":[1,1,1,1,1],\"eb\":0,\"eub\":0,\"pl\":[],\"dm\":\"\",\"ls\":0,\"ds\":0,\"bn\":1,\"bu\":0,\"m\":65,\"jc\":6,\"jl\":5,\"par\":30,\"pas\":500,\"on\":\"\",\"alt\":15,\"amt\":15,\"cil\":[]},\"sk\":null,\"ui\":null,\"w\":\"4\"}}"),
     V323("{\"i\":\"V323\",\"r\":0,\"t\":{\"ad\":\"0\",\"l\":[1199,1199,0,0,0],\"pi\":null,\"sk\":null,\"t\":\"0\",\"ui\":null}}"),
     V437("{\"i\":\"V437\",\"r\":0,\"t\":{\"pi\":null,\"sk\":null,\"ui\":null}}"),
+    V792("{\"i\":\"V792\",\"r\":0,\"t\":{\"ai\":\"10814\",\"i\":\"4\",\"pi\":null,\"sk\":null,\"t\":\"1\",\"ui\":null}}"),
     V876("{\"i\":\"V876\",\"r\":0,\"t\":{\"code\":null,\"pi\":null,\"sk\":null,\"star\":\"50\",\"ui\":null}}"),
     V877("{\"i\":\"V877\",\"r\":0,\"t\":{\"index\":null,\"pi\":null,\"sk\":null,\"ui\":null}}"),
     V878("{\"i\":\"V878\",\"r\":0,\"t\":{\"pi\":null,\"sk\":null,\"type\":null,\"ui\":null}}"),
@@ -29,6 +30,7 @@ public enum RequestType {
     V904("{\"i\":\"V904\",\"r\":0,\"t\":{\"pi\":null,\"sk\":null,\"t\":null,\"ui\":null}}"),
     V921("{\"i\":\"V921\",\"r\":0,\"t\":{\"oi\":null,\"pi\":null,\"sk\":null,\"ui\":null}}"),
     V927("{\"i\":\"V927\",\"r\":0,\"t\":{\"fr\":{\"t\":\"1\",\"l\":\"2\",\"g\":\"3\",\"s\":\"9888\",\"r\":\"1\",\"b\":\"1.000000\"},\"g\":\"1\",\"on\":\"726c0c5a88d349f986085e29ca731151\",\"pi\":null,\"pr\":{\"pl\":null},\"sk\":null,\"ui\":null}}"),
+    V940("{\"i\":\"V940\",\"r\":0,\"t\":{\"pi\":null,\"sk\":null,\"ui\":null}}"),
     V993("{\"i\":\"V993\",\"r\":0,\"t\":{\"giftId\":null,\"pi\":null,\"sk\":null,\"ui\":null}}"),
     V9999("");
     private final String requestBody;
@@ -56,7 +58,7 @@ public enum RequestType {
         return requestBody;
     }
 
-    public String getRequestBody(RequestType index, int userId) {
+    public String getRequestBody(RequestType index, String userId) {
         JSONObject parse = JSONObject.parse(getRequestBody());
         JSONObject t = parse.getJSONObject("t");
         t.put("ver_", Inter.iosVersion);
@@ -76,7 +78,7 @@ public enum RequestType {
         return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
     }
 
-    public String getRequestBody(RequestType index, int userId, Object... param) {
+    public String getRequestBody(RequestType index, String userId, Object... param) {
         JSONObject parse = JSONObject.parse(getRequestBody());
         JSONObject t = parse.getJSONObject("t");
         if (index != V202) {
@@ -103,7 +105,7 @@ public enum RequestType {
                 t.put("pack", Inter.packageValue);
                 t.put("v", Inter.androidVersion);
             }
-            case V316, V323, V437, V902 -> {
+            case V316, V323, V437,V792, V902,V940 -> {
             }
             case V876 -> t.put("code", param[0]);
             case V877 -> t.put("index", param[0]);
@@ -115,7 +117,7 @@ public enum RequestType {
                 t.put("type", param[0]);
             }
             case V904 -> t.put("t", param[0]);
-            case V921 -> t.put("oi",param[0]);
+            case V921 -> t.put("oi", param[0]);
             case V927 -> {
                 JSONObject pr = t.getJSONObject("pr");
                 t.put("pl", param[0]);
@@ -127,5 +129,4 @@ public enum RequestType {
         }
         return parse.toJSONString(JSONWriter.Feature.WriteMapNullValue);
     }
-
 }

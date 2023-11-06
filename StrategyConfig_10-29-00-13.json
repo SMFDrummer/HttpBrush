@@ -1,0 +1,29 @@
+{
+	"Configuration":"HttpUtilSenderProps",
+	"FileInfo":{
+		"Author":[
+			"SMF",
+			"icdada"
+		]
+	},
+	"SendPackage":[
+		{
+			"Order":1,
+			"Identifier":"V940",
+			"Body":{
+				"override":false,
+				"value":"",
+				"account":true,
+				"config":[
+					
+				]
+			},
+			"CycleIndex":9999,
+			"CheckSuccess":false,
+			"CheckPoint":{
+				"override":false,
+				"value":0
+			}
+		}
+	]
+}

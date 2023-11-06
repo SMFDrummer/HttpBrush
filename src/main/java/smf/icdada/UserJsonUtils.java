@@ -33,18 +33,18 @@ public class UserJsonUtils {
 
     public static void measure() {
         initUsersMap();
-        List<Integer> userIds = getUserList();
-        ExecutorService executorService = Executors.newFixedThreadPool(userIds.size());
-        for (int userId : userIds) {
+        List<String> userIds = getUserList();
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        for (String userId : userIds) {
             sleep(100);
-            executorService.submit(() -> {
+            executor.submit(() -> {
                 Log.v("账号:" + userId + " || 已读取，开始执行");
                 JsonUtilInterface(userId);
             });
         }
-        executorService.shutdown();
+        executor.shutdown();
         try {
-            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -52,7 +52,7 @@ public class UserJsonUtils {
         System.exit(0);
     }
 
-    private static void JsonUtilInterface(int userId) {
+    private static void JsonUtilInterface(String userId) {
         if (Inter.inter == 10) while (true) try {
             refresh(userId);
         } catch (Exception e) {
@@ -72,12 +72,11 @@ public class UserJsonUtils {
         }
     }
 
-    private static int getGem(int userId) {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+    private static int getGem(String userId) {
         Check.V316 v316 = new Check.V316();
         while (true) {
             try {
-                Future<String> future = executor.submit(() -> getResponseBody(V316, userId));
+                Future<String> future = getExecutor(userId).submit(() -> getResponseBody(V316, userId));
                 String response316Body = future.get(3, TimeUnit.SECONDS);
                 v316.setResponseBody(response316Body);
                 if (!v316.isValid(0)) {
@@ -85,7 +84,7 @@ public class UserJsonUtils {
                     if (!v316.isValid(20013)) refresh(userId);
                 } else {
                     if (v316.data.containsKey("$.p")) {
-                        int fg = (int) v316.data.get("$.p.fg");
+                        int fg = Integer.parseInt(v316.data.get("$.p.fg").toString());
                         Log.s("账号:" + userId + " || 已获取钻石数量:" + fg);
                         return fg;
                     }
@@ -96,12 +95,11 @@ public class UserJsonUtils {
         }
     }
 
-    private static String getInviteCode(int userId) {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+    private static String getInviteCode(String userId) {
         Check.V303 v303 = new Check.V303();
         while (true) {
             try {
-                Future<String> future = executor.submit(() -> getResponseBody(V303, userId, 10868));
+                Future<String> future = getExecutor(userId).submit(() -> getResponseBody(V303, userId, 10868));
                 String response303Body = future.get(3, TimeUnit.SECONDS);
                 v303.setResponseBody(response303Body);
                 if (!v303.isValid(0)) {
@@ -125,7 +123,7 @@ public class UserJsonUtils {
     /**
      * @描述: user.json文件编辑方法，请确保运行该方法前已经初始化Users，否则会回报空指针异常
      */
-    public static <T> void JsonUtil(int userId, String key, T value) {
+    public static <T> void JsonUtil(String userId, String key, T value) {
         String filePath = System.getProperty("user.dir") + File.separator + "user.json";
         String tempFilePath = System.getProperty("user.dir") + File.separator + "temp" + File.separator + UUID.randomUUID() + ".tmp";
         try {
@@ -168,8 +166,8 @@ public class UserJsonUtils {
                 System.exit(0);
             }
         }
-        JSONObject parsePass = JSONObject.parse("{}");
-        JSONObject parseFail = JSONObject.parse("{}");
+        JSONObject parsePass = new JSONObject();
+        JSONObject parseFail = new JSONObject();
         JSONArray passUsers = new JSONArray();
         JSONArray failUsers = new JSONArray();
         try {

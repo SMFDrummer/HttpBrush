@@ -12,7 +12,6 @@ import java.util.Objects;
 
 public class DESUtil {
     public final static char[] HEX = "0123456789ABCDEF".toCharArray();
-
     /**
      * 偏移变量，固定占8位字节
      */
@@ -30,11 +29,6 @@ public class DESUtil {
      */
     private static final String CHARSET = "utf-8";
 
-    public static String XMLdecrypt(String string) {
-        // TODO: Implement this method
-        return null;
-    }
-
     /**
      * 生成key
      *
@@ -43,8 +37,8 @@ public class DESUtil {
      * @throws Exception 异常
      */
     private static Key generateKey(String password) throws Exception {
-        DESKeySpec dks = new DESKeySpec(password.getBytes(CHARSET));
-        SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(ALGORITHM);
+        DESKeySpec dks = new DESKeySpec(password.getBytes(StandardCharsets.UTF_8));
+        SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES");
         return keyFactory.generateSecret(dks);
     }
 

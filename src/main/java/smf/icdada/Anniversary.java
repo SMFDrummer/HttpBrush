@@ -21,18 +21,18 @@ import static smf.icdada.RequestType.*;
 public class Anniversary {
     public static void measure() {
         initUsersMap();
-        Map<Integer, String> userObjects = readUserObjects();
-        ExecutorService executorService = Executors.newFixedThreadPool(userObjects.size() + 1);
-        for (Map.Entry<Integer, String> userObject : userObjects.entrySet()) {
+        Map<String, String> userObjects = readUserObjects();
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        for (Map.Entry<String, String> userObject : userObjects.entrySet()) {
             sleep(100);
-            executorService.submit(() -> {
+            executor.submit(() -> {
                 Log.v("账号:" + userObject.getKey() + " || " + "已读取，开始执行");
-                brush(userObject.getKey(), userObject.getValue());
+                single(userObject.getKey(), userObject.getValue());
             });
         }
-        executorService.shutdown();
+        executor.shutdown();
         try {
-            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -40,8 +40,8 @@ public class Anniversary {
         System.exit(0);
     }
 
-    private static Map<Integer, String> readUserObjects() {
-        Map<Integer, String> userObjects = new HashMap<>();
+    private static Map<String, String> readUserObjects() {
+        Map<String, String> userObjects = new HashMap<>();
         try {
             String stringUrl = System.getProperty("user.dir") + File.separator + "user.json";
             Path userPath = Paths.get(stringUrl);
@@ -50,7 +50,7 @@ public class Anniversary {
                 JSONArray usersArray = userData.getJSONArray("Users");
                 for (Object userElement : usersArray) {
                     JSONObject userObject = (JSONObject) userElement;
-                    int userId = userObject.getIntValue("userId");
+                    String userId = userObject.getString("userId");
                     if (userObject.containsKey("activate")) {
                         if (userObject.getBooleanValue("activate") && userObject.containsKey("inviteCode")) {
                             String inviteCode = userObject.getString("inviteCode");
@@ -79,7 +79,7 @@ public class Anniversary {
         return userObjects;
     }
 
-    public static void brush() {
+    public static void single() {
         String inviteCode = getInviteCode();
         int count = 0;
         do {
@@ -94,7 +94,7 @@ public class Anniversary {
         Log.v("邀请码:" + inviteCode + " || 邀请结束");
     }
 
-    private static void brush(int userId, String inviteCode) {
+    private static void single(String userId, String inviteCode) {
         int count = checkInviteCode(userId);
         if (count == 12202) {
             UserJsonUtils.JsonUtil(userId, "isBanned", true);
@@ -113,20 +113,19 @@ public class Anniversary {
         return smfScanner.String(true);
     }
 
-    private static int getRandomId() {
+    private static String getRandomId() {
         Random random = new Random();
-        return random.nextInt(500000) + 39500001;
+        return String.valueOf(random.nextInt(500000) + 39500001);
     }
 
-    private static int checkInviteCode(int userId) {
-        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+    private static int checkInviteCode(String userId) {
         Check.V303 v303 = new Check.V303();
         refresh(userId);
         Result uisk = getUisk(userId);
         if ("banned".equals(uisk.getUi()) && "banned".equals(uisk.getSk())) {
             return 12202;
         } else while (true) try {
-            Future<String> future = executor.submit(() -> getResponseBody(V303, userId, 10868));
+            Future<String> future = getExecutor(userId).submit(() -> getResponseBody(V303, userId, 10868));
             String response303Body = future.get(3, TimeUnit.SECONDS);
             v303.setResponseBody(response303Body);
             if (v303.isValid(0)) {
@@ -140,8 +139,7 @@ public class Anniversary {
     }
 
 
-    private static int brushInviteCode(String inviteCode, int randomUserId) {
-        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+    private static int brushInviteCode(String inviteCode, String randomUserId) {
         refresh(randomUserId);
         Result uisk = getUisk(randomUserId);
         if ("banned".equals(uisk.getUi()) && "banned".equals(uisk.getSk())) {
@@ -149,14 +147,14 @@ public class Anniversary {
         } else {
             while (true) {
                 List<Future<String>> futures = new ArrayList<>();
-                futures.add(executor.submit(() -> getResponseBody(V303, randomUserId, 10868)));
-                futures.add(executor.submit(() -> getResponseBody(V876, randomUserId, inviteCode)));
+                futures.add(getExecutor(randomUserId).submit(() -> getResponseBody(V303, randomUserId, 10868)));
+                futures.add(getExecutor(randomUserId).submit(() -> getResponseBody(V876, randomUserId, inviteCode)));
                 try {
                     String response303Body = futures.get(0).get(3, TimeUnit.SECONDS);
                     if (JSON.parseObject(response303Body).getIntValue("r") == 0) {
                         String response876Body = futures.get(1).get(3, TimeUnit.SECONDS);
                         if (JSON.parseObject(response876Body).getIntValue("r") != 0) {
-                            futures.add(executor.submit(() -> getResponseBody(V876, randomUserId, inviteCode)));
+                            futures.add(getExecutor(randomUserId).submit(() -> getResponseBody(V876, randomUserId, inviteCode)));
                             sleep(350);
                             String response876BodyResend = futures.get(2).get(3, TimeUnit.SECONDS);
                             return JSON.parseObject(response876BodyResend).getIntValue("r") == 0 ? 1 : 0;
@@ -169,8 +167,7 @@ public class Anniversary {
         }
     }
 
-    private static void anniversaryGacha(int userId) {
-        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+    private static void anniversaryGacha(String userId) {
         Check.V316 v316 = new Check.V316();
         refresh(userId);
         Result uisk = getUisk(userId);
@@ -179,7 +176,7 @@ public class Anniversary {
             UserJsonUtils.JsonUtil(userId, "activate", false);
         } else {
             while (true) try {
-                Future<String> futureV316 = executor.submit(() -> getResponseBody(V316, userId));
+                Future<String> futureV316 = getExecutor(userId).submit(() -> getResponseBody(V316, userId));
                 String response316Body = futureV316.get(3, TimeUnit.SECONDS);
                 v316.setResponseBody(response316Body);
                 if (!v316.isValid(0)) refresh(userId);
@@ -188,13 +185,13 @@ public class Anniversary {
                         List<Future<String>> futures;
                         while (true) {
                             futures = new ArrayList<>();
-                            futures.add(executor.submit(() -> getResponseBody(V877, userId, 1)));
-                            futures.add(executor.submit(() -> getResponseBody(V877, userId, 2)));
-                            futures.add(executor.submit(() -> getResponseBody(V877, userId, 3)));
-                            futures.add(executor.submit(() -> getResponseBody(V877, userId, 6)));
-                            futures.add(executor.submit(() -> getResponseBody(V877, userId, 7)));
-                            futures.add(executor.submit(() -> getResponseBody(V877, userId, 8)));
-                            futures.add(executor.submit(() -> getResponseBody(V877, userId, 9)));
+                            futures.add(getExecutor(userId).submit(() -> getResponseBody(V877, userId, 1)));
+                            futures.add(getExecutor(userId).submit(() -> getResponseBody(V877, userId, 2)));
+                            futures.add(getExecutor(userId).submit(() -> getResponseBody(V877, userId, 3)));
+                            futures.add(getExecutor(userId).submit(() -> getResponseBody(V877, userId, 6)));
+                            futures.add(getExecutor(userId).submit(() -> getResponseBody(V877, userId, 7)));
+                            futures.add(getExecutor(userId).submit(() -> getResponseBody(V877, userId, 8)));
+                            futures.add(getExecutor(userId).submit(() -> getResponseBody(V877, userId, 9)));
                             try {
                                 int success = 0;
                                 Check.V877 v877 = new Check.V877();
@@ -208,12 +205,12 @@ public class Anniversary {
                             }
                         }
                         while (true) {
-                            futures.add(executor.submit(() -> getResponseBody(V878, userId, "0")));
+                            futures.add(getExecutor(userId).submit(() -> getResponseBody(V878, userId, "0")));
                             try {
                                 Check.V878 v878 = new Check.V878();
                                 v878.setResponseBody(futures.get(futures.size() - 1).get(3, TimeUnit.SECONDS));
                                 if (v878.isValid(46343)) {
-                                    futures.add(executor.submit(() -> getResponseBody(V878, userId, "1")));
+                                    futures.add(getExecutor(userId).submit(() -> getResponseBody(V878, userId, "1")));
                                     v878.setResponseBody(futures.get(futures.size() - 1).get(3, TimeUnit.SECONDS));
                                     if (v878.isValid(0) || v878.isValid(46342)) {
                                         UserJsonUtils.JsonUtil(userId, "activate", false);

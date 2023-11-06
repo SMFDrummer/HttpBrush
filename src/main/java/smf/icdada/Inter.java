@@ -145,6 +145,8 @@ public class Inter {
                 [14] 剧院币一键成号刷取(user.json)
                 [15] 完美存档刷取(单一用户)
                 [16] 完美存档刷取(user.json)
+                [17] 快速刷钻(单一用户)
+                [18] 快速刷钻(user.json)
                 [0] 退出程序""");
         Log.v("请输入序号并按回车键继续……:");
         while (keepRunning) {
@@ -214,6 +216,14 @@ public class Inter {
                     }
                     case 16 -> {
                         Log.s("完美存档刷取(user.json)");
+                        keepRunning = false;
+                    }
+                    case 17 -> {
+                        Log.s("[17] 快速刷钻(单一用户)");
+                        keepRunning = false;
+                    }
+                    case 18 -> {
+                        Log.s("[18] 快速刷钻(user.json)");
                         keepRunning = false;
                     }
                     case 99 -> {

@@ -62,7 +62,7 @@ public class HttpSender {
         connection.setDoOutput(true);
         try (OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream())) {
             writer.write(requestBody);
-        }
+        } catch (Exception ignored) {}
         return GetString(connection);
     }
 

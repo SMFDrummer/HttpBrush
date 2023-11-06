@@ -17,7 +17,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class Create {
-    public static void Single() {
+    public static void single() {
         try {
             Log.i("默认创建渠道将会读取default中channelId的值");
             Log.v("请输入需要创建账号的手机号:");
@@ -31,7 +31,7 @@ public class Create {
         }
     }
 
-    public static void Batch() {
+    public static void measure() {
         try {
             Log.i("默认创建渠道将会读取default中channelId的值");
             Log.v("请输入需要创建的账号数量:");

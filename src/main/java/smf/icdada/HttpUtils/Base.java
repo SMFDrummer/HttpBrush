@@ -28,24 +28,36 @@ import static smf.icdada.RequestType.V202;
  * </p>
  */
 public class Base {
-    private static final ConcurrentHashMap<Integer, Result> Account = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<Integer, Result> Proxy = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<Integer, Integer> Users = new ConcurrentHashMap<>();
-    private static final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+    /**
+     * @描述: AccountHashMap储存的是账号uisk的配对信息，随着刷新方法初始化和更新
+     */
+    private static final ConcurrentHashMap<String, Result> Account = new ConcurrentHashMap<>();
+    /**
+     * @描述: ProxyHashMap储存的是代理的配对信息，随着刷新方法初始化和更新
+     */
+    private static final ConcurrentHashMap<String, Result> Proxy = new ConcurrentHashMap<>();
+    /**
+     * @描述: UsersHashMap储存的是该账号在账号库中的索引位置，使用initUsersMap方法更新
+     */
+    private static final ConcurrentHashMap<String, Integer> Users = new ConcurrentHashMap<>();
+    /**
+     * @描述: VirtualThreadPoolHashMap储存的是账号对应的虚拟线程池，得益于优秀的JDK21新功能，程序的核心
+     */
+    private static final ConcurrentHashMap<String, ExecutorService> Vtp = new ConcurrentHashMap<>();
 
     /**
-     * @param userId 八位用户ID
-     * @return Result(ui, sk)
+     * @param userId 拓维userId
+     * @return 异步刷新的账号uisk信息
      * @描述: uisk重要数值获取与刷新
      */
-    private static CompletableFuture<Result> uisk(int userId) {
+    private static CompletableFuture<Result> uisk(String userId) {
         Result uisk = null;
         Result proxy = proxy();
         Proxy.put(userId, proxy);
         Check.V202 v202 = new Check.V202();
         do {
             try {
-                Future<String> future = executor.submit(() -> getResponseBody(V202, userId));
+                Future<String> future = getExecutor(userId).submit(() -> getResponseBody(V202, userId));
                 try {
                     v202.setResponseBody(future.get(10, TimeUnit.SECONDS));
                     if (v202.isValid(20507)) {
@@ -75,10 +87,10 @@ public class Base {
             }
         } while (uisk == null);
         Result finalUisk = uisk;
-        return CompletableFuture.supplyAsync(() -> finalUisk, executor);
+        return CompletableFuture.supplyAsync(() -> finalUisk, getExecutor(userId));
     }
 
-    public static String getResponseBody(RequestType index, int userId, Object... param) {
+    public static String getResponseBody(RequestType index, String userId, Object... param) {
         String responseBody;
         try {
             Result proxy = getProxy(userId);
@@ -99,48 +111,60 @@ public class Base {
                 e.printStackTrace();
             }
             responseBody = "{\"r\":12202}";
+            Proxy.put(userId,proxy());
         }
         if (Inter.openConsole) Log.w("[RECV] " + responseBody);
         return responseBody;
     }
 
-    public static String getResponseBody(String requestBody, int userId, boolean replaceUisk) {
+    public static String getResponseBody(String requestBody, String userId, boolean replaceUisk) {
         String responseBody;
         try {
             JSONObject parse = JSON.parseObject(requestBody);
             JSONObject t = parse.getJSONObject("t");
-            Result proxy = getProxy(userId);
             if (replaceUisk) {
                 Result uisk = getUisk(userId);
+                Result proxy = getProxy(userId);
                 if (t.containsKey("pi") && t.containsKey("ui") && t.containsKey("sk")) {
                     t.put("pi", uisk.getUi());
                     t.put("sk", uisk.getSk());
                     t.put("ui", uisk.getUi());
                 }
+                if (Inter.openConsole) Log.d("[SEND] " + parse.toJSONString(JSONWriter.Feature.WriteMapNullValue));
+                responseBody = HttpCrypto.decryptRES(
+                        HttpSender.doQuest(
+                                Inter.environment,
+                                HttpCrypto.encryptREQ(
+                                        parse.toJSONString(JSONWriter.Feature.WriteMapNullValue)
+                                ),
+                                proxy.getProxyHost(),
+                                proxy.getProxyPort()
+                        )
+                );
+            } else {
+                if (Inter.openConsole) Log.d("[SEND] " + parse.toJSONString(JSONWriter.Feature.WriteMapNullValue));
+                responseBody = HttpCrypto.decryptRES(
+                        HttpSender.doQuest(
+                                Inter.environment,
+                                HttpCrypto.encryptREQ(
+                                        parse.toJSONString(JSONWriter.Feature.WriteMapNullValue)
+                                )
+                        )
+                );
             }
-            if (Inter.openConsole) Log.d("[SEND] " + parse.toJSONString(JSONWriter.Feature.WriteMapNullValue));
-            responseBody = HttpCrypto.decryptRES(
-                    HttpSender.doQuest(
-                            Inter.environment,
-                            HttpCrypto.encryptREQ(
-                                    parse.toJSONString(JSONWriter.Feature.WriteMapNullValue)
-                            ),
-                            proxy.getProxyHost(),
-                            proxy.getProxyPort()
-                    )
-            );
         } catch (Exception e) {
             if (Inter.openConsole) {
                 Log.w(e.getMessage());
                 e.printStackTrace();
             }
             responseBody = "{\"r\":12202}";
+            if (replaceUisk) Proxy.put(userId,proxy());
         }
         if (Inter.openConsole) Log.w("[RECV] " + responseBody);
         return responseBody;
     }
 
-    public static void refresh(int userId) {
+    public static void refresh(String userId) {
         while (true) {
             Result previous = Account.get(userId);
             try {
@@ -149,7 +173,6 @@ public class Base {
                     Account.put(userId, latest);
                     break;
                 }
-                sleep(5000);
             } catch (Exception e) {
                 if (Inter.openConsole) {
                     Log.w(e.getMessage());
@@ -159,23 +182,27 @@ public class Base {
         }
     }
 
-    public static Result getUisk(int userId) {
+    public static ExecutorService getExecutor(String userId) {
+        return Vtp.computeIfAbsent(userId, key -> Executors.newVirtualThreadPerTaskExecutor());
+    }
+
+    public static Result getUisk(String userId) {
         return Account.get(userId);
     }
 
-    public static Result getProxy(int userId) {
+    public static Result getProxy(String userId) {
         return Proxy.get(userId);
     }
 
-    public static List<Integer> getUserList() {
-        List<Integer> userList = new ArrayList<>();
-        for (Map.Entry<Integer, Integer> entry : Users.entrySet()) {
+    public static List<String> getUserList() {
+        List<String> userList = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : Users.entrySet()) {
             userList.add(entry.getKey());
         }
         return userList;
     }
 
-    public static int getIndex(int userId) {
+    public static int getIndex(String userId) {
         return Users.get(userId);
     }
 
@@ -187,7 +214,7 @@ public class Base {
     }
 
     public static String getFilePath() {
-        Log.v("请输入完整的Strategy配置文件路径");
+        Log.v("请输入完整的文件路径");
         while (true) {
             String filePath = smfScanner.String(false);
             filePath = removeQuotes(filePath);
@@ -202,7 +229,7 @@ public class Base {
         if (Files.exists(Paths.get(filePath))) {
             return filePath;
         } else {
-            Log.e(filePath + "路径配置文件不存在，传参出现严重错误，程序退出");
+            Log.e(filePath + "路径文件不存在，传参出现严重错误，程序退出");
             System.exit(0);
             return null;
         }
@@ -222,11 +249,11 @@ public class Base {
                     JSONObject userObject = usersArray.getJSONObject(i);
                     if (userObject.containsKey("activate")) {
                         if (userObject.getBooleanValue("activate")) {
-                            int userId = userObject.getIntValue("userId");
+                            String userId = userObject.getString("userId");
                             Users.put(userId, i);
                         }
                     } else {
-                        int userId = userObject.getIntValue("userId");
+                        String userId = userObject.getString("userId");
                         userObject.put("activate", true);
                         Users.put(userId, i);
                     }
@@ -362,7 +389,7 @@ public class Base {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
-            Log.e("sleep function error:");
+            Log.w("sleep function error:" + e.getMessage());
             e.printStackTrace();
         }
     }

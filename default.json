@@ -31,11 +31,11 @@
       },
       "AndroidVersion": {
         "#DESCRIPTION#": "安卓版本号",
-        "value": "3.2.0"
+        "value": "3.2.3.1430"
       },
       "IOSVersion": {
         "#DESCRIPTION#": "苹果版本号",
-        "value": "3.2.1.804"
+        "value": "3.2.3.811"
       },
       "Environment": {
         "#DESCRIPTION#": "运行环境",

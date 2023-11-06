@@ -7,6 +7,7 @@ import com.alibaba.fastjson2.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -53,6 +54,56 @@ public class smfScanner {
             number = scanner.nextInt();
             scanner.nextLine();
             if (Pattern.matches(regex, Integer.toString(number))) {
+                if (requireConfirmation) {
+                    Log.i("你输入的是 " + number);
+                    Log.v("如果确认请输入任意字符，否则请输入N或n:");
+                    String confirmation = scanner.nextLine();
+                    isValid = !confirmation.equalsIgnoreCase("N");
+                } else {
+                    isValid = true;
+                }
+            } else {
+                Log.e("输入的整数不符合正则表达式，请重新输入:");
+            }
+        }
+        return number;
+    }
+
+    public static BigInteger BigInteger(boolean requireConfirmation) {
+        Scanner scanner = new Scanner(System.in);
+        BigInteger number = BigInteger.ZERO;
+        boolean isValid = false;
+        while (!isValid) {
+            while (!scanner.hasNextInt()) {
+                Log.e("输入无效，请输入一个整数:");
+                scanner.next();
+            }
+            number = scanner.nextBigInteger();
+            scanner.nextLine();
+            if (requireConfirmation) {
+                Log.i("你输入的是 " + number);
+                Log.v("如果确认请输入任意字符，否则请输入N或n:");
+                String confirmation = scanner.nextLine();
+                isValid = !confirmation.equalsIgnoreCase("N");
+            } else {
+                isValid = true;
+            }
+        }
+        return number;
+    }
+
+    public static BigInteger BigInteger(boolean requireConfirmation, String regex) {
+        Scanner scanner = new Scanner(System.in);
+        BigInteger number = BigInteger.ZERO;
+        boolean isValid = false;
+        while (!isValid) {
+            while (!scanner.hasNextInt()) {
+                Log.e("输入无效，请输入一个整数:");
+                scanner.next();
+            }
+            number = scanner.nextBigInteger();
+            scanner.nextLine();
+            if (Pattern.matches(regex, number.toString())) {
                 if (requireConfirmation) {
                     Log.i("你输入的是 " + number);
                     Log.v("如果确认请输入任意字符，否则请输入N或n:");

@@ -25,9 +25,7 @@ public class Check {
         public boolean isValid(int r) {
             if (JSON.isValidObject(responseBody)) {
                 JSONObject jsonObject = JSON.parseObject(responseBody);
-                if (r == 0) return jsonObject.getIntValue("r") == r &&
-                        jsonObject.containsKey("d") &&
-                        JSON.isValidObject(jsonObject.getString("d"));
+                if (r == 0) return jsonObject.getIntValue("r") == r && jsonObject.containsKey("d");
                 else return jsonObject.getIntValue("r") == r;
             } else return false;
         }
@@ -93,15 +91,16 @@ public class Check {
                 JSONObject jsonObject = JSON.parseObject(responseBody);
                 if (r == 0) return jsonObject.getIntValue("r") == r &&
                         jsonObject.containsKey("d") &&
-                        JSON.isValidArray(jsonObject.getString("d")) &&
-                        JSON.isValidObject(jsonObject.getJSONArray("d").getJSONObject(0).getString("data"));
+                        JSON.isValidArray(jsonObject.getString("d"));
                 else return jsonObject.getIntValue("r") == r;
             } else return false;
         }
 
         @Override
         public JSONObject setData() {
-            return JSON.parseObject(JSON.parseObject(responseBody).getJSONArray("d").getJSONObject(0).getString("data"));
+            if (JSON.parseObject(responseBody).getJSONArray("d").getJSONObject(0).containsKey("data")) {
+                return JSON.parseObject(JSON.parseObject(responseBody).getJSONArray("d").getJSONObject(0).getString("data"));
+            } else return new JSONObject();
         }
     }
 
@@ -114,6 +113,8 @@ public class Check {
             else return true;
         }
     }
+    public static class V792 extends V {
+    }
 
     public static class V877 extends V {
     }
@@ -123,11 +124,13 @@ public class Check {
 
     public static class V904 extends V {
     }
-    public static class V921 extends V {
 
+    public static class V921 extends V {
     }
 
     public static class V927 extends V {
+    }
 
+    public static class V940 extends V {
     }
 }

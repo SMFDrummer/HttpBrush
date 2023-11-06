@@ -3,7 +3,6 @@ package smf.icdada.HttpUtils;
 import com.alibaba.fastjson2.*;
 import smf.icdada.Log;
 import smf.icdada.RequestType;
-import smf.icdada.Result;
 import smf.icdada.smfScanner;
 
 import java.io.File;
@@ -13,7 +12,9 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import static smf.icdada.HttpUtils.Base.*;
@@ -29,7 +30,7 @@ public class Strategy {
     /**
      * @描述: 配置文件解析方法
      */
-    public static boolean apply(int userId, Object... filePathString) {
+    public static boolean apply(String userId, Object... filePathString) {
         try {
             String filePath;
             if (filePathString != null && filePathString.length > 0) {
@@ -38,63 +39,55 @@ public class Strategy {
                 filePath = getFilePath();
             }
             JSONObject parse = JSONObject.parse(Files.readString(Paths.get(filePath)));
-            if (parse.containsKey("Configuration") && "HttpUtilSenderProps".equals(parse.get("Configuration"))) {
-                if (parse.containsKey("SendPackage")) {
-                    refresh(userId);
-                    Result uisk = getUisk(userId);
-                    Result proxy = getProxy(userId);
-                    if (!"banned".equals(uisk.getUi()) && !"banned".equals(uisk.getSk())) {
-                        JSONArray sendPackage = parse.getJSONArray("SendPackage");
-                        JSONObject[] sendPackages = new JSONObject[sendPackage.size()];
-                        for (int i = 0; i < sendPackage.size(); i++) {
-                            sendPackages[i] = sendPackage.getJSONObject(i);
-                        }
-                        Arrays.sort(sendPackages, (o1, o2) -> {
-                            int packageOrder1 = o1.getInteger("Order");
-                            int packageOrder2 = o2.getInteger("Order");
-                            return Integer.compare(packageOrder1, packageOrder2);
-                        });
-                        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-                        Check.Any any = new Check.Any();
-                        for (JSONObject Package : sendPackages) {
-                            String identifier = Package.getString("Identifier");
-                            JSONObject body = Package.getJSONObject("Body");
-                            if (!RequestType.checkRequestBody(identifier) && !body.getBooleanValue("override")) {
-                                Log.w("由于未找到默认模板且未启用覆写，程序无法执行，即将退出");
-                                System.exit(0);
-                            }
-                            String requestBody = formatRequestBody(Package, userId);
-                            int cycleIndex = Package.getIntValue("CycleIndex");
-                            boolean replaceUisk = (boolean) JSONPath.eval(Package, "$.Body.account");
-                            IntStream.range(0, cycleIndex).forEach(i -> {
-                                while (true) {
-                                    Future<String> future = executor.submit(() -> getResponseBody(requestBody, userId, replaceUisk));
-                                    try {
-                                        any.setResponseBody(future.get(10, TimeUnit.SECONDS));
-                                        if (Package.getBooleanValue("CheckSuccess")) {
-                                            boolean success = any.isValid(0);
-                                            if ((boolean) JSONPath.eval(Package, "$.CheckPoint.override")) {
-                                                success = any.isValid((int) JSONPath.eval(Package, "$.CheckPoint.value"));
-                                            }
-                                            if (success) break;
-                                        } else break;
-                                    } catch (Exception ignored) {
-                                        refresh(userId);
-                                    }
-                                }
-                            });
-                        }
-                        return true;
-                    } else {
-                        System.exit(0);
-                    }
-                } else {
-                    Log.e("配置文件损坏，请重新生成或尝试修复配置");
-                    System.exit(0);
+            if (
+                    parse.containsKey("Configuration") &&
+                            "HttpUtilSenderProps".equals(parse.get("Configuration")) &&
+                            parse.containsKey("SendPackage")
+            ) {
+                JSONArray sendPackage = parse.getJSONArray("SendPackage");
+                JSONObject[] sendPackages = new JSONObject[sendPackage.size()];
+                for (int i = 0; i < sendPackage.size(); i++) {
+                    sendPackages[i] = sendPackage.getJSONObject(i);
                 }
+                Arrays.sort(sendPackages, (o1, o2) -> {
+                    int packageOrder1 = o1.getInteger("Order");
+                    int packageOrder2 = o2.getInteger("Order");
+                    return Integer.compare(packageOrder1, packageOrder2);
+                });
+                Check.Any any = new Check.Any();
+                for (JSONObject Package : sendPackages) {
+                    String identifier = Package.getString("Identifier");
+                    JSONObject body = Package.getJSONObject("Body");
+                    if (!RequestType.checkRequestBody(identifier) && !body.getBooleanValue("override")) {
+                        Log.w("由于未找到默认模板且未启用覆写，程序无法执行，即将退出");
+                        return false;
+                    } else {
+                        String requestBody = formatRequestBody(Package, userId);
+                        int cycleIndex = Package.getIntValue("CycleIndex");
+                        boolean replaceUisk = (boolean) JSONPath.eval(Package, "$.Body.account");
+                        IntStream.range(0, cycleIndex).forEach(i -> {
+                            while (true) {
+                                Future<String> future = getExecutor(userId).submit(() -> getResponseBody(requestBody, userId, replaceUisk));
+                                try {
+                                    any.setResponseBody(future.get(10, TimeUnit.SECONDS));
+                                    if (Package.getBooleanValue("CheckSuccess")) {
+                                        boolean success = any.isValid(0);
+                                        if ((boolean) JSONPath.eval(Package, "$.CheckPoint.override")) {
+                                            success = any.isValid((int) JSONPath.eval(Package, "$.CheckPoint.value"));
+                                        }
+                                        if (success) break;
+                                    } else break;
+                                } catch (Exception ignored) {
+                                    refresh(userId);
+                                }
+                            }
+                        });
+                    }
+                }
+                return true;
             } else {
-                Log.e("选择的配置不是Strategy标准配置，程序无法执行");
-                System.exit(0);
+                Log.e("选择的配置不是Strategy标准配置，或配置损坏，程序无法执行");
+                return false;
             }
         } catch (Exception e) {
             Log.w(e.getMessage());
@@ -103,11 +96,14 @@ public class Strategy {
         return false;
     }
 
-    private static String formatRequestBody(JSONObject Package, int userId) {
-        RequestType V = RequestType.valueOf(JSONPath.eval(Package, "$.Identifier").toString());
-        JSONObject requestBody = (boolean) JSONPath.eval(Package, "$.Body.override") ?
-                (JSONObject) JSONPath.eval(Package, "$.Body.value") :
-                JSON.parseObject(V.getRequestBody(V, userId));
+    private static String formatRequestBody(JSONObject Package, String userId) {
+        JSONObject requestBody;
+        if ((boolean) JSONPath.eval(Package, "$.Body.override")) {
+            requestBody = (JSONObject) JSONPath.eval(Package, "$.Body.value");
+        } else {
+            RequestType V = RequestType.valueOf(JSONPath.eval(Package, "$.Identifier").toString());
+            requestBody = JSON.parseObject(V.getRequestBody(V, userId));
+        }
         ConcurrentHashMap<String, Object> configs = new ConcurrentHashMap<>();
         for (Object o : (JSONArray) JSONPath.eval(Package, "$.Body.config")) {
             JSONObject config = (JSONObject) o;
@@ -183,7 +179,7 @@ public class Strategy {
             boolean checkSuccess = smfScanner.Boolean(false);
             aPackage.put("CheckSuccess", checkSuccess);
             boolean overrideR = false;
-            int valueR = 0;
+            int valueR;
             if (checkSuccess) {
                 Log.v("是否需要变更发包成功检测的r的值？");
                 overrideR = smfScanner.Boolean(false);
