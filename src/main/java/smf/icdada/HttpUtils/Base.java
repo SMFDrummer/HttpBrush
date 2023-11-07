@@ -52,8 +52,11 @@ public class Base {
      */
     private static CompletableFuture<Result> uisk(String userId) {
         Result uisk = null;
-        Result proxy = proxy();
-        Proxy.put(userId, proxy);
+        Result proxy;
+        if (Inter.proxyType != 0){
+            proxy = proxy();
+            Proxy.put(userId, proxy);
+        }
         Check.V202 v202 = new Check.V202();
         do {
             try {
@@ -76,8 +79,10 @@ public class Base {
                         }
                     }
                 } catch (Exception ignored) {
-                    proxy = proxy();
-                    Proxy.put(userId, proxy);
+                    if (Inter.proxyType != 0) {
+                        proxy = proxy();
+                        Proxy.put(userId, proxy);
+                    }
                 }
             } catch (Exception e) {
                 if (Inter.openConsole) {
@@ -93,18 +98,29 @@ public class Base {
     public static String getResponseBody(RequestType index, String userId, Object... param) {
         String responseBody;
         try {
-            Result proxy = getProxy(userId);
             if (Inter.openConsole) Log.d("[SEND] " + index.getRequestBody(index, userId, param));
-            responseBody = HttpCrypto.decryptRES(
-                    HttpSender.doQuest(
-                            Inter.environment,
-                            HttpCrypto.encryptREQ(
-                                    index.getRequestBody(index, userId, param)
-                            ),
-                            proxy.getProxyHost(),
-                            proxy.getProxyPort()
-                    )
-            );
+            if (Inter.proxyType == 0){
+                responseBody = HttpCrypto.decryptRES(
+                        HttpSender.doQuest(
+                                Inter.environment,
+                                HttpCrypto.encryptREQ(
+                                        index.getRequestBody(index, userId, param)
+                                )
+                        )
+                );
+            } else {
+                Result proxy = getProxy(userId);
+                responseBody = HttpCrypto.decryptRES(
+                        HttpSender.doQuest(
+                                Inter.environment,
+                                HttpCrypto.encryptREQ(
+                                        index.getRequestBody(index, userId, param)
+                                ),
+                                proxy.getProxyHost(),
+                                proxy.getProxyPort()
+                        )
+                );
+            }
         } catch (Exception e) {
             if (Inter.openConsole) {
                 Log.w(e.getMessage());
@@ -124,23 +140,34 @@ public class Base {
             JSONObject t = parse.getJSONObject("t");
             if (replaceUisk) {
                 Result uisk = getUisk(userId);
-                Result proxy = getProxy(userId);
                 if (t.containsKey("pi") && t.containsKey("ui") && t.containsKey("sk")) {
                     t.put("pi", uisk.getUi());
                     t.put("sk", uisk.getSk());
                     t.put("ui", uisk.getUi());
                 }
                 if (Inter.openConsole) Log.d("[SEND] " + parse.toJSONString(JSONWriter.Feature.WriteMapNullValue));
-                responseBody = HttpCrypto.decryptRES(
-                        HttpSender.doQuest(
-                                Inter.environment,
-                                HttpCrypto.encryptREQ(
-                                        parse.toJSONString(JSONWriter.Feature.WriteMapNullValue)
-                                ),
-                                proxy.getProxyHost(),
-                                proxy.getProxyPort()
-                        )
-                );
+                if (Inter.proxyType == 0){
+                    responseBody = HttpCrypto.decryptRES(
+                            HttpSender.doQuest(
+                                    Inter.environment,
+                                    HttpCrypto.encryptREQ(
+                                            parse.toJSONString(JSONWriter.Feature.WriteMapNullValue)
+                                    )
+                            )
+                    );
+                } else {
+                    Result proxy = getProxy(userId);
+                    responseBody = HttpCrypto.decryptRES(
+                            HttpSender.doQuest(
+                                    Inter.environment,
+                                    HttpCrypto.encryptREQ(
+                                            parse.toJSONString(JSONWriter.Feature.WriteMapNullValue)
+                                    ),
+                                    proxy.getProxyHost(),
+                                    proxy.getProxyPort()
+                            )
+                    );
+                }
             } else {
                 if (Inter.openConsole) Log.d("[SEND] " + parse.toJSONString(JSONWriter.Feature.WriteMapNullValue));
                 responseBody = HttpCrypto.decryptRES(

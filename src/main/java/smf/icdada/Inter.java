@@ -243,10 +243,11 @@ public class Inter {
     private static int proxyType() {
         Log.v("""
                 请输入默认执行代理池类型:
+                [0] 不使用代理池
                 [1] 本地代理池(需要提前开启HttpBrushProxyPool)
                 [2] 在线代理池""");
         Log.v("请输入序号并按回车键继续……:");
-        return smfScanner.Int(false, "^[1|2]$");
+        return smfScanner.Int(false, "^[0|1|2]$");
     }
 
     private static String androidVersion() {

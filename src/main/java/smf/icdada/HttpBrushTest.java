@@ -16,6 +16,7 @@ public class HttpBrushTest {
         try {
             Log.d("Debug Start");
             updateUserJson();
+            Base.initUsersMap();
         } catch (Exception e) {
             Log.w(e.getMessage());
             e.printStackTrace();

@@ -191,7 +191,8 @@ public class UserJsonUtils {
             fileWriterFail.flush();
             fileWriterPass.close();
             fileWriterFail.close();
-            passUserCutter(100);
+            Log.v("请输入需要切割每个文件账号的数量");
+            passUserCutter(smfScanner.Int(false));
         } catch (Exception e) {
             Log.w(e.getMessage());
             e.printStackTrace();

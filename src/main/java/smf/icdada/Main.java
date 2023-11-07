@@ -28,8 +28,8 @@ public class Main {
         Log.i(String.format("程序作者:SMF & icdada；协同测试:%s", Inter.getTestBy()));
         Log.v("""
                 更新日志:
-                * 加入临时快速刷钻功能
-                * 修复获取钻石数量的一个潜在问题
+                * 修复快速刷钻功能
+                * 新增不使用代理池选项
                 * 修复bug""");
         Log.w("使用含有user.json批量刷取功能前请确保账号库文件已经通过功能99升级");
         Inter.Setting();
