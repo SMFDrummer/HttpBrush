@@ -52,10 +52,8 @@ public class Base {
      */
     private static CompletableFuture<Result> uisk(String userId) {
         Result uisk = null;
-        Result proxy;
         if (Inter.proxyType != 0){
-            proxy = proxy();
-            Proxy.put(userId, proxy);
+            Proxy.put(userId, proxy());
         }
         Check.V202 v202 = new Check.V202();
         do {
@@ -80,8 +78,7 @@ public class Base {
                     }
                 } catch (Exception ignored) {
                     if (Inter.proxyType != 0) {
-                        proxy = proxy();
-                        Proxy.put(userId, proxy);
+                        Proxy.put(userId, proxy());
                     }
                 }
             } catch (Exception e) {
@@ -127,9 +124,17 @@ public class Base {
                 e.printStackTrace();
             }
             responseBody = "{\"r\":12202}";
-            Proxy.put(userId,proxy());
+            if (Inter.proxyType != 0) {
+                Proxy.put(userId, proxy());
+            }
         }
         if (Inter.openConsole) Log.w("[RECV] " + responseBody);
+        int r = JSON.parseObject(responseBody).getIntValue("r");
+        if (r == 20013 || r == 20020){
+            refresh(userId);
+        } else if (r == 12202) {
+            sleep(3000);
+        }
         return responseBody;
     }
 
@@ -138,6 +143,7 @@ public class Base {
         try {
             JSONObject parse = JSON.parseObject(requestBody);
             JSONObject t = parse.getJSONObject("t");
+            t.put("ver_",Inter.iosVersion);
             if (replaceUisk) {
                 Result uisk = getUisk(userId);
                 if (t.containsKey("pi") && t.containsKey("ui") && t.containsKey("sk")) {
@@ -185,9 +191,17 @@ public class Base {
                 e.printStackTrace();
             }
             responseBody = "{\"r\":12202}";
-            if (replaceUisk) Proxy.put(userId,proxy());
+            if (replaceUisk && Inter.proxyType != 0) {
+                Proxy.put(userId,proxy());
+            }
         }
         if (Inter.openConsole) Log.w("[RECV] " + responseBody);
+        int r = JSON.parseObject(responseBody).getIntValue("r");
+        if (r == 20013 || r == 20020){
+            refresh(userId);
+        } else if (r == 12202) {
+            sleep(3000);
+        }
         return responseBody;
     }
 

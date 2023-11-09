@@ -24,11 +24,13 @@ public class PerfectArchive {
                 请输入需要执行的功能
                 [1] 全神器刷取
                 [2] 全植物刷取
-                [3] 全装扮刷取""");
-        switch (smfScanner.Int(false, "^[1|2|3]$")) {
+                [3] 全装扮刷取
+                [4] ID自定义刷取""");
+        switch (smfScanner.Int(false, "^[1|2|3|4]$")) {
             case 1 -> rewardArtifactBrush(userId);
             case 2 -> rewardPlantBrush(userId);
             case 3 -> rewardCustomBrush(userId);
+            case 4 -> rewardCustomizeGetter(userId);
         }
     }
 
@@ -77,9 +79,9 @@ public class PerfectArchive {
                     progressBar.print(1);
                     while (true) {
                         int artifactUk = ++uk;
-                        Future<String> futureV302Artifact = getExecutor(userId).submit(() -> getResponseBody(V302, userId, rewardPieces(artifactUk), artifactUk));
+                        Future<String> futureV302Piece = getExecutor(userId).submit(() -> getResponseBody(V302, userId, rewardPieces(artifactUk), artifactUk));
                         try {
-                            v302.setResponseBody(futureV302Artifact.get(10, TimeUnit.SECONDS));
+                            v302.setResponseBody(futureV302Piece.get(10, TimeUnit.SECONDS));
                             if (v302.isValid(11102)) {
                                 progressBar.print(1);
                                 uk = uk + 1;
@@ -95,18 +97,15 @@ public class PerfectArchive {
                                         if (v302.isValid(0)) i++;
                                         progressBar.print(2 + i);
                                     } catch (Exception ignored) {
-                                        refresh(userId);
                                     }
                                 }
                                 return;
                             }
                         } catch (Exception ignored) {
-                            refresh(userId);
                         }
                     }
                 }
             } catch (Exception ignored) {
-                refresh(userId);
             }
         }
     }
@@ -125,9 +124,9 @@ public class PerfectArchive {
                     progressBar.print(1);
                     while (true) {
                         int artifactUk = ++uk;
-                        Future<String> futureV302Artifact = getExecutor(userId).submit(() -> getResponseBody(V302, userId, rewardPieces(artifactUk), artifactUk));
+                        Future<String> futureV302Piece = getExecutor(userId).submit(() -> getResponseBody(V302, userId, rewardPieces(artifactUk), artifactUk));
                         try {
-                            v302.setResponseBody(futureV302Artifact.get(10, TimeUnit.SECONDS));
+                            v302.setResponseBody(futureV302Piece.get(10, TimeUnit.SECONDS));
                             if (v302.isValid(11102)) {
                                 progressBar.print(1);
                                 uk = uk + 1;
@@ -143,18 +142,15 @@ public class PerfectArchive {
                                         if (v302.isValid(0)) i++;
                                         progressBar.print(2 + i);
                                     } catch (Exception ignored) {
-                                        refresh(userId);
                                     }
                                 }
                                 return;
                             }
                         } catch (Exception ignored) {
-                            refresh(userId);
                         }
                     }
                 }
             } catch (Exception ignored) {
-                refresh(userId);
             }
         }
     }
@@ -173,9 +169,9 @@ public class PerfectArchive {
                     progressBar.print(1);
                     while (true) {
                         int artifactUk = ++uk;
-                        Future<String> futureV302Artifact = getExecutor(userId).submit(() -> getResponseBody(V302, userId, rewardPieces(artifactUk), artifactUk));
+                        Future<String> futureV302Piece = getExecutor(userId).submit(() -> getResponseBody(V302, userId, rewardPieces(artifactUk), artifactUk));
                         try {
-                            v302.setResponseBody(futureV302Artifact.get(10, TimeUnit.SECONDS));
+                            v302.setResponseBody(futureV302Piece.get(10, TimeUnit.SECONDS));
                             if (v302.isValid(11102)) {
                                 progressBar.print(1);
                                 uk = uk + 1;
@@ -187,23 +183,60 @@ public class PerfectArchive {
                                     int customUk = uk;
                                     Future<String> futureV302Custom = getExecutor(userId).submit(() -> getResponseBody(V302, userId, rewardCustoms(customUk), customUk));
                                     try {
-                                        sleep(10000);
-                                        v302.setResponseBody(futureV302Custom.get(10, TimeUnit.SECONDS));
+                                        v302.setResponseBody(futureV302Custom.get(20, TimeUnit.SECONDS));
                                         if (v302.isValid(0)) i++;
                                         progressBar.print(2 + i);
                                     } catch (Exception ignored) {
-                                        refresh(userId);
                                     }
                                 }
                                 return;
                             }
                         } catch (Exception ignored) {
-                            refresh(userId);
                         }
                     }
                 }
             } catch (Exception ignored) {
-                refresh(userId);
+            }
+        }
+    }
+
+    private static void rewardCustomizeGetter(String userId) {
+        boolean keepRunning = true;
+        Check.V316 v316 = new Check.V316();
+        Check.V302 v302 = new Check.V302();
+        refresh(userId);
+        while (keepRunning) {
+            Future<String> futureV316 = getExecutor(userId).submit(() -> getResponseBody(V316, userId));
+            try {
+                v316.setResponseBody(futureV316.get(3, TimeUnit.SECONDS));
+                if (v316.isValid(0)) {
+                    int uk = Integer.parseInt(v316.data.get("$.p.uk").toString());
+                    while (keepRunning) {
+                        int finalUk = ++uk;
+                        Log.v("请输入要刷取的植物、装扮或神器等的物品ID");
+                        int rewardId = smfScanner.Int(false);
+                        Log.v("请输入刷取数量，至少为1");
+                        int q = smfScanner.Int(false, "^\\d+$");
+                        Log.v("请输入循环次数");
+                        int index = smfScanner.Int(false,"^\\d+$");
+                        while (index > 0){
+                            Future<String> futureV302 = getExecutor(userId).submit(() -> getResponseBody(V302, userId, rewardCustomize(rewardId, q, finalUk), finalUk));
+                            try {
+                                v302.setResponseBody(futureV302.get(3, TimeUnit.SECONDS));
+                                if (v302.isValid(0)) {
+                                    Log.s("刷取成功");
+                                    index--;
+                                } else {
+                                    Log.e("刷取失败(错误码:" + v302.getErrorCode() + ")");
+                                }
+                            } catch (Exception ignored) {
+                            }
+                        }
+                        Log.v("是否继续刷取？");
+                        keepRunning = smfScanner.Boolean(false);
+                    }
+                }
+            } catch (Exception ignored) {
             }
         }
     }
@@ -238,15 +271,21 @@ public class PerfectArchive {
                                 Log.e(Arrays.toString(range) + "is Invalid!");
                             }
                         } catch (Exception ignored) {
-                            refresh(userId);
                         }
                     }
                     return;
                 }
             } catch (Exception ignored) {
-                refresh(userId);
             }
         }
+    }
+
+    private static JSONArray rewardCustomize(int rewardId, int q, int uk) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("i", rewardId);
+        jsonObject.put("q", q);
+        jsonObject.put("f", "steam" + uk + "_hard_level_reward");
+        return new JSONArray(jsonObject);
     }
 
     private static JSONArray rewardPieces(int uk) {

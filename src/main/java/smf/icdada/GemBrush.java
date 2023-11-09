@@ -55,7 +55,6 @@ public class GemBrush {
                 }
                 return 0;
             } catch (Exception ignored) {
-                refresh(userId);
             }
         }
     }
@@ -83,13 +82,11 @@ public class GemBrush {
                                     progressBar.print(index + 1);
                                 }
                             } catch (Exception ignored) {
-                                refresh(userId);
                             }
                         }
                         return;
                     }
                 } catch (Exception ignored) {
-                    refresh(userId);
                 }
             }
         }

@@ -124,8 +124,7 @@ public class TheaterCoin {
                         T(userId, futureT100, v904, t100);
                     }
                 }
-            } catch (Exception e) {
-                refresh(userId);
+            } catch (Exception ignored) {
             }
         }
     }
@@ -141,7 +140,6 @@ public class TheaterCoin {
                 JsonUtil(userId, "theater", theaterObject(t7.get(userId), t100.get(userId)));
             }
         } catch (Exception ignored) {
-            refresh(userId);
         }
     }
 

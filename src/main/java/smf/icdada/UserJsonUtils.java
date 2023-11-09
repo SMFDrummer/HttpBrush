@@ -79,10 +79,7 @@ public class UserJsonUtils {
                 Future<String> future = getExecutor(userId).submit(() -> getResponseBody(V316, userId));
                 String response316Body = future.get(3, TimeUnit.SECONDS);
                 v316.setResponseBody(response316Body);
-                if (!v316.isValid(0)) {
-                    Log.v("账号:" + userId + " || 读取失败，正在重试…… || " + response316Body);
-                    if (!v316.isValid(20013)) refresh(userId);
-                } else {
+                if (v316.isValid(0)) {
                     if (v316.data.containsKey("$.p")) {
                         int fg = Integer.parseInt(v316.data.get("$.p.fg").toString());
                         Log.s("账号:" + userId + " || 已获取钻石数量:" + fg);
@@ -90,7 +87,6 @@ public class UserJsonUtils {
                     }
                 }
             } catch (Exception ignored) {
-                refresh(userId);
             }
         }
     }
@@ -102,12 +98,7 @@ public class UserJsonUtils {
                 Future<String> future = getExecutor(userId).submit(() -> getResponseBody(V303, userId, 10868));
                 String response303Body = future.get(3, TimeUnit.SECONDS);
                 v303.setResponseBody(response303Body);
-                if (!v303.isValid(0)) {
-                    Log.v("账号:" + userId + " || 读取失败，正在重试…… || " + response303Body);
-                    if (!v303.isValid(20013)) {
-                        refresh(userId);
-                    }
-                } else {
+                if (v303.isValid(0)) {
                     if (v303.data.containsKey("$.code") && v303.data.get("$.code") != null) {
                         String inviteCode = v303.data.get("$.code").toString();
                         Log.s("账号:" + userId + " || 已获取邀请码:" + inviteCode);
@@ -115,7 +106,6 @@ public class UserJsonUtils {
                     }
                 }
             } catch (Exception ignored) {
-                refresh(userId);
             }
         }
     }

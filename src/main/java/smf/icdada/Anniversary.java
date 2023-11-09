@@ -134,7 +134,6 @@ public class Anniversary {
                 } else return 0;
             }
         } catch (Exception ignored) {
-            refresh(userId);
         }
     }
 
@@ -161,7 +160,6 @@ public class Anniversary {
                         } else return 1;
                     } else return 0;
                 } catch (Exception ignored) {
-                    refresh(randomUserId);
                 }
             }
         }
@@ -179,8 +177,7 @@ public class Anniversary {
                 Future<String> futureV316 = getExecutor(userId).submit(() -> getResponseBody(V316, userId));
                 String response316Body = futureV316.get(3, TimeUnit.SECONDS);
                 v316.setResponseBody(response316Body);
-                if (!v316.isValid(0)) refresh(userId);
-                else {
+                if (v316.isValid(0)) {
                     if (!v316.data.containsKey("$.al[?(@i == 60011)]")) {
                         List<Future<String>> futures;
                         while (true) {
@@ -201,7 +198,6 @@ public class Anniversary {
                                 }
                                 if (success == 7) break;
                             } catch (Exception ignored) {
-                                refresh(userId);
                             }
                         }
                         while (true) {
@@ -218,7 +214,6 @@ public class Anniversary {
                                     }
                                 }
                             } catch (Exception ignored) {
-                                refresh(userId);
                             }
                         }
                     } else {
@@ -227,7 +222,6 @@ public class Anniversary {
                     }
                 }
             } catch (Exception ignored) {
-                refresh(userId);
             }
         }
     }

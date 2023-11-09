@@ -44,3 +44,8 @@ build/
 
 ### Mac OS ###
 .DS_Store
+user/fail.json
+user/pass.json
+user/pass_1.json
+user/pass_2.json
+user/pass_3.json

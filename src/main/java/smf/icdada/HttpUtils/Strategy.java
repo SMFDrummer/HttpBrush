@@ -78,7 +78,6 @@ public class Strategy {
                                         if (success) break;
                                     } else break;
                                 } catch (Exception ignored) {
-                                    refresh(userId);
                                 }
                             }
                         });

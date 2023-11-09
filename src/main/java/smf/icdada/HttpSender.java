@@ -27,8 +27,8 @@ public class HttpSender {
         URI uri = new URI(serverUrl);
         URL url = uri.toURL();
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setConnectTimeout(10000); // 设置连接超时时间为10秒
-        connection.setReadTimeout(10000); // 设置读取超时时间为10秒
+        connection.setConnectTimeout(20000); // 设置连接超时时间为20秒
+        connection.setReadTimeout(20000); // 设置读取超时时间为20秒
         return HttpPoster(requestBody, serverUrl, connection);
     }
 
@@ -47,8 +47,8 @@ public class HttpSender {
         // 创建代理对象
         Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
         HttpURLConnection connection = (HttpURLConnection) url.openConnection(proxy);
-        connection.setConnectTimeout(10000); // 设置连接超时时间为10秒
-        connection.setReadTimeout(10000); // 设置读取超时时间为10秒
+        connection.setConnectTimeout(20000); // 设置连接超时时间为20秒
+        connection.setReadTimeout(20000); // 设置读取超时时间为20秒
         return HttpPoster(requestBody, serverUrl, connection);
     }
 

@@ -21,6 +21,9 @@ public class Check {
             this.responseBody = responseBody;
             data = new Data(setData());
         }
+        public int getErrorCode(){
+            return JSON.parseObject(responseBody).getIntValue("r");
+        }
 
         public boolean isValid(int r) {
             if (JSON.isValidObject(responseBody)) {
@@ -74,14 +77,7 @@ public class Check {
     }
 
     public static class V302 extends V {
-        @Override
-        public boolean isValid(int r) {
-            if (JSON.isValidObject(responseBody)) {
-                JSONObject jsonObject = JSON.parseObject(responseBody);
-                if (r == 0) return jsonObject.getIntValue("r") == r && jsonObject.containsKey("d");
-                else return jsonObject.getIntValue("r") == r;
-            } else return false;
-        }
+
     }
 
     public static class V303 extends V {

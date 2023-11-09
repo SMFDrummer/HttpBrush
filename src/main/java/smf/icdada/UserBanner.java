@@ -196,11 +196,9 @@ public class UserBanner {
                                 }
                             }
                         } catch (Exception ignored) {
-                            refresh(userId);
                         }
                     }
                 } catch (Exception ignored) {
-                    refresh(userId);
                 }
             }
         }
