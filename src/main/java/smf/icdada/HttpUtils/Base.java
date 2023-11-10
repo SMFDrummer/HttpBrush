@@ -93,6 +93,7 @@ public class Base {
     }
 
     public static String getResponseBody(RequestType index, String userId, Object... param) {
+        sleep(50);
         String responseBody;
         try {
             if (Inter.openConsole) Log.d("[SEND] " + index.getRequestBody(index, userId, param));
@@ -123,7 +124,7 @@ public class Base {
                 Log.w(e.getMessage());
                 e.printStackTrace();
             }
-            responseBody = "{\"r\":12202}";
+            responseBody = "{\"r\":403}";
             if (Inter.proxyType != 0) {
                 Proxy.put(userId, proxy());
             }
@@ -190,7 +191,7 @@ public class Base {
                 Log.w(e.getMessage());
                 e.printStackTrace();
             }
-            responseBody = "{\"r\":12202}";
+            responseBody = "{\"r\":403}";
             if (replaceUisk && Inter.proxyType != 0) {
                 Proxy.put(userId,proxy());
             }
