@@ -52,7 +52,7 @@ public class Base {
      */
     private static CompletableFuture<Result> uisk(String userId) {
         Result uisk = null;
-        if (Inter.proxyType != 0){
+        if (Inter.proxyType != 0) {
             Proxy.put(userId, proxy());
         }
         Check.V202 v202 = new Check.V202();
@@ -97,7 +97,7 @@ public class Base {
         String responseBody;
         try {
             if (Inter.openConsole) Log.d("[SEND] " + index.getRequestBody(index, userId, param));
-            if (Inter.proxyType == 0){
+            if (Inter.proxyType == 0) {
                 responseBody = HttpCrypto.decryptRES(
                         HttpSender.doQuest(
                                 Inter.environment,
@@ -131,7 +131,7 @@ public class Base {
         }
         if (Inter.openConsole) Log.w("[RECV] " + responseBody);
         int r = JSON.parseObject(responseBody).getIntValue("r");
-        if (r == 20013 || r == 20020){
+        if (r == 20013 || r == 20020) {
             refresh(userId);
         } else if (r == 12202) {
             sleep(3000);
@@ -144,8 +144,9 @@ public class Base {
         try {
             JSONObject parse = JSON.parseObject(requestBody);
             JSONObject t = parse.getJSONObject("t");
-            t.put("ver_",Inter.iosVersion);
+            t.put("ver_", Inter.iosVersion);
             if (replaceUisk) {
+                if (getUisk(userId) == null) refresh(userId);
                 Result uisk = getUisk(userId);
                 if (t.containsKey("pi") && t.containsKey("ui") && t.containsKey("sk")) {
                     t.put("pi", uisk.getUi());
@@ -153,7 +154,7 @@ public class Base {
                     t.put("ui", uisk.getUi());
                 }
                 if (Inter.openConsole) Log.d("[SEND] " + parse.toJSONString(JSONWriter.Feature.WriteMapNullValue));
-                if (Inter.proxyType == 0){
+                if (Inter.proxyType == 0) {
                     responseBody = HttpCrypto.decryptRES(
                             HttpSender.doQuest(
                                     Inter.environment,
@@ -193,12 +194,12 @@ public class Base {
             }
             responseBody = "{\"r\":403}";
             if (replaceUisk && Inter.proxyType != 0) {
-                Proxy.put(userId,proxy());
+                Proxy.put(userId, proxy());
             }
         }
         if (Inter.openConsole) Log.w("[RECV] " + responseBody);
         int r = JSON.parseObject(responseBody).getIntValue("r");
-        if (r == 20013 || r == 20020){
+        if (r == 20013 || r == 20020) {
             refresh(userId);
         } else if (r == 12202) {
             sleep(3000);
@@ -224,12 +225,12 @@ public class Base {
         }
     }
 
-    public static ExecutorService getExecutor(String userId) {
-        return Vtp.computeIfAbsent(userId, key -> Executors.newVirtualThreadPerTaskExecutor());
-    }
-
     public static Result getUisk(String userId) {
         return Account.get(userId);
+    }
+
+    public static ExecutorService getExecutor(String userId) {
+        return Vtp.computeIfAbsent(userId, key -> Executors.newVirtualThreadPerTaskExecutor());
     }
 
     public static Result getProxy(String userId) {
@@ -258,7 +259,7 @@ public class Base {
     public static String getFilePath() {
         Log.v("请输入完整的文件路径");
         while (true) {
-            String filePath = smfScanner.String(false);
+            String filePath = Scanner.String(false);
             filePath = removeQuotes(filePath);
             if (Files.exists(Paths.get(filePath))) {
                 return filePath;
@@ -320,7 +321,7 @@ public class Base {
     public static void cryptoGuideLine() {
         try {
             Log.v("请输入任意内容或数据包，多次按下回车继续，输入空字段以结束:");
-            String body = smfScanner.LongString(true);
+            String body = Scanner.LongString(true);
             if (body.isBlank()) System.exit(0);
             if (JSON.isValidObject(body)) {
                 JSONObject jsonObject = JSONObject.parse(body);
@@ -328,7 +329,7 @@ public class Base {
                     if (jsonObject.containsKey("t")) {
                         Log.a(HttpCrypto.encryptREQ(body));
                         Log.v("是否发送数据包取得响应？(Y/N)");
-                        if (smfScanner.Boolean(false))
+                        if (Scanner.Boolean(false))
                             Log.a(HttpCrypto.decryptRES(HttpSender.doQuest(Inter.environment, HttpCrypto.encryptREQ(body))));
                     }
                     if (jsonObject.containsKey("e")) {
@@ -341,7 +342,7 @@ public class Base {
             } else if (body.startsWith("--_{{}}_")) {
                 Log.a(HttpCrypto.decryptREQ(body));
                 Log.v("是否发送数据包取得响应？(Y/N)");
-                if (smfScanner.Boolean(false))
+                if (Scanner.Boolean(false))
                     Log.a(HttpCrypto.decryptRES(HttpSender.doQuest(Inter.environment, body)));
             } else {
                 Log.e("自动检测失败");
@@ -349,10 +350,10 @@ public class Base {
                 boolean keepRunning = true;
                 while (keepRunning) {
                     String identifier = null;
-                    int choice = smfScanner.Int(false);
+                    int choice = Scanner.Int(false);
                     if (choice != 6 && choice != 7 && choice != 8) {
                         Log.v("请输入数据包标识:");
-                        identifier = smfScanner.String(true);
+                        identifier = Scanner.String(true);
                     }
                     switch (choice) {
                         case 1 -> {

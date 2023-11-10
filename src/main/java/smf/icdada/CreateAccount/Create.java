@@ -5,7 +5,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONWriter;
 import smf.icdada.Inter;
 import smf.icdada.Log;
-import smf.icdada.smfScanner;
+import smf.icdada.Scanner;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -21,9 +21,9 @@ public class Create {
         try {
             Log.i("默认创建渠道将会读取default中channelId的值");
             Log.v("请输入需要创建账号的手机号:");
-            String phone = smfScanner.String(true, "^\\d{11}$");
+            String phone = Scanner.String(true, "^\\d{11}$");
             Log.v("请输入需要创建账号的密码:");
-            String password = smfScanner.String(true);
+            String password = Scanner.String(true);
             makeNewUserWithPhone(phone, password);
         } catch (Exception e) {
             Log.w(e.getMessage());
@@ -35,7 +35,7 @@ public class Create {
         try {
             Log.i("默认创建渠道将会读取default中channelId的值");
             Log.v("请输入需要创建的账号数量:");
-            int num = smfScanner.Int(true);
+            int num = Scanner.Int(true);
             makeNewUserQuickly(num);
         } catch (Exception e) {
             Log.w(e.getMessage());

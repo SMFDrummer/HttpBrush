@@ -6,7 +6,7 @@
 
     <groupId>smf.icdada</groupId>
     <artifactId>HttpBrush</artifactId>
-    <version>6.7</version>
+    <version>6.8</version>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>

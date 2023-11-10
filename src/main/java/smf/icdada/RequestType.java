@@ -105,7 +105,7 @@ public enum RequestType {
                 t.put("pack", Inter.packageValue);
                 t.put("v", Inter.androidVersion);
             }
-            case V316, V323, V437,V792, V902,V940 -> {
+            case V316, V323, V437, V792, V902, V940 -> {
             }
             case V876 -> t.put("code", param[0]);
             case V877 -> t.put("index", param[0]);

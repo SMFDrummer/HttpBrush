@@ -3,7 +3,7 @@ package smf.icdada.HttpUtils;
 import com.alibaba.fastjson2.*;
 import smf.icdada.Log;
 import smf.icdada.RequestType;
-import smf.icdada.smfScanner;
+import smf.icdada.Scanner;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -139,7 +139,7 @@ public class Strategy {
             CheckPoint.put("value", 0);
             aPackage.put("Order", i++);
             Log.v("请输入数据包标识:");
-            String packageIdentifier = smfScanner.String(false, "^[V|I]\\d{1,}$");
+            String packageIdentifier = Scanner.String(false, "^[V|I]\\d{1,}$");
             JSONObject packageBody = new JSONObject();
             boolean override;
             String value = "";
@@ -148,7 +148,7 @@ public class Strategy {
                 Log.s("找到默认模板如下");
                 RequestType.printRequestBody(packageIdentifier);
                 Log.v("是否使用默认模板？");
-                override = !smfScanner.Boolean(false);
+                override = !Scanner.Boolean(false);
                 if (!override) {
                     if (Format.hasSubclass(packageIdentifier)) {
                         config = Format.writeFormat(packageIdentifier);
@@ -164,7 +164,7 @@ public class Strategy {
                 config = processConfig();
             }
             Log.v("是否需要程序自动更新账号信息？");
-            boolean account = smfScanner.Boolean(false);
+            boolean account = Scanner.Boolean(false);
             packageBody.put("override", override);
             packageBody.put("value", value);
             packageBody.put("account", account);
@@ -172,27 +172,27 @@ public class Strategy {
             aPackage.put("Identifier", packageIdentifier);
             aPackage.put("Body", packageBody);
             Log.v("请输入执行次数:");
-            int cycleIndex = smfScanner.Int(false, "^[1-9]\\d*$");
+            int cycleIndex = Scanner.Int(false, "^[1-9]\\d*$");
             aPackage.put("CycleIndex", cycleIndex);
             Log.v("是否需要检测数据包是否发送成功？");
-            boolean checkSuccess = smfScanner.Boolean(false);
+            boolean checkSuccess = Scanner.Boolean(false);
             aPackage.put("CheckSuccess", checkSuccess);
             boolean overrideR = false;
             int valueR;
             if (checkSuccess) {
                 Log.v("是否需要变更发包成功检测的r的值？");
-                overrideR = smfScanner.Boolean(false);
+                overrideR = Scanner.Boolean(false);
             }
             CheckPoint.put("override", overrideR);
             if (overrideR) {
                 Log.v("请输入发包成功检测的r的值:");
-                valueR = smfScanner.Int(false, "^\\d+$");
+                valueR = Scanner.Int(false, "^\\d+$");
                 CheckPoint.put("value", valueR);
             }
             aPackage.put("CheckPoint", CheckPoint);
             sendPackage.add(aPackage);
             Log.v("是否继续添加？");
-        } while (smfScanner.Boolean(false));
+        } while (Scanner.Boolean(false));
         parse.put("Configuration", "HttpUtilSenderProps");
         parse.put("FileInfo", fileInfo);
         parse.put("SendPackage", sendPackage);
@@ -212,7 +212,7 @@ public class Strategy {
         String value;
         Log.v("请输入数据包，格式为标准irt结构或t结构");
         while (true) {
-            value = smfScanner.LongString(true);
+            value = Scanner.LongString(true);
             if (JSON.isValidObject(value)) {
                 JSONObject parseBody = JSON.parseObject(value);
                 if (!parseBody.containsKey("i") || !parseBody.getString("i").equals(identifier)) {
@@ -233,16 +233,16 @@ public class Strategy {
         JSONArray config = new JSONArray();
         Log.i("数据包内容自定义，请根据提示输入正确的路径配置、类型以及自定义值");
         Log.v("是否添加自定义配置？");
-        while (smfScanner.Boolean(false)) {
+        while (Scanner.Boolean(false)) {
             Log.v("请输入正确的键路径，以$.t开始");
-            String keyPath = smfScanner.String(true, "^\\$.t");
+            String keyPath = Scanner.String(true, "^\\$.t");
             Log.v("请输入键值类型");
             Log.i("Int(整数)、Double(小数)、String(字符串)、JSONObject(JSON对象{})、JSONArray(JSON数组[])");
-            String type = smfScanner.String(false, "^[Int|Double|String|JSONObject|JSONArray]$");
+            String type = Scanner.String(false, "^[Int|Double|String|JSONObject|JSONArray]$");
             JSONObject configElement = Format.write(keyPath, Format.DataType.valueOf(type));
             config.add(configElement);
             Log.v("是否要继续添加？");
-            if (!smfScanner.Boolean(false)) break;
+            if (!Scanner.Boolean(false)) break;
         }
         return config;
     }

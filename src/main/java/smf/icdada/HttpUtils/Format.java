@@ -3,7 +3,7 @@ package smf.icdada.HttpUtils;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import smf.icdada.Log;
-import smf.icdada.smfScanner;
+import smf.icdada.Scanner;
 
 import java.lang.String;
 import java.lang.reflect.Method;
@@ -59,11 +59,11 @@ public class Format {
         JSONObject jsonObject = new JSONObject();
         Log.v("请输入预设键路径" + keyPath + "的值，类型为" + type);
         Object value = switch (type) {
-            case Int -> smfScanner.Int(false);
-            case Double -> smfScanner.Double(false);
-            case String -> smfScanner.String(false);
-            case JSONObject -> smfScanner.JSONObject(false);
-            case JSONArray -> smfScanner.JSONArray(false);
+            case Int -> Scanner.Int(false);
+            case Double -> Scanner.Double(false);
+            case String -> Scanner.String(false);
+            case JSONObject -> Scanner.JSONObject(false);
+            case JSONArray -> Scanner.JSONArray(false);
         };
         jsonObject.put("keyPath", keyPath);
         jsonObject.put("type", type.toString());

@@ -8,7 +8,6 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Scanner;
 
 import static smf.icdada.Inter.SettingType.GlobalSettings;
 import static smf.icdada.Inter.SettingType.OtherSettings;
@@ -130,79 +129,69 @@ public class Inter {
         Log.v("""
                 功能列表:
                 [1] 自适应网络数据包加解密
-                [2] 接收拓维UserID区间的banuser.json生成
-                [3] 根据banuser.json用户库自动封号
-                [4] user.json用户库状态刷新
-                [5] user.json用户库拆解
-                [6] 发送数据包配置生成器
-                [7] 自定义发送数据包组(单一用户)
-                [8] 周年庆邀请活动刷取(单一用户)
-                [9] 周年庆邀请活动刷取(user.json)
-                [10] user.json用户库保护
-                [11] 拓维官服创建账号(使用手机号与密码)
-                [12] 拓维官服创建账号(批量创建)
-                [13] 剧院币一键成号刷取(单一用户)
-                [14] 剧院币一键成号刷取(user.json)
-                [15] 完美存档刷取(单一用户)
-                [16] 完美存档刷取(user.json)
-                [17] 快速刷钻(单一用户)
-                [18] 快速刷钻(user.json)
+                [2] user.json用户库状态刷新
+                [3] user.json用户库拆解
+                [4] 发送数据包配置生成器
+                [5] 自定义发送数据包组(单一用户)
+                [6] user.json用户库保护
+                [7] 拓维官服创建账号(使用手机号与密码)
+                [8] 拓维官服创建账号(批量创建)
                 [0] 退出程序""");
         Log.v("请输入序号并按回车键继续……:");
         while (keepRunning) {
             try {
-                Scanner scanner = new Scanner(System.in);
+                java.util.Scanner scanner = new java.util.Scanner(System.in);
                 inter = scanner.nextInt();
                 switch (inter) {
                     case 1 -> {
                         Log.s("自适应网络数据包加解密");
                         keepRunning = false;
                     }
-                    case 2 -> {
+                    /*case 2 -> {
                         Log.s("接收拓维UserID区间的banuser.json生成");
                         keepRunning = false;
                     }
                     case 3 -> {
                         Log.s("根据banuser.json用户库自动封号");
                         keepRunning = false;
-                    }
-                    case 4 -> {
+                    }*/
+                    case 2 -> {
                         Log.s("user.json用户库状态刷新");
                         keepRunning = false;
                     }
-                    case 5 -> {
+                    case 3 -> {
                         Log.s("user.json用户库拆解");
                         keepRunning = false;
                     }
-                    case 6 -> {
+                    case 4 -> {
                         Log.s("发送数据包配置生成器");
                         keepRunning = false;
                     }
-                    case 7 -> {
+                    case 5 -> {
                         Log.s("自定义发送数据包组(单一用户)");
                         keepRunning = false;
                     }
-                    case 8 -> {
+                    /*case 8 -> {
                         Log.s("周年庆邀请活动刷取(单一用户)");
                         keepRunning = false;
                     }
                     case 9 -> {
                         Log.s("周年庆邀请活动刷取(user.json)");
                         keepRunning = false;
-                    }
-                    case 10 -> {
+                    }*/
+                    case 6 -> {
                         Log.s("user.json用户库保护");
                         keepRunning = false;
                     }
-                    case 11 -> {
+                    case 7 -> {
                         Log.s("拓维官服创建账号(使用手机号与密码)");
                         keepRunning = false;
                     }
-                    case 12 -> {
+                    case 8 -> {
                         Log.s("拓维官服创建账号(批量创建)");
                         keepRunning = false;
                     }
-                    case 13 -> {
+                    /*case 13 -> {
                         Log.s("剧院币一键成号刷取(单一用户)");
                         keepRunning = false;
                     }
@@ -225,7 +214,7 @@ public class Inter {
                     case 18 -> {
                         Log.s("[18] 快速刷钻(user.json)");
                         keepRunning = false;
-                    }
+                    }*/
                     case 99 -> {
                         Log.d("Debug - HttpBrushTest - main");
                         keepRunning = false;
@@ -247,17 +236,17 @@ public class Inter {
                 [1] 本地代理池(需要提前开启HttpBrushProxyPool)
                 [2] 在线代理池""");
         Log.v("请输入序号并按回车键继续……:");
-        return smfScanner.Int(false, "^[0|1|2]$");
+        return Scanner.Int(false, "^[0|1|2]$");
     }
 
     private static String androidVersion() {
         Log.v("请输入安卓版本号，格式为${VersionName}，如1.2.3");
-        return smfScanner.String(false, "^\\d{1}\\.\\d{1}\\.\\d{1}$");
+        return Scanner.String(false, "^\\d{1}\\.\\d{1}\\.\\d{1}$");
     }
 
     private static String iosVersion() {
         Log.v("请输入苹果版本号，格式为${VersionName}.${VersionCode}，如1.2.3.123");
-        return smfScanner.String(false, "^\\d{1}\\.\\d{1}\\.\\d{1}\\.\\d{3,}$");
+        return Scanner.String(false, "^\\d{1}\\.\\d{1}\\.\\d{1}\\.\\d{3,}$");
     }
 
     private static boolean environment() {
@@ -282,7 +271,7 @@ public class Inter {
             }
             stringBuilder.append("]+$");
             Log.v("请输入渠道Id，并按回车键继续……:");
-            channelId = smfScanner.Int(false, stringBuilder.toString());
+            channelId = Scanner.Int(false, stringBuilder.toString());
         } catch (Exception e) {
             Log.e("配置文件异常:");
             e.printStackTrace();

@@ -22,23 +22,25 @@ public class HttpBrushTest {
             e.printStackTrace();
         }
     }
-    private static String XMLEncrypt(byte[] paramArrayOfByteData,byte[] paramArrayOfByteKey){
+
+    private static String XMLEncrypt(byte[] paramArrayOfByteData, byte[] paramArrayOfByteKey) {
         DESKeyGenerator desKeyGenerator = new DESKeyGenerator();
         //desKeyGenerator.init(new KeyGenerationParameters(new SecureRandom(),));
         return null;
     }
-    private static void updateUserJson(){
+
+    private static void updateUserJson() {
         try {
             Log.v("请输入旧账号库文件完整路径");
-            String userPath = Base.getFilePath(smfScanner.String(false));
+            String userPath = Base.getFilePath(Scanner.String(false));
             JSONObject parse = JSON.parseObject(Files.readString(Path.of(userPath)));
             JSONArray Users = new JSONArray();
             if (parse.containsKey("Users")) Users = parse.getJSONArray("Users");
             else if (parse.containsKey("BannedUsers")) Users = parse.getJSONArray("BannedUsers");
-            for (Object o : Users){
+            for (Object o : Users) {
                 JSONObject userObject = (JSONObject) o;
                 int userId = userObject.getIntValue("userId");
-                userObject.put("userId",String.valueOf(userId));
+                userObject.put("userId", String.valueOf(userId));
             }
             FileWriter fileWriter = new FileWriter(userPath);
             fileWriter.write(parse.toJSONString(JSONWriter.Feature.WriteMapNullValue, JSONWriter.Feature.PrettyFormat));

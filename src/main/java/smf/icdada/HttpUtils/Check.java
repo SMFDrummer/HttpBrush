@@ -21,7 +21,8 @@ public class Check {
             this.responseBody = responseBody;
             data = new Data(setData());
         }
-        public int getErrorCode(){
+
+        public int getErrorCode() {
             return JSON.parseObject(responseBody).getIntValue("r");
         }
 
@@ -109,6 +110,7 @@ public class Check {
             else return true;
         }
     }
+
     public static class V792 extends V {
     }
 

@@ -8,7 +8,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
-import java.util.Scanner;
 import java.util.regex.Pattern;
 
 /**
@@ -18,9 +17,9 @@ import java.util.regex.Pattern;
  * 更加智能的 Scanner，相对弥补了 java 官方 Scanner 的不足，并修复一些问题。
  * </p>
  */
-public class smfScanner {
+public class Scanner {
     public static int Int(boolean requireConfirmation) {
-        Scanner scanner = new Scanner(System.in);
+        java.util.Scanner scanner = new java.util.Scanner(System.in);
         int number = 0;
         boolean isValid = false;
         while (!isValid) {
@@ -43,7 +42,7 @@ public class smfScanner {
     }
 
     public static int Int(boolean requireConfirmation, String regex) {
-        Scanner scanner = new Scanner(System.in);
+        java.util.Scanner scanner = new java.util.Scanner(System.in);
         int number = 0;
         boolean isValid = false;
         while (!isValid) {
@@ -70,7 +69,7 @@ public class smfScanner {
     }
 
     public static BigInteger BigInteger(boolean requireConfirmation) {
-        Scanner scanner = new Scanner(System.in);
+        java.util.Scanner scanner = new java.util.Scanner(System.in);
         BigInteger number = BigInteger.ZERO;
         boolean isValid = false;
         while (!isValid) {
@@ -93,7 +92,7 @@ public class smfScanner {
     }
 
     public static BigInteger BigInteger(boolean requireConfirmation, String regex) {
-        Scanner scanner = new Scanner(System.in);
+        java.util.Scanner scanner = new java.util.Scanner(System.in);
         BigInteger number = BigInteger.ZERO;
         boolean isValid = false;
         while (!isValid) {
@@ -120,7 +119,7 @@ public class smfScanner {
     }
 
     public static double Double(boolean requireConfirmation) {
-        Scanner scanner = new Scanner(System.in);
+        java.util.Scanner scanner = new java.util.Scanner(System.in);
         double number = 0.0;
         boolean isValid = false;
         while (!isValid) {
@@ -143,7 +142,7 @@ public class smfScanner {
     }
 
     public static double Double(boolean requireConfirmation, String regex) {
-        Scanner scanner = new Scanner(System.in);
+        java.util.Scanner scanner = new java.util.Scanner(System.in);
         double number = 0.0;
         boolean isValid = false;
         while (!isValid) {
@@ -170,7 +169,7 @@ public class smfScanner {
     }
 
     public static boolean Boolean(boolean requireConfirmation) {
-        Scanner scanner = new Scanner(System.in);
+        java.util.Scanner scanner = new java.util.Scanner(System.in);
         boolean bool = false;
         boolean isValid = false;
         while (!isValid) {
@@ -296,7 +295,7 @@ public class smfScanner {
                 if (requireConfirmation) {
                     Log.i("你输入的内容是:" + jsonObject);
                     Log.v("如果确认请输入任意字符，否则请输入 N 或 n:");
-                    String confirmation = new Scanner(System.in).nextLine();
+                    String confirmation = new java.util.Scanner(System.in).nextLine();
                     isValid = !confirmation.equalsIgnoreCase("N");
                 } else {
                     isValid = true;
@@ -318,7 +317,7 @@ public class smfScanner {
                 if (requireConfirmation) {
                     Log.i("你输入的内容是:" + jsonArray);
                     Log.v("如果确认请输入任意字符，否则请输入 N 或 n:");
-                    String confirmation = new Scanner(System.in).nextLine();
+                    String confirmation = new java.util.Scanner(System.in).nextLine();
                     isValid = !confirmation.equalsIgnoreCase("N");
                 } else {
                     isValid = true;

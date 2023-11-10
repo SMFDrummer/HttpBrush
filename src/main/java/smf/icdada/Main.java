@@ -28,32 +28,22 @@ public class Main {
         Log.i(String.format("程序作者:SMF & icdada；协同测试:%s", Inter.getTestBy()));
         Log.v("""
                 更新日志:
-                * 重写完美存档刷取方法
-                * 修复发包报错问题
+                * 净化软件主体
+                * 修复自定义发包问题
                 * 修复bug""");
         Log.w("使用含有user.json批量刷取功能前请确保账号库文件已经通过功能99升级");
         Inter.Setting();
         switch (Inter.inter) {
             case 1 -> cryptoGuideLine();
-            case 2 -> UserBanner.fileChecker(false);
-            case 3 -> UserBanner.bannedFunction();
-            case 4, 10 -> UserJsonUtils.measure();
-            case 5 -> UserJsonUtils.JsonCutter();
-            case 6 -> maker();
-            case 7 -> {
+            case 2, 6 -> UserJsonUtils.measure();
+            case 3 -> UserJsonUtils.JsonCutter();
+            case 4 -> maker();
+            case 5 -> {
                 Log.v("请输入拓维userId，如果确认配置文件中不含有需要刷新账号信息的项，也可以直接回车以继续");
-                apply(smfScanner.String(true));
+                apply(Scanner.String(true));
             }
-            case 8 -> Anniversary.single();
-            case 9 -> Anniversary.measure();
-            case 11 -> Create.single();
-            case 12 -> Create.measure();
-            case 13 -> TheaterCoin.single();
-            case 14 -> TheaterCoin.measure();
-            case 15 -> PerfectArchive.single();
-            case 16 -> PerfectArchive.measure();
-            case 17 -> GemBrush.single();
-            case 18 -> GemBrush.measure();
+            case 7 -> Create.single();
+            case 8 -> Create.measure();
             case 99 -> HttpBrushTest.main(args);
             case 0 -> System.exit(0);
             default -> {
